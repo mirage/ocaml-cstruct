@@ -1,0 +1,27 @@
+OASISFormat: 0.1
+OCamlVersion: >= 3.12
+Name: cstruct
+Version: 0.1
+License: ISC
+Authors: Anil Madhavapeddy
+Homepage: http://github.com/avsm/ocaml-cstruct
+BuildTools: ocamlbuild
+Plugins: META (0.2)
+
+Synopsis: Syntax extension to map C structs onto Bigarray buffers
+
+Library cstruct
+  Path: lib
+  Modules: Cstruct
+  CSources: cstruct_stubs.c
+
+Library syntax
+  FindlibName: syntax
+  FindlibParent: cstruct
+  Path: syntax
+  BuildDepends: camlp4.lib, camlp4.quotations.o, camlp4.extend
+  Modules: Pa_cstruct
+  XMETAType: syntax
+  XMETADescription: Syntactic sugars for Lwt
+  XMETARequires: camlp4, lwt.syntax.options
+

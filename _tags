@@ -1,0 +1,29 @@
+# OASIS_START
+# DO NOT EDIT (digest: a07d3ace9b5ae416dbd1646cf4d5127d)
+# Ignore VCS directories, you can use the same kind of rule outside 
+# OASIS_START/STOP if you want to exclude directories that contains 
+# useless stuff for the build process
+<**/.svn>: -traverse
+<**/.svn>: not_hygienic
+".bzr": -traverse
+".bzr": not_hygienic
+".hg": -traverse
+".hg": not_hygienic
+".git": -traverse
+".git": not_hygienic
+"_darcs": -traverse
+"_darcs": not_hygienic
+# Library syntax
+"syntax": include
+<syntax/*.ml{,i}>: pkg_camlp4.quotations.o
+<syntax/*.ml{,i}>: pkg_camlp4.lib
+<syntax/*.ml{,i}>: pkg_camlp4.extend
+# Library cstruct
+"lib": include
+<lib/cstruct.{cma,cmxa}>: use_libcstruct
+# OASIS_STOP
+<**/*.ml>: syntax_camlp4o, pkg_camlp4
+<**/*.ml>: pa_lwt_options, pa_lwt, pa_lwt_log, pa_optcomp
+<syntax/*.ml>: -pa_lwt_options, -pa_lwt, -pa_lwt_log, -pa_optcomp
+true: annot
+
