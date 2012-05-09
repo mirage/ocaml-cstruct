@@ -27,12 +27,42 @@ let parse_field _loc fname fty =
   |Some field -> field
   |None -> Loc.raise _loc (Failure (sprintf "Unknown type %s" fty))
 
-(* TODO *)
+let getter_name s f = sprintf "get_%s_%s" s.C.name f.C.field
+let setter_name s f = sprintf "set_%s_%s" s.C.name f.C.field
+
+let output_get _loc s f =
+  let open Cstruct in
+  <:str_item<
+    let $lid:getter_name s f$ v = 
+      $match f.ty with
+       |UInt8 -> <:expr< Cstruct.get_uint8 v $int:string_of_int f.off$ >>
+       |UInt16 -> <:expr< Cstruct.get_uint16 v $int:string_of_int f.off$ >>
+       |UInt32 -> <:expr< Cstruct.get_uint32 v $int:string_of_int f.off$ >>
+      $
+  >>
+
+let output_set _loc s f =
+  let open Cstruct in
+  <:str_item<
+    let $lid:setter_name s f$ v x = 
+      $match f.ty with
+       |UInt8 -> <:expr< Cstruct.set_uint8 v $int:string_of_int f.off$ x >>
+       |UInt16 -> <:expr< Cstruct.set_uint16 v $int:string_of_int f.off$ x >>
+       |UInt32 -> <:expr< Cstruct.set_uint32 v $int:string_of_int f.off$ x >>
+       |_ -> <:expr< -1 >>
+      $
+  >>
+
 let output_struct _loc s =
-  <:expr<  $str:C.to_string s$ >>
+  (* Generate functions of the form {get/set}_<struct>_<field> *)
+  let expr = List.fold_left (fun a f ->
+      <:str_item< $a$ ;; $output_get _loc s f$ ;; $output_set _loc s f$ >>
+    ) <:str_item< >> s.C.fields
+  in
+  expr
 
 EXTEND Gram
-  GLOBAL: expr;
+  GLOBAL: str_item;
 
   constr_field: [
     [ fty = LIDENT; fname = LIDENT ->
@@ -46,7 +76,7 @@ EXTEND Gram
     ]
   ];
 
-  expr: LEVEL ";" [
+  str_item: [
     [ "cstruct"; name = LIDENT; fields = constr_fields ->
 	output_struct _loc (C.create_struct name fields)
     ]
