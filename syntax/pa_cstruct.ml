@@ -20,44 +20,117 @@ open Camlp4.PreCast
 open Syntax
 open Ast
 
-module C = Cstruct
+type mode = Big_endian | Little_endian | Host_endian
+
+type ty =
+  |UInt8
+  |UInt16
+  |UInt32
+
+type field = {
+  field: string;
+  ty: ty;
+  off: int;
+}
+
+type t = {
+  name: string; 
+  fields: field list;
+  len: int;
+}
+
+let ty_of_string =
+  function
+  |"uint8_t" -> Some UInt8
+  |"uint16_t" -> Some UInt16
+  |"uint32_t" -> Some UInt32
+  |_ -> None
+
+let width_of_field f =
+  match f.ty with
+  |UInt8 -> 1
+  |UInt16 -> 2
+  |UInt32 -> 4
+
+let field_to_string f =
+  sprintf "%s %s" 
+    (match f.ty with
+     |UInt8 -> "uint8_t"
+     |UInt16 -> "uint16_t"
+     |UInt32 -> "uint32_t"
+    ) f.field
+
+let to_string t =
+  sprintf "cstruct[%d] %s { %s }" t.len t.name
+    (String.concat "; " (List.map field_to_string t.fields))
+
+let create_field field field_type =
+  match ty_of_string field_type with
+  |None -> None
+  |Some ty ->
+    let off = 0 in (* XXX *)
+    Some { field; ty; off }
+
+let create_struct name fields =
+  let len, fields =
+    List.fold_left (fun (off,acc) field ->
+      let field = {field with off=off} in 
+      let off = width_of_field field + off in
+      let acc = acc @ [field] in
+      (off, acc)
+    ) (0,[]) fields
+  in
+  { fields; name; len }
+
+let mode_mod _loc =
+  function
+  |Big_endian -> <:expr< Cstruct.BE >>
+  |Little_endian -> <:expr< Cstruct.LE >>
+  |Host_endian -> <:expr< Cstruct.HE >>
 
 let parse_field _loc fname fty =
-  match C.create_field fname fty with
+  match create_field fname fty with
   |Some field -> field
   |None -> Loc.raise _loc (Failure (sprintf "Unknown type %s" fty))
 
-let getter_name s f = sprintf "get_%s_%s" s.C.name f.C.field
-let setter_name s f = sprintf "set_%s_%s" s.C.name f.C.field
+let getter_name s f = sprintf "get_%s_%s" s.name f.field
+let setter_name s f = sprintf "set_%s_%s" s.name f.field
 
-let output_get _loc s f =
-  let open Cstruct in
+let output_get _loc m s f =
+  let m = mode_mod _loc m in
+  let off = <:expr< $int:string_of_int f.off$ >> in 
   <:str_item<
     let $lid:getter_name s f$ v = 
       $match f.ty with
-       |UInt8 -> <:expr< Cstruct.get_uint8 v $int:string_of_int f.off$ >>
-       |UInt16 -> <:expr< Cstruct.get_uint16 v $int:string_of_int f.off$ >>
-       |UInt32 -> <:expr< Cstruct.get_uint32 v $int:string_of_int f.off$ >>
+       |UInt8 -> <:expr< $m$.get_uint8 v $off$ >>
+       |UInt16 -> <:expr< $m$.get_uint16 v $off$ >>
+       |UInt32 -> <:expr< $m$.get_uint32 v $off$ >>
       $
   >>
 
-let output_set _loc s f =
-  let open Cstruct in
+let output_set _loc m s f =
+  let m = mode_mod _loc m in
+  let off = <:expr< $int:string_of_int f.off$ >> in 
   <:str_item<
     let $lid:setter_name s f$ v x = 
       $match f.ty with
-       |UInt8 -> <:expr< Cstruct.set_uint8 v $int:string_of_int f.off$ x >>
-       |UInt16 -> <:expr< Cstruct.set_uint16 v $int:string_of_int f.off$ x >>
-       |UInt32 -> <:expr< Cstruct.set_uint32 v $int:string_of_int f.off$ x >>
+       |UInt8 -> <:expr< $m$.set_uint8 v $off$ x >>
+       |UInt16 -> <:expr< $m$.set_uint16 v $off$ x >>
+       |UInt32 -> <:expr< $m$.set_uint32 v $off$ x >>
        |_ -> <:expr< -1 >>
       $
   >>
 
 let output_struct _loc s =
+  let m = Big_endian (* TODO *) in
   (* Generate functions of the form {get/set}_<struct>_<field> *)
   let expr = List.fold_left (fun a f ->
-      <:str_item< $a$ ;; $output_get _loc s f$ ;; $output_set _loc s f$ >>
-    ) <:str_item< >> s.C.fields
+      <:str_item< 
+          $a$ ;; 
+          $output_get _loc m s f$ ;; 
+          $output_set _loc m s f$ 
+      >>
+    ) <:str_item< >> s.fields
   in
   expr
 
@@ -78,7 +151,7 @@ EXTEND Gram
 
   str_item: [
     [ "cstruct"; name = LIDENT; fields = constr_fields ->
-	output_struct _loc (C.create_struct name fields)
+	output_struct _loc (create_struct name fields)
     ]
   ];
 

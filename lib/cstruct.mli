@@ -1,4 +1,4 @@
-/*
+(*
  * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -12,29 +12,26 @@
  * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
- */
+ *)
 
-#include <sys/param.h>
-#include <stdlib.h>
-#include <errno.h>
+type buf = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
 
-#include <caml/mlvalues.h>
-#include <caml/memory.h>
-#include <caml/fail.h>
-#include <caml/alloc.h>
-#include <caml/bigarray.h>
+type uint8 = int
+type uint16 = int
+type uint32 = int32
 
-/* Return the offset of the bigarray slice against the underlying
- * data buffer (which is recorded in the ba->proxy, if it is set */
-CAMLprim value
-caml_bigarray_base_offset(value v_ba)
-{
-  CAMLparam1(v_ba);
-  struct caml_ba_array *ba = Caml_ba_array_val(v_ba);
-  if (ba->proxy == NULL)
-    CAMLreturn(Val_int(0));
-  else {
-    off_t len = (ba->proxy->data - ba->data);
-    CAMLreturn(Val_int(len));
-  }
-}
+module BE : sig
+
+  val get_uint8 : buf -> int -> uint8
+  val get_uint16 : buf -> int -> uint16
+  val get_uint32 : buf -> int -> uint32
+
+  val set_uint8 : buf -> int -> uint8 -> unit
+  val set_uint16 : buf -> int -> uint16 -> unit
+  val set_uint32 : buf -> int -> uint32 -> unit
+
+end
+
+val len : buf -> int
+val base_offset : buf -> int
+val sub : buf -> int -> int -> buf

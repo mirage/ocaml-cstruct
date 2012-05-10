@@ -14,67 +14,54 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-
 open Printf
 
-type ty =
-  |UInt8
-  |UInt16
-  |UInt32
+open Bigarray
+open Array1 
 
-type field = {
-  field: string;
-  ty: ty;
-  off: int;
-  
-}
+type buf = (char, int8_unsigned_elt, c_layout) Bigarray.Array1.t
 
-type t = {
-  name: string; 
-  fields: field list;
-  len: int;
-}
+type uint8 = int
+type uint16 = int
+type uint32 = int32
 
-let ty_of_string =
-  function
-  |"uint8_t" -> Some UInt8
-  |"uint16_t" -> Some UInt16
-  |"uint32_t" -> Some UInt32
-  |_ -> None
+module BE = struct
 
-let width_of_field f =
-  match f.ty with
-  |UInt8 -> 1
-  |UInt16 -> 2
-  |UInt32 -> 4
+  let get_uint8 s off =
+    Char.code (get s off)
 
-let field_to_string f =
-  sprintf "%s %s" 
-    (match f.ty with
-     |UInt8 -> "uint8_t"
-     |UInt16 -> "uint16_t"
-     |UInt32 -> "uint32_t"
-    ) f.field
+  let get_uint16 s off =
+    let a = get_uint8 s off in
+    let b = get_uint8 s (off+1) in
+    (a lsl 8) + b
 
-let to_string t =
-  sprintf "cstruct[%d] %s { %s }" t.len t.name
-    (String.concat "; " (List.map field_to_string t.fields))
+  let get_uint32 s off =
+    let a = Int32.of_int (get_uint16 s off) in
+    let b = Int32.of_int (get_uint16 s (off+2)) in
+    Int32.(add (shift_left a 16) b)
 
-let create_field field field_type =
-  match ty_of_string field_type with
-  |None -> None
-  |Some ty ->
-    let off = 0 in (* XXX *)
-    Some { field; ty; off }
+  let set_uint8 s off v =
+    set s off (Char.chr v)
 
-let create_struct name fields =
-  let len, fields =
-    List.fold_left (fun (off,acc) field ->
-      let field = {field with off=off} in 
-      let off = width_of_field field + off in
-      let acc = acc @ [field] in
-      (off, acc)
-    ) (0,[]) fields
-  in
-  { fields; name; len }
+  let set_uint16 s off v =
+    set_uint8 s off (v lsr 8);
+    set_uint8 s (off+1) (v land 0xff)
 
+  let set_uint32 s off v =
+    set_uint16 s off (Int32.(to_int (shift_right_logical v 16)));
+    set_uint16 s (off+2) (Int32.(to_int (logand v 0xffffl)))
+end
+
+module LE = struct
+  open Bigarray.Array1 
+
+  let get_uint8 s off =
+    Char.code (get s off)
+  (* TODO *)
+end
+
+let len buf = dim buf
+
+external base_offset : buf -> int = "caml_bigarray_base_offset"
+
+let sub buf off len = sub buf off len
