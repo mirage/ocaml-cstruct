@@ -34,7 +34,7 @@ caml_bigarray_base_offset(value v_ba)
   if (ba->proxy == NULL)
     CAMLreturn(Val_int(0));
   else {
-    off_t len = (ba->proxy->data - ba->data);
+    off_t len = (ba->data - ba->proxy->data);
     CAMLreturn(Val_int(len));
   }
 }
