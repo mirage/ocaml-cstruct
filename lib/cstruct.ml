@@ -71,7 +71,7 @@ module LE = struct
   let get_uint16 s off =
     let a = get_uint8 s off in
     let b = get_uint8 s (off+1) in
-    (b lsl 8) + b
+    (b lsl 8) + a
 
   let get_uint32 s off =
     let a = get_uint8 s off in
