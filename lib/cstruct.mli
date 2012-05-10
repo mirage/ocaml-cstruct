@@ -21,18 +21,32 @@ type uint16 = int
 type uint32 = int32
 
 module BE : sig
-
   val get_uint8 : buf -> int -> uint8
   val get_uint16 : buf -> int -> uint16
   val get_uint32 : buf -> int -> uint32
+  val get_buffer : buf -> int -> int -> buf
 
   val set_uint8 : buf -> int -> uint8 -> unit
   val set_uint16 : buf -> int -> uint16 -> unit
   val set_uint32 : buf -> int -> uint32 -> unit
+  val set_buffer : buf -> int -> int -> buf -> unit
+end
 
+module LE : sig
+  val get_uint8 : buf -> int -> uint8
+  val get_uint16 : buf -> int -> uint16
+  val get_uint32 : buf -> int -> uint32
+  val get_buffer : buf -> int -> int -> buf
+
+  val set_uint8 : buf -> int -> uint8 -> unit
+  val set_uint16 : buf -> int -> uint16 -> unit
+  val set_uint32 : buf -> int -> uint32 -> unit
+  val set_buffer : buf -> int -> int -> buf -> unit
 end
 
 val len : buf -> int
 val base_offset : buf -> int
 val sub : buf -> int -> int -> buf
 val split : buf -> int -> buf * buf
+
+val hexdump : buf -> unit

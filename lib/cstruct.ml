@@ -33,12 +33,18 @@ module BE = struct
   let get_uint16 s off =
     let a = get_uint8 s off in
     let b = get_uint8 s (off+1) in
-    (b lsl 8) + a
+    (a lsl 8) + b
 
   let get_uint32 s off =
-    let a = Int32.of_int (get_uint16 s off) in
-    let b = Int32.of_int (get_uint16 s (off+2)) in
-    Int32.(add (shift_left b 16) a)
+    let a = get_uint8 s off in
+    let b = get_uint8 s (off+1) in
+    let c = get_uint8 s (off+2) in
+    let d = get_uint8 s (off+3) in
+    let e = (b lsl 16) + (c lsl 8) + d in
+    Int32.(add (shift_left (of_int a) 24) (of_int e))
+
+  let get_buffer s off len =
+    sub s off len
 
   let set_uint8 s off v =
     set s off (Char.chr v)
@@ -50,6 +56,10 @@ module BE = struct
   let set_uint32 s off v =
     set_uint16 s off (Int32.(to_int (shift_right_logical v 16)));
     set_uint16 s (off+2) (Int32.(to_int (logand v 0xffffl)))
+
+  let set_buffer s off len src =
+    let dst = sub s off len in
+    blit src dst
 end
 
 module LE = struct
@@ -57,7 +67,42 @@ module LE = struct
 
   let get_uint8 s off =
     Char.code (get s off)
-  (* TODO *)
+
+  let get_uint16 s off =
+    let a = get_uint8 s off in
+    let b = get_uint8 s (off+1) in
+    (b lsl 8) + b
+
+  let get_uint32 s off =
+    let a = get_uint8 s off in
+    let b = get_uint8 s (off+1) in
+    let c = get_uint8 s (off+2) in
+    let d = get_uint8 s (off+3) in
+    let e = (c lsl 16) + (b lsl 8) + a in
+    Int32.(add (shift_left (of_int d) 24) (of_int e))
+
+  let get_buffer s off len =
+    sub s off len
+
+  let set_uint8 s off v =
+    set s off (Char.chr v)
+
+  let set_uint16 s off v =
+    set_uint8 s off (v land 0xff);
+    set_uint8 s (off+1) (v lsr 8)
+
+  let set_uint32 s off v =
+    set_uint16 s off (Int32.(to_int (shift_right_logical v 16)));
+    set_uint16 s (off+2) (Int32.(to_int (logand v 0xffffl)))
+
+  let set_uint32 s off v =
+    set_uint16 s off (Int32.(to_int (logand v 0xffffl)));
+    set_uint16 s (off+2) (Int32.(to_int (shift_right_logical v 16)))
+
+  let set_buffer s off len src =
+    let dst = sub s off len in
+    blit src dst
+
 end
 
 let len buf = dim buf
@@ -71,3 +116,11 @@ let split buf off =
   let body = sub buf off (len buf - off) in
   header, body
 
+let hexdump buf =
+  let c = ref 0 in
+  for i = 0 to len buf - 1 do
+    if !c mod 16 = 0 then print_endline "";
+    printf "%.2x " (Char.code (get buf i));
+    incr c;
+  done;
+  print_endline ""
