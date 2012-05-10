@@ -127,12 +127,18 @@ let output_set _loc m s f =
       $
   >>
 
+let output_sizeof _loc s =
+  <:str_item<
+    let $lid:"sizeof_"^s.name$ = $int:string_of_int s.len$
+  >>
+
 let output_struct _loc s =
   let m = Big_endian (* TODO *) in
   (* Generate functions of the form {get/set}_<struct>_<field> *)
   let expr = List.fold_left (fun a f ->
       <:str_item< 
           $a$ ;; 
+          $output_sizeof _loc s$ ;;
           $output_get _loc m s f$ ;; 
           $output_set _loc m s f$ 
       >>
