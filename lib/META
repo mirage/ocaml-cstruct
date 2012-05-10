@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 9d54aa08629690006e86085e6546bd71)
+# DO NOT EDIT (digest: 6265303fb84f32cd465cde68bb52d0f0)
 version = "0.1"
 description = "Syntax extension to map C structs onto Bigarray buffers"
 archive(byte) = "cstruct.cma"
@@ -9,9 +9,9 @@ package "syntax" (
  version = "0.1"
  description = "Syntactic sugars for Lwt"
  requires = "camlp4 lwt.syntax.options"
- archive(syntax, preprocessor) = "syntax.cma"
- archive(syntax, toploop) = "syntax.cma"
- exists_if = "syntax.cma"
+ archive(syntax, preprocessor) = "cstruct-syntax.cma"
+ archive(syntax, toploop) = "cstruct-syntax.cma"
+ exists_if = "cstruct-syntax.cma"
 )
 # OASIS_STOP
 

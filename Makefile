@@ -22,7 +22,7 @@ install: setup.bin
 	./setup.bin -install
 
 test: 
-	camlp4o -printer o ./_build/lib/cstruct.cmo ./_build/syntax/syntax.cma ./lib_test/ipv4.ml
+	camlp4o -printer o ./_build/syntax/cstruct-syntax.cma ./lib_test/ipv4.ml
 
 reinstall: setup.bin
 	ocamlfind remove $(NAME) || true

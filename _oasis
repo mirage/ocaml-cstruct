@@ -15,7 +15,7 @@ Library cstruct
   Modules: Cstruct
   CSources: cstruct_stubs.c
 
-Library syntax
+Library "cstruct-syntax"
   FindlibName: syntax
   FindlibParent: cstruct
   Path: syntax
