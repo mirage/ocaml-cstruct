@@ -111,6 +111,17 @@ external base_offset : buf -> int = "caml_bigarray_base_offset"
 
 let sub buf off len = sub buf off len
 
+let to_string buf = 
+  let sz = len buf in
+  let s = String.create sz in
+  for i = 0 to sz - 1 do
+    s.[i] <- get buf i
+  done;
+  s
+
+let shift buf off =
+  sub buf off (len buf - off)
+
 let split buf off =
   let header = sub buf 0 off in
   let body = sub buf off (len buf - off) in

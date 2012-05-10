@@ -77,7 +77,7 @@ let print_packet p =
   printf "ether %s -> %s etype %x\n" src_mac dst_mac ethertype;
   match ethertype with
   |0x0800 -> begin
-     let _,ip = Cstruct.split p sizeof_ethernet in
+     let ip = Cstruct.shift p sizeof_ethernet in
      let version = get_ipv4_hlen_version ip lsr 4 in
      let hlen = (get_ipv4_hlen_version ip land 0xf) * 4 in
      let ttl = get_ipv4_ttl ip in
@@ -85,12 +85,23 @@ let print_packet p =
      printf "ipv%d hlen %d ttl %d proto %d\n" version hlen ttl proto;
      match proto with 
      |6 -> begin (* tcp *)
-       let _,tcp = Cstruct.split ip sizeof_ipv4 in
+       let tcp = Cstruct.shift ip sizeof_ipv4 in
        let off = 0 in
+       let x = get_tcpv4_offset_flags tcp in
+       let data_offset = (x lsr 12) * 4 in
+       let options =
+         match data_offset - sizeof_tcpv4 with
+         |0 -> 0
+         |n -> n (* TODO parse *)
+       in
+       let payload = Cstruct.shift tcp data_offset in
+       let fin = (x land 1) = 1 in
+       let syn = (x land 2) = 2 in
        let flags = "?" in
-       printf "tcpv4 port %d->%d seq %lu ack %lu win %d off %d flags %s\n"
+       printf "tcpv4 port %d->%d seq %lu ack %lu win %d off %d flags %s opt %d fin %b syn %b\n"
          (get_tcpv4_src_port tcp) (get_tcpv4_dst_port tcp) (get_tcpv4_seqnum tcp)
-         (get_tcpv4_acknum tcp) (get_tcpv4_window tcp) off flags;
+         (get_tcpv4_acknum tcp) (get_tcpv4_window tcp) off flags options fin syn;
+       printf "%S\n" (Cstruct.to_string payload)
      end
      |_ -> printf "unknown ip proto %d\n" proto
   end
