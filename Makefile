@@ -1,5 +1,5 @@
 .PHONY: all clean install build
-all: build test doc
+all: build
 
 NAME=cstruct
 
@@ -21,8 +21,12 @@ doc: setup.data setup.bin
 install: setup.bin
 	./setup.bin -install
 
+# must have cstruct installed and accessible to ocamlfind first *)
 test: 
-	camlp4o -printer o ./_build/syntax/cstruct-syntax.cma ./lib_test/ipv4.ml
+	cd lib_test && \
+	  ocamlbuild -clean && \
+	  ocamlbuild -classic-display -use-ocamlfind ipv4.native && \
+	  ./ipv4.native
 
 reinstall: setup.bin
 	ocamlfind remove $(NAME) || true

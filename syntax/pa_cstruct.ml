@@ -37,6 +37,7 @@ type t = {
   name: string; 
   fields: field list;
   len: int;
+  endian: mode;
 }
 
 let ty_of_string =
@@ -71,7 +72,13 @@ let create_field field field_type =
     let off = 0 in (* XXX *)
     Some { field; ty; off }
 
-let create_struct name fields =
+let create_struct _loc endian name fields =
+  let endian = match endian with 
+    |"little_endian" -> Little_endian
+    |"big_endian" -> Big_endian
+    |"host_endian" -> Host_endian
+    |_ -> Loc.raise _loc (Failure (sprintf "unknown endian %s, should be little_endian, big_endian or host_endian" endian))
+  in
   let len, fields =
     List.fold_left (fun (off,acc) field ->
       let field = {field with off=off} in 
@@ -80,7 +87,7 @@ let create_struct name fields =
       (off, acc)
     ) (0,[]) fields
   in
-  { fields; name; len }
+  { fields; name; len; endian }
 
 let mode_mod _loc =
   function
@@ -117,7 +124,6 @@ let output_set _loc m s f =
        |UInt8 -> <:expr< $m$.set_uint8 v $off$ x >>
        |UInt16 -> <:expr< $m$.set_uint16 v $off$ x >>
        |UInt32 -> <:expr< $m$.set_uint32 v $off$ x >>
-       |_ -> <:expr< -1 >>
       $
   >>
 
@@ -150,8 +156,9 @@ EXTEND Gram
   ];
 
   str_item: [
-    [ "cstruct"; name = LIDENT; fields = constr_fields ->
-	output_struct _loc (create_struct name fields)
+    [ "cstruct"; name = LIDENT; fields = constr_fields;
+      "as"; endian = LIDENT ->
+	output_struct _loc (create_struct _loc endian name fields)
     ]
   ];
 
