@@ -33,12 +33,12 @@ module BE = struct
   let get_uint16 s off =
     let a = get_uint8 s off in
     let b = get_uint8 s (off+1) in
-    (a lsl 8) + b
+    (b lsl 8) + a
 
   let get_uint32 s off =
     let a = Int32.of_int (get_uint16 s off) in
     let b = Int32.of_int (get_uint16 s (off+2)) in
-    Int32.(add (shift_left a 16) b)
+    Int32.(add (shift_left b 16) a)
 
   let set_uint8 s off v =
     set s off (Char.chr v)
