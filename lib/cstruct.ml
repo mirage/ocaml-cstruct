@@ -65,3 +65,9 @@ let len buf = dim buf
 external base_offset : buf -> int = "caml_bigarray_base_offset"
 
 let sub buf off len = sub buf off len
+
+let split buf off =
+  let header = sub buf 0 off in
+  let body = sub buf off (len buf - off) in
+  header, body
+

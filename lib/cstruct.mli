@@ -35,3 +35,4 @@ end
 val len : buf -> int
 val base_offset : buf -> int
 val sub : buf -> int -> int -> buf
+val split : buf -> int -> buf * buf
