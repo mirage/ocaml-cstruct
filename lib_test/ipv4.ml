@@ -61,7 +61,6 @@ cstruct tcpv4 {
   uint16_t       urg
 } as big_endian
 
-open Lwt
 open Printf
 
 let num_packets = ref 0
@@ -128,14 +127,12 @@ let print_pcap_header buf =
   printf "lltype %lx\n" (get_pcap_header_network buf)
 
 let parse () =
-  lwt lfd = Lwt_unix.(openfile "http.cap" [O_RDONLY] 0) in
-  let fd = Lwt_unix.unix_file_descr lfd in
-  let buf = Lwt_bytes.map_file ~shared:false ~fd () in
+  let fd = Unix.(openfile "http.cap" [O_RDONLY] 0) in
+  let buf = Bigarray.(Array1.map_file fd Bigarray.char c_layout false (-1)) in
   printf "total pcap file length %d\n" (Cstruct.len buf);
   let header, packets = Cstruct.split buf sizeof_pcap_header in
   print_pcap_header header;
   print_pcap_packet packets;
-  printf "num_packets %d\n" !num_packets; 
-  return ()
+  printf "num_packets %d\n" !num_packets
 
-let _ = Lwt_unix.run (parse ())
+let _ = parse ()
