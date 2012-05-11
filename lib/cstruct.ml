@@ -24,6 +24,7 @@ type buf = (char, int8_unsigned_elt, c_layout) Bigarray.Array1.t
 type uint8 = int
 type uint16 = int
 type uint32 = int32
+type uint64 = int64
 
 module BE = struct
 
@@ -43,6 +44,11 @@ module BE = struct
     let e = (b lsl 16) + (c lsl 8) + d in
     Int32.(add (shift_left (of_int a) 24) (of_int e))
 
+  let get_uint64 s off =
+    let hi = get_uint32 s off in
+    let lo = get_uint32 s (off+4) in 
+    Int64.(add (shift_left (of_int32 hi) 32) (of_int32 lo))
+
   let get_buffer s off len =
     sub s off len
 
@@ -56,6 +62,10 @@ module BE = struct
   let set_uint32 s off v =
     set_uint16 s off (Int32.(to_int (shift_right_logical v 16)));
     set_uint16 s (off+2) (Int32.(to_int (logand v 0xffffl)))
+  
+  let set_uint64 s off v =
+    set_uint32 s off (Int64.(to_int32 (shift_right_logical v 32)));
+    set_uint32 s (off+4) (Int64.(to_int32 (logand v 0xffff_L)))
 
   let set_buffer s off len src =
     let dst = sub s off len in

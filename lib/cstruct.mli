@@ -19,16 +19,19 @@ type buf = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1
 type uint8 = int
 type uint16 = int
 type uint32 = int32
+type uint64 = int64
 
 module BE : sig
   val get_uint8 : buf -> int -> uint8
   val get_uint16 : buf -> int -> uint16
   val get_uint32 : buf -> int -> uint32
+  val get_uint64 : buf -> int -> uint64
   val get_buffer : buf -> int -> int -> buf
 
   val set_uint8 : buf -> int -> uint8 -> unit
   val set_uint16 : buf -> int -> uint16 -> unit
   val set_uint32 : buf -> int -> uint32 -> unit
+  val set_uint64 : buf -> int -> uint64 -> unit
   val set_buffer : buf -> int -> int -> buf -> unit
 end
 
