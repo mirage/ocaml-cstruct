@@ -1,9 +1,11 @@
 # OASIS_START
-# DO NOT EDIT (digest: 6265303fb84f32cd465cde68bb52d0f0)
+# DO NOT EDIT (digest: df5b08d4a866e3259dbc60f8f286e647)
 version = "0.1"
 description = "Syntax extension to map C structs onto Bigarray buffers"
 archive(byte) = "cstruct.cma"
+archive(byte, plugin) = "cstruct.cma"
 archive(native) = "cstruct.cmxa"
+archive(native, plugin) = "cstruct.cmxs"
 exists_if = "cstruct.cma"
 package "syntax" (
  version = "0.1"
