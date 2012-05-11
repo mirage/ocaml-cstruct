@@ -26,6 +26,7 @@ type ty =
   |UInt8
   |UInt16
   |UInt32
+  |UInt64
   |Buffer of int
 
 type field = {
@@ -46,6 +47,7 @@ let ty_of_string =
   |"uint8_t" -> Some UInt8
   |"uint16_t" -> Some UInt16
   |"uint32_t" -> Some UInt32
+  |"uint64_t" -> Some UInt64
   |_ -> None
 
 let width_of_field f =
@@ -53,6 +55,7 @@ let width_of_field f =
   |UInt8 -> 1
   |UInt16 -> 2
   |UInt32 -> 4
+  |UInt64 -> 8
   |Buffer len -> len
 
 let field_to_string f =
@@ -61,6 +64,7 @@ let field_to_string f =
      |UInt8 -> "uint8_t"
      |UInt16 -> "uint16_t"
      |UInt32 -> "uint32_t"
+     |UInt64 -> "uint64_t"
      |Buffer len -> sprintf "uint8_t[%d]" len
     ) f.field
 
@@ -118,6 +122,7 @@ let output_get _loc s f =
        |UInt8 -> <:expr< $m$.get_uint8 v $num f.off$ >>
        |UInt16 -> <:expr< $m$.get_uint16 v $num f.off$ >>
        |UInt32 -> <:expr< $m$.get_uint32 v $num f.off$ >>
+       |UInt64 -> <:expr< $m$.get_uint64 v $num f.off$ >>
        |Buffer len -> <:expr< $m$.get_buffer v $num f.off$ $num len$ >>
       $
   >>
@@ -131,6 +136,7 @@ let output_set _loc s f =
        |UInt8 -> <:expr< $m$.set_uint8 v $num f.off$ x >>
        |UInt16 -> <:expr< $m$.set_uint16 v $num f.off$ x >>
        |UInt32 -> <:expr< $m$.set_uint32 v $num f.off$ x >>
+       |UInt64 -> <:expr< $m$.set_uint64 v $num f.off$ x >>
        |Buffer len -> <:expr< $m$.set_buffer v $num f.off$ $num len$ x >>
       $
   >>
