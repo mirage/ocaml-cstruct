@@ -32,17 +32,14 @@ module BE = struct
     Char.code (get s off)
 
   let get_uint16 s off =
-    let a = get_uint8 s off in
-    let b = get_uint8 s (off+1) in
-    (a lsl 8) + b
+    let hi = get_uint8 s off in
+    let lo = get_uint8 s (off+1) in
+    (hi lsl 8) + lo
 
   let get_uint32 s off =
-    let a = get_uint8 s off in
-    let b = get_uint8 s (off+1) in
-    let c = get_uint8 s (off+2) in
-    let d = get_uint8 s (off+3) in
-    let e = (b lsl 16) + (c lsl 8) + d in
-    Int32.(add (shift_left (of_int a) 24) (of_int e))
+    let hi = get_uint16 s off in
+    let lo = get_uint16 s (off+2) in
+    Int32.(add (shift_left (of_int hi) 16) (of_int lo))
 
   let get_uint64 s off =
     let hi = get_uint32 s off in
@@ -61,11 +58,11 @@ module BE = struct
 
   let set_uint32 s off v =
     set_uint16 s off (Int32.(to_int (shift_right_logical v 16)));
-    set_uint16 s (off+2) (Int32.(to_int (logand v 0xffffl)))
+    set_uint16 s (off+2) (Int32.(to_int (logand v 0xffff_l)))
   
   let set_uint64 s off v =
     set_uint32 s off (Int64.(to_int32 (shift_right_logical v 32)));
-    set_uint32 s (off+4) (Int64.(to_int32 (logand v 0xffff_L)))
+    set_uint32 s (off+4) (Int64.(to_int32 (logand v 0xffffffff_L)))
 
   let set_buffer s off len src =
     let dst = sub s off len in
@@ -79,18 +76,20 @@ module LE = struct
     Char.code (get s off)
 
   let get_uint16 s off =
-    let a = get_uint8 s off in
-    let b = get_uint8 s (off+1) in
-    (b lsl 8) + a
+    let lo = get_uint8 s off in
+    let hi = get_uint8 s (off+1) in
+    (hi lsl 8) + lo
 
   let get_uint32 s off =
-    let a = get_uint8 s off in
-    let b = get_uint8 s (off+1) in
-    let c = get_uint8 s (off+2) in
-    let d = get_uint8 s (off+3) in
-    let e = (c lsl 16) + (b lsl 8) + a in
-    Int32.(add (shift_left (of_int d) 24) (of_int e))
+    let lo = get_uint16 s off in
+    let hi = get_uint16 s (off+2) in
+    Int32.(add (shift_left (of_int hi) 16) (of_int lo))
 
+  let get_uint64 s off =
+    let lo = get_uint32 s off in
+    let hi = get_uint32 s (off+4) in 
+    Int64.(add (shift_left (of_int32 hi) 32) (of_int32 lo))
+  
   let get_buffer s off len =
     sub s off len
 
@@ -102,12 +101,12 @@ module LE = struct
     set_uint8 s (off+1) (v lsr 8)
 
   let set_uint32 s off v =
-    set_uint16 s off (Int32.(to_int (shift_right_logical v 16)));
-    set_uint16 s (off+2) (Int32.(to_int (logand v 0xffffl)))
+    set_uint16 s (off+2) (Int32.(to_int (logand v 0xffff_l)));
+    set_uint16 s off (Int32.(to_int (shift_right_logical v 16)))
 
-  let set_uint32 s off v =
-    set_uint16 s off (Int32.(to_int (logand v 0xffffl)));
-    set_uint16 s (off+2) (Int32.(to_int (shift_right_logical v 16)))
+  let set_uint64 s off v =
+    set_uint32 s off (Int64.(to_int32 (logand v 0xffffffff_L)));
+    set_uint32 s (off+4) (Int64.(to_int32 (shift_right_logical v 32)))
 
   let set_buffer s off len src =
     let dst = sub s off len in
