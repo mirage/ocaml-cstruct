@@ -26,7 +26,8 @@ test:
 	cd lib_test && \
 	  ocamlbuild -clean && \
 	  ocamlbuild -classic-display -use-ocamlfind pcap.native && \
-	  ./pcap.native
+	  ocamlbuild -classic-display -use-ocamlfind basic.native && \
+	  ./_build/basic.native && ./_build/pcap.native
 
 reinstall: setup.bin
 	ocamlfind remove $(NAME) || true
