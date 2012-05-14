@@ -144,3 +144,13 @@ let hexdump buf =
     incr c;
   done;
   print_endline ""
+
+let getn parsef n buf = 
+  let rec aux rem acc bs =
+    if rem = 0 then acc, bs
+    else (
+      let v,bs = parsef bs in     
+      aux (rem-1) (v :: acc) bs
+    )
+  in
+  aux n [] buf
