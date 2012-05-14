@@ -147,7 +147,7 @@ let hexdump buf =
 
 let getn parsef n buf = 
   let rec aux rem acc bs =
-    if rem = 0 then acc, bs
+    if rem = 0 then List.rev acc, bs
     else (
       let v,bs = parsef bs in     
       aux (rem-1) (v :: acc) bs
