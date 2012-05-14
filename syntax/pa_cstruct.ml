@@ -44,10 +44,10 @@ type t = {
 
 let ty_of_string =
   function
-  |"uint8_t" -> Some UInt8
-  |"uint16_t" -> Some UInt16
-  |"uint32_t" -> Some UInt32
-  |"uint64_t" -> Some UInt64
+  |"uint8_t" |"uint8" |"int8" |"int8_t"  -> Some UInt8
+  |"uint16_t"|"uint16"|"int16"|"int16_t" -> Some UInt16
+  |"uint32_t"|"uint32"|"int32"|"int32_t" -> Some UInt32
+  |"uint64_t"|"uint64"|"int64"|"int64_t" -> Some UInt64
   |_ -> None
 
 let width_of_field f =
