@@ -107,18 +107,14 @@ let print_packet p =
   end
   |_ -> printf "unknown body\n"
  
-let rec print_pcap_packet buf =
+let rec print_pcap_packet hdr body =
   incr num_packets;
-  let hdr, rest = Cstruct.split buf sizeof_pcap_packet in
   printf "\n** %lu.%lu  bytes %lu (of %lu)\n" 
     (get_pcap_packet_ts_sec hdr)
     (get_pcap_packet_ts_usec hdr)
     (get_pcap_packet_incl_len hdr)
     (get_pcap_packet_orig_len hdr);
-  let plen = Int32.to_int (get_pcap_packet_incl_len hdr)  in
-  let body, rest = Cstruct.split rest plen in
-  print_packet body;
-  if Cstruct.len rest > 0 then print_pcap_packet rest
+  print_packet body
   
 let print_pcap_header buf =
   let magic = get_pcap_header_magic_number buf in
@@ -141,9 +137,18 @@ let parse () =
   let fd = Unix.(openfile "http.cap" [O_RDONLY] 0) in
   let buf = Bigarray.(Array1.map_file fd Bigarray.char c_layout false (-1)) in
   printf "total pcap file length %d\n" (Cstruct.len buf);
-  let header, packets = Cstruct.split buf sizeof_pcap_header in
+  let header, body = Cstruct.split buf sizeof_pcap_header in
   print_pcap_header header;
-  print_pcap_packet packets;
+  let packets = Cstruct.iter sizeof_pcap_packet
+    (fun p -> Int32.to_int (get_pcap_packet_incl_len p))
+    body
+  in
+  let rec print_packet () =
+    match packets () with
+    |None -> ()
+    |Some (h,p) -> print_pcap_packet h p; print_packet ()
+  in
+  print_packet ();
   printf "num_packets %d\n" !num_packets
 
 let _ = parse ()

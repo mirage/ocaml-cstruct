@@ -3,7 +3,7 @@ OCamlVersion: >= 3.12
 Name: cstruct
 Version: 0.1
 License: ISC
-Authors: Anil Madhavapeddy
+Authors: Anil Madhavapeddy, Richard Mortier
 Homepage: http://github.com/avsm/ocaml-cstruct
 BuildTools: ocamlbuild
 Plugins: META (0.2)

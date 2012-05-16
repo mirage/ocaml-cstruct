@@ -44,10 +44,10 @@ type t = {
 
 let ty_of_string =
   function
-  |"uint8_t" -> Some UInt8
-  |"uint16_t" -> Some UInt16
-  |"uint32_t" -> Some UInt32
-  |"uint64_t" -> Some UInt64
+  |"uint8_t" |"uint8" |"int8" |"int8_t"  -> Some UInt8
+  |"uint16_t"|"uint16"|"int16"|"int16_t" -> Some UInt16
+  |"uint32_t"|"uint32"|"int32"|"int32_t" -> Some UInt32
+  |"uint64_t"|"uint64"|"int64"|"int64_t" -> Some UInt64
   |_ -> None
 
 let width_of_field f =
@@ -159,6 +159,40 @@ let output_struct _loc s =
   in
   expr
 
+let output_enum _loc name fields width =
+  let intfn,pattfn = match ty_of_string width with 
+    |None -> loc_err _loc ("enum: unknown width specifier " ^ width)
+    |Some UInt8|Some UInt16 ->
+      (fun i -> <:expr< $int:string_of_int i$ >>),
+      (fun i -> <:patt< $int:string_of_int i$ >>)
+    |Some UInt32 ->
+      (fun i -> <:expr< $int32:string_of_int i$ >>),
+      (fun i -> <:patt< $int32:string_of_int i$ >>)
+    |Some UInt64 ->
+      (fun i -> <:expr< $int64:string_of_int i$ >>),
+      (fun i -> <:patt< $int64:string_of_int i$ >>)
+    |Some (Buffer _) -> loc_err _loc "enum: array types not allowed"
+  in
+  let decls = tyOr_of_list (List.map (fun (f,_) ->
+    <:ctyp< $uid:f$ >>) fields) in
+  let getters = mcOr_of_list ((List.map (fun (f,i) ->
+    <:match_case< $pattfn i$ -> Some $uid:f$ >>
+  ) fields) @ [ <:match_case< _ -> None >> ]) in
+  let setters = mcOr_of_list (List.map (fun (f,i) ->
+    <:match_case< $uid:f$ -> $intfn i$ >>
+  ) fields) in
+  let printers = mcOr_of_list (List.map (fun (f,_) ->
+    <:match_case< $uid:f$ -> $str:f$ >>) fields) in
+  let getter x = sprintf "%s_of_int" x in
+  let setter x = sprintf "%s_to_int" x in
+  let printer x = sprintf "%s_to_string" x in
+  <:str_item<
+    type $lid:name$ = $decls$ ;; 
+    let $lid:getter name$ = function $getters$ ;;
+    let $lid:setter name$ = function $setters$ ;;
+    let $lid:printer name$ = function $printers$ ;;
+  >>
+
 EXTEND Gram
   GLOBAL: str_item;
 
@@ -174,10 +208,25 @@ EXTEND Gram
     ]
   ];
 
+  constr_enum: [
+    [ f = UIDENT -> (f, None)
+    | f = UIDENT; "="; i = INT -> (f, Some (int_of_string i)) ]
+  ];
+
   str_item: [
     [ "cstruct"; name = LIDENT; fields = constr_fields;
       "as"; endian = LIDENT ->
 	output_struct _loc (create_struct _loc endian name fields)
+    ] |
+    [ "cenum"; name = LIDENT; "{"; fields = LIST0 [ constr_enum ] SEP ";"; "}";
+      "as"; width = LIDENT ->
+        let n = ref (-1) in
+        let fields =
+          List.map (function
+            | (f, None)   -> incr n; (f, !n)
+            | (f, Some i) -> (f, i)
+          ) fields in
+        output_enum _loc name fields width
     ]
   ];
 
