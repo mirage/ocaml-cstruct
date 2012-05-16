@@ -173,18 +173,15 @@ let output_enum _loc name fields width =
       (fun i -> <:patt< $int64:string_of_int i$ >>)
     |Some (Buffer _) -> loc_err _loc "enum: array types not allowed"
   in
-  let decls = tyOr_of_list (List.map (fun f ->
+  let decls = tyOr_of_list (List.map (fun (f,_) ->
     <:ctyp< $uid:f$ >>) fields) in
-  let mapi fn l =
-    let ctr = ref 0 in
-    List.map (fun x -> let r = fn !ctr x in incr ctr; r) l in
-  let getters = mcOr_of_list ((mapi (fun i f ->
+  let getters = mcOr_of_list ((List.map (fun (f,i) ->
     <:match_case< $pattfn i$ -> Some $uid:f$ >>
   ) fields) @ [ <:match_case< _ -> None >> ]) in
-  let setters = mcOr_of_list (mapi (fun i f ->
+  let setters = mcOr_of_list (List.map (fun (f,i) ->
     <:match_case< $uid:f$ -> $intfn i$ >>
   ) fields) in
-  let printers = mcOr_of_list (mapi (fun i f ->
+  let printers = mcOr_of_list (List.map (fun (f,_) ->
     <:match_case< $uid:f$ -> $str:f$ >>) fields) in
   let getter x = sprintf "%s_of_int" x in
   let setter x = sprintf "%s_to_int" x in
@@ -211,13 +208,24 @@ EXTEND Gram
     ]
   ];
 
+  constr_enum: [
+    [ f = UIDENT -> (f, None)
+    | f = UIDENT; "="; i = INT -> (f, Some (int_of_string i)) ]
+  ];
+
   str_item: [
     [ "cstruct"; name = LIDENT; fields = constr_fields;
       "as"; endian = LIDENT ->
 	output_struct _loc (create_struct _loc endian name fields)
     ] |
-    [ "cenum"; name = LIDENT; "{"; fields = LIST0 [ f = UIDENT -> f ] SEP ";"; "}";
+    [ "cenum"; name = LIDENT; "{"; fields = LIST0 [ constr_enum ] SEP ";"; "}";
       "as"; width = LIDENT ->
+        let n = ref (-1) in
+        let fields =
+          List.map (function
+            | (f, None)   -> incr n; (f, !n)
+            | (f, Some i) -> (f, i)
+          ) fields in
         output_enum _loc name fields width
     ]
   ];

@@ -1,2 +1,2 @@
-true: syntax(camlp4o), package(cstruct.syntax), package(cstruct), package(bigarray)
+true: syntax(camlp4o), package(cstruct.syntax), package(cstruct), package(bigarray), package(unix)
 true: annot
