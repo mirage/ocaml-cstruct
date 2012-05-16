@@ -22,7 +22,7 @@ cenum foo64 {
 
 cenum foo32 {
   ONE32;
-  TWO32;
+  TWO32 = 3;
   THREE32
 } as uint32_t
 
@@ -47,4 +47,8 @@ let _ =
   ignore(foo32_to_int ONE32);
   ignore(foo16_to_int ONE16);
   ignore(foo8_to_int ONE8);
+  assert(foo32_to_int TWO32 = 3l);
+  assert(foo32_to_int THREE32 = 1l);
+  assert(foo32_of_int 3l = Some (TWO32));
+  assert(foo32_of_int 1l = Some (THREE32));
   print_endline (foo8_to_string ONE8)
