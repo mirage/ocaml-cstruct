@@ -144,3 +144,23 @@ let hexdump buf =
     incr c;
   done;
   print_endline ""
+
+(* Generate an iterator over a stream of packets *)
+let iter hlen plenfn buf =
+  let body = ref (Some buf) in
+  fun () ->
+    match !body with
+    |Some buf ->
+      (* Split the header frame *)
+      let hdr, rest = split buf hlen in
+      (* Determine the packet length from the header *)
+      let plen = plenfn hdr in
+      (* Generate the packet buffer *)
+      let pbody = sub rest 0 plen in
+      (* Skip the buffer to the next packet *)
+      if len buf - hlen - plen > 0 then
+        body := Some (shift rest plen)
+      else
+        body := None;
+      Some (hdr, pbody)
+    |None -> None

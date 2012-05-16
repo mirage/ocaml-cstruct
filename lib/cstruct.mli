@@ -57,3 +57,5 @@ val split : buf -> int -> buf * buf
 val to_string : buf -> string
 
 val hexdump : buf -> unit
+
+val iter: int -> (buf -> int) -> buf -> (unit -> (buf * buf) option)
