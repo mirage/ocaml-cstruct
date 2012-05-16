@@ -157,9 +157,9 @@ let getn n parsef buf =
 
 let getz parsef buf = 
   let rec aux acc bs =
-    if len buf = 0 then List.rev acc
+    if len bs = 0 then List.rev acc
     else (
-      let v,bs = parsef bs in     
+      let v,bs = parsef bs in
       aux (v :: acc) bs
     )
   in
