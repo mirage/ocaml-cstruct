@@ -17,7 +17,8 @@
 cstruct foo {
   uint8_t a;
   uint16_t b;
-  uint32_t c
+  uint32_t c;
+  uint8_t d[4]
 } as big_endian
 
 cstruct bar {

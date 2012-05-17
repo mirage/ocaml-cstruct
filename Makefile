@@ -30,6 +30,9 @@ test:
 	  ocamlbuild -classic-display -use-ocamlfind basic.native && \
 	  ./_build/enum.native && ./_build/basic.native && ./_build/pcap.native
 
+dump:
+	camlp4o -printer o _build/syntax/cstruct-syntax.cma lib_test/basic.ml
+
 reinstall: setup.bin
 	ocamlfind remove $(NAME) || true
 	./setup.bin -reinstall
