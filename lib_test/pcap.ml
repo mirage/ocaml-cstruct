@@ -66,7 +66,7 @@ open Printf
 let num_packets = ref 0
 
 let mac_to_string buf =
-  let i n = Cstruct.BE.get_uint8 buf n in
+  let i n = Cstruct.get_uint8 buf n in
   sprintf "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
     (i 0) (i 1) (i 2) (i 3) (i 4) (i 5)
 

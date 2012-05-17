@@ -21,32 +21,29 @@ type uint16 = int
 type uint32 = int32
 type uint64 = int64
 
+val get_uint8 : buf -> int -> uint8
+val set_uint8 : buf -> int -> uint8 -> unit
+val get_buffer : buf -> int -> int -> buf
+val set_buffer : buf -> int -> int -> buf -> unit
+
 module BE : sig
-  val get_uint8 : buf -> int -> uint8
   val get_uint16 : buf -> int -> uint16
   val get_uint32 : buf -> int -> uint32
   val get_uint64 : buf -> int -> uint64
-  val get_buffer : buf -> int -> int -> buf
 
-  val set_uint8 : buf -> int -> uint8 -> unit
   val set_uint16 : buf -> int -> uint16 -> unit
   val set_uint32 : buf -> int -> uint32 -> unit
   val set_uint64 : buf -> int -> uint64 -> unit
-  val set_buffer : buf -> int -> int -> buf -> unit
 end
 
 module LE : sig
-  val get_uint8 : buf -> int -> uint8
   val get_uint16 : buf -> int -> uint16
   val get_uint32 : buf -> int -> uint32
   val get_uint64 : buf -> int -> uint64
-  val get_buffer : buf -> int -> int -> buf
 
-  val set_uint8 : buf -> int -> uint8 -> unit
   val set_uint16 : buf -> int -> uint16 -> unit
   val set_uint32 : buf -> int -> uint32 -> unit
   val set_uint64 : buf -> int -> uint64 -> unit
-  val set_buffer : buf -> int -> int -> buf -> unit
 end
 
 val len : buf -> int
