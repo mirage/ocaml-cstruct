@@ -131,9 +131,9 @@ let to_string buf =
 let shift buf off =
   sub buf off (len buf - off)
 
-let split buf off =
-  let header = sub buf 0 off in
-  let body = sub buf off (len buf - off) in
+let split ?(start=0) buf off =
+  let header = sub buf start off in
+  let body = sub buf (start+off) (len buf - off - start) in
   header, body
 
 let hexdump buf =
@@ -177,7 +177,7 @@ let getn n parsef buf =
 
 let getz parsef buf =
   let rec aux acc bs =
-    if len buf = 0 then List.rev acc
+    if len bs = 0 then List.rev acc
     else (
       let v,bs = parsef bs in
       aux (v :: acc) bs
