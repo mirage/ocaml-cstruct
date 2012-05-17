@@ -164,3 +164,23 @@ let iter hlen plenfn buf =
         body := None;
       Some (hdr, pbody)
     |None -> None
+
+let getn n parsef buf =
+  let rec aux acc rem bs =
+    if rem = 0 then List.rev acc, bs
+    else (
+      let v,bs = parsef bs in
+      aux (v :: acc) (rem-1) bs
+    )
+  in
+  aux [] n buf
+
+let getz parsef buf =
+  let rec aux acc bs =
+    if len buf = 0 then List.rev acc
+    else (
+      let v,bs = parsef bs in
+      aux (v :: acc) bs
+    )
+  in
+  aux [] buf
