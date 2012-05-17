@@ -32,12 +32,25 @@ let get_uint8 s off =
 let set_uint8 s off v =
   set s off (Char.chr v)
 
-let get_buffer s off len =
-  sub s off len
+let sub_buffer src srcoff len =
+  sub src srcoff len
 
-let set_buffer s off len src =
-  let dst = sub s off len in
+let copy_buffer src srcoff len =
+  let s = String.create len in
+  for i = 0 to len - 1 do
+    s.[i] <- get src (srcoff+i)
+  done;
+  s
+
+let blit_buffer src srcoff dst dstoff len =
+  let src = sub src srcoff len in
+  let dst = sub dst dstoff len in
   blit src dst
+
+let set_buffer src srcoff dst dstoff len =
+  for i = srcoff to srcoff + len - 1 do
+    set dst (dstoff+i) src.[i]
+  done
 
 module BE = struct
 

@@ -23,8 +23,12 @@ type uint64 = int64
 
 val get_uint8 : buf -> int -> uint8
 val set_uint8 : buf -> int -> uint8 -> unit
-val get_buffer : buf -> int -> int -> buf
-val set_buffer : buf -> int -> int -> buf -> unit
+
+val sub_buffer : buf -> int -> int -> buf
+val copy_buffer : buf -> int -> int -> string
+
+val blit_buffer : buf -> int -> buf -> int -> int -> unit
+val set_buffer : string -> int -> buf -> int -> int -> unit
 
 module BE : sig
   val get_uint16 : buf -> int -> uint16

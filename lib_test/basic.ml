@@ -18,13 +18,14 @@ cstruct foo {
   uint8_t a;
   uint16_t b;
   uint32_t c;
-  uint8_t d[4]
+  uint8_t d[8]
 } as big_endian
 
 cstruct bar {
   uint8_t a;
   uint16_t b;
-  uint32_t c
+  uint32_t c;
+  uint8_t d[8]
 } as big_endian
 
 
@@ -65,4 +66,10 @@ let _ =
       assert(get_foo_c le = i);
       fn (Int32.sub i 0x10l)
   in fn 0xffffffff_l;
-  ()
+  let s1 = "deadbeef" in
+  set_foo_d s1 0 be;
+  assert(copy_foo_d be = s1);
+  let sb1 = get_foo_d be in
+  blit_bar_d sb1 0 le;
+  assert(copy_bar_d le = s1);
+  Printf.printf "%s %s\n" (copy_foo_d be) (copy_bar_d le)
