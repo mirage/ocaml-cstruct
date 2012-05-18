@@ -197,14 +197,12 @@ let output_enum _loc name fields width =
   ) fields) in
   let printers = mcOr_of_list (List.map (fun (f,_) ->
     <:match_case< $uid:f$ -> $str:f$ >>) fields) in
-  let getter x = sprintf "%s_of_int" x in
-  let getter_alt x = sprintf "int_to_%s" x in
+  let getter x = sprintf "int_to_%s" x in
   let setter x = sprintf "%s_to_int" x in
   let printer x = sprintf "%s_to_string" x in
   <:str_item<
     type $lid:name$ = $decls$ ;; 
     let $lid:getter name$ = function $getters$ ;;
-    let $lid:getter_alt name$ = function $getters$ ;;
     let $lid:setter name$ = function $setters$ ;;
     let $lid:printer name$ = function $printers$ ;;
   >>
