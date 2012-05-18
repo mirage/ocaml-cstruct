@@ -146,7 +146,8 @@ let split ?(start=0) buf off =
   let body = sub buf (start+off) (len buf - off - start) in
   header, body
 
-(* Generate an iterator over a stream of packets *)
+type 'a iter = unit -> 'a option
+
 let iter lenfn pfn buf =
   let body = ref (Some buf) in
   fun () ->
@@ -162,23 +163,3 @@ let iter lenfn pfn buf =
             Some (pfn hlen p)
           )
       | None -> None
-
-let getn n parsef buf =
-  let rec aux acc rem bs =
-    if rem = 0 then List.rev acc, bs
-    else (
-      let v,bs = parsef bs in
-      aux (v :: acc) (rem-1) bs
-    )
-  in
-  aux [] n buf
-
-let getz parsef buf =
-  let rec aux acc bs =
-    if len bs = 0 then List.rev acc
-    else (
-      let v,bs = parsef bs in
-      aux (v :: acc) bs
-    )
-  in
-  aux [] buf
