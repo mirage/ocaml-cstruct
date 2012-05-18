@@ -129,14 +129,6 @@ let to_string buf =
   done;
   s
 
-let shift buf off =
-  sub buf off (len buf - off)
-
-let split ?(start=0) buf off =
-  let header = sub buf start off in
-  let body = sub buf (start+off) (len buf - off - start) in
-  header, body
-
 let hexdump buf =
   let c = ref 0 in
   for i = 0 to len buf - 1 do
@@ -146,25 +138,30 @@ let hexdump buf =
   done;
   print_endline ""
 
+let shift buf off =
+  sub buf off (len buf - off)
+
+let split ?(start=0) buf off =
+  let header = sub buf start off in
+  let body = sub buf (start+off) (len buf - off - start) in
+  header, body
+
 (* Generate an iterator over a stream of packets *)
-let iter hlen plenfn buf =
+let iter lenfn pfn buf =
   let body = ref (Some buf) in
   fun () ->
     match !body with
-    |Some buf ->
-      (* Split the header frame *)
-      let hdr, rest = split buf hlen in
-      (* Determine the packet length from the header *)
-      let plen = plenfn hdr in
-      (* Generate the packet buffer *)
-      let pbody = sub rest 0 plen in
-      (* Skip the buffer to the next packet *)
-      if len buf - hlen - plen > 0 then
-        body := Some (shift rest plen)
-      else
-        body := None;
-      Some (hdr, pbody)
-    |None -> None
+      | Some buf ->
+          if len buf = 0 then ( 
+            body := None; 
+            None 
+          ) else (
+            let hlen,plen = lenfn buf in
+            let p,rest = split buf (hlen+plen) in
+            body := Some rest;
+            Some (pfn hlen p)
+          )
+      | None -> None
 
 let getn n parsef buf =
   let rec aux acc rem bs =

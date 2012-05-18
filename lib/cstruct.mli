@@ -60,6 +60,6 @@ val to_string : buf -> string
 
 val hexdump : buf -> unit
 
-val iter: int -> (buf -> int) -> buf -> (unit -> (buf * buf) option)
+val iter : (buf -> (int * int)) -> (int -> buf -> 'a) -> buf -> (unit -> 'a option)
 val getn : int -> (buf -> 'a * buf) -> buf -> 'a list * buf
 val getz : (buf -> 'a * buf) -> buf -> 'a list
