@@ -88,5 +88,6 @@ let _ =
   (* shift it back *)
   assert(Cstruct.shift_left be2 3);
   assert(Cstruct.BE.get_uint32 be2 3 = 0xbeef_l);
+  assert(not (Cstruct.shift_left be2 1));
   assert(get_foo_b be2 = 44);
   assert(get_foo_a be2 = 7)
