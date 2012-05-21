@@ -148,18 +148,11 @@ let split ?(start=0) buf off =
 
 type 'a iter = unit -> 'a option
 
-let iter lenfn pfn buf =
-  let body = ref (Some buf) in
-  fun () ->
-    match !body with
-      | Some buf ->
-          if len buf = 0 then ( 
-            body := None; 
-            None 
-          ) else (
-            let hlen,plen = lenfn buf in
-            let p,rest = split buf (hlen+plen) in
-            body := Some rest;
-            Some (pfn hlen p)
-          )
-      | None -> None
+(* Fold over a buffer, accumulating results until done.
+ * The offset returned is how much has been consumed of the
+ * buffer, with 0 indicating end of stream *)
+let rec fold fn a buf =
+  let r = try fn a buf with Invalid_argument _ -> a, 0 in 
+  match r with
+  |(b, 0) -> b
+  |(b, off) -> fold fn b (shift buf off)

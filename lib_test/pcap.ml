@@ -107,14 +107,13 @@ let print_packet p =
   end
   |_ -> printf "unknown body\n"
  
-let rec print_pcap_packet hdr body =
-  incr num_packets;
+let rec print_pcap_packet hdr =
   printf "\n** %lu.%lu  bytes %lu (of %lu)\n" 
     (get_pcap_packet_ts_sec hdr)
     (get_pcap_packet_ts_usec hdr)
     (get_pcap_packet_incl_len hdr)
     (get_pcap_packet_orig_len hdr);
-  print_packet body
+  print_packet (Cstruct.shift hdr sizeof_pcap_packet)
   
 let print_pcap_header buf =
   let magic = get_pcap_header_magic_number buf in
@@ -139,18 +138,12 @@ let parse () =
   printf "total pcap file length %d\n" (Cstruct.len buf);
   let header, body = Cstruct.split buf sizeof_pcap_header in
   print_pcap_header header;
-  let packets = Cstruct.iter 
-    (fun buf -> 
-      sizeof_pcap_packet, Int32.to_int (get_pcap_packet_incl_len buf))
-    (fun hlen buf -> Cstruct.split buf hlen)
-    body
-  in
-  let rec print_packet () =
-    match packets () with
-    |None -> ()
-    |Some (h,p) -> print_pcap_packet h p; print_packet ()
-  in
-  print_packet ();
-  printf "num_packets %d\n" !num_packets
+  let num_packets = Cstruct.fold
+    (fun a buf ->
+      let tlen = (Int32.to_int (get_pcap_packet_incl_len buf)) + sizeof_pcap_packet in
+      print_pcap_packet (Cstruct.sub buf 0 tlen);
+      (a+1), tlen
+    ) 0 body in
+  printf "num_packets %d\n" num_packets
 
 let _ = parse ()
