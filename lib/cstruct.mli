@@ -55,9 +55,10 @@ val base_offset : buf -> int
 val shift_left : buf -> int -> bool
 val sub : buf -> int -> int -> buf
 val shift : buf -> int -> buf
-val split : buf -> int -> buf * buf
+val split : ?start:int -> buf -> int -> buf * buf
 val to_string : buf -> string
 
 val hexdump : buf -> unit
 
-val iter: int -> (buf -> int) -> buf -> (unit -> (buf * buf) option)
+type 'a iter = unit -> 'a option
+val iter : (buf -> (int * int)) -> (int -> buf -> 'a) -> buf -> 'a iter

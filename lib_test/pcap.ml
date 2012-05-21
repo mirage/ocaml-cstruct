@@ -139,8 +139,10 @@ let parse () =
   printf "total pcap file length %d\n" (Cstruct.len buf);
   let header, body = Cstruct.split buf sizeof_pcap_header in
   print_pcap_header header;
-  let packets = Cstruct.iter sizeof_pcap_packet
-    (fun p -> Int32.to_int (get_pcap_packet_incl_len p))
+  let packets = Cstruct.iter 
+    (fun buf -> 
+      sizeof_pcap_packet, Int32.to_int (get_pcap_packet_incl_len buf))
+    (fun hlen buf -> Cstruct.split buf hlen)
     body
   in
   let rec print_packet () =
