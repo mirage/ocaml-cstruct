@@ -39,16 +39,16 @@ cenum foo8 {
 } as uint8_t
 
 let _ = 
-  ignore(foo64_of_int 2L);
-  ignore(foo32_of_int 1l);
-  ignore(foo16_of_int 1);
-  ignore(foo8_of_int 1);
+  ignore(int_to_foo64 2L);
+  ignore(int_to_foo32 1l);
+  ignore(int_to_foo16 1);
+  ignore(int_to_foo8 1);
   ignore(foo64_to_int ONE64);
   ignore(foo32_to_int ONE32);
   ignore(foo16_to_int ONE16);
   ignore(foo8_to_int ONE8);
   assert(foo32_to_int TWO32 = 3l);
   assert(foo32_to_int THREE32 = 1l);
-  assert(foo32_of_int 3l = Some (TWO32));
-  assert(foo32_of_int 1l = Some (THREE32));
+  assert(int_to_foo32 3l = Some (TWO32));
+  assert(int_to_foo32 1l = Some (THREE32));
   print_endline (foo8_to_string ONE8)
