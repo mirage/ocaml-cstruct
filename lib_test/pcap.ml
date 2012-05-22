@@ -148,7 +148,7 @@ let parse () =
   in 
   let num_packets = Cstruct.fold
     (fun a packet -> print_pcap_packet packet; (a+1)) 
-    0 packets 
+    packets 0
   in
   printf "num_packets %d\n" num_packets
 

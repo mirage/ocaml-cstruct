@@ -62,4 +62,4 @@ val hexdump : buf -> unit
 
 type 'a iter = unit -> 'a option
 val iter : (buf -> (int * int)) -> (int -> buf -> 'a) -> buf -> 'a iter
-val fold : ('b -> 'a -> 'b) -> 'b -> 'a iter -> 'b
+val fold : ('b -> 'a -> 'b) -> 'a iter -> 'b -> 'b
