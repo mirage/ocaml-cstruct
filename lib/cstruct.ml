@@ -165,4 +165,5 @@ let iter lenfn pfn buf =
 
 let rec fold f acc next = match next () with
   | None -> acc
-  | Some v -> fold f (f acc v) next; 
+  | Some v -> fold f (f acc v) next
+        
