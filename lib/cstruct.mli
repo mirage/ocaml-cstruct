@@ -60,4 +60,6 @@ val to_string : buf -> string
 
 val hexdump : buf -> unit
 
-val fold : ('a -> buf -> 'a * int) -> 'a -> buf -> 'a
+type 'a iter = unit -> 'a option
+val iter : (buf -> (int * int)) -> (int -> buf -> 'a) -> buf -> 'a iter
+val fold : ('b -> 'a -> 'b) -> 'b -> 'a iter -> 'b
