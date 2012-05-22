@@ -166,4 +166,10 @@ let iter lenfn pfn buf =
 let rec fold f next acc = match next () with
   | None -> acc
   | Some v -> fold f next (f acc v)
-        
+
+let rec unfold f next (acc,tot,buf)  = match next () with
+  | None -> acc, tot, buf
+  | Some v -> unfold f next (f acc v buf)
+
+
+      ...need to manage tot for caller else this is just fold...

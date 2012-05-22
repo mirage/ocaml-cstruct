@@ -150,6 +150,10 @@ let parse () =
     (fun a packet -> print_pcap_packet packet; (a+1)) 
     packets 0
   in
-  printf "num_packets %d\n" num_packets
+  printf "num_packets %d\n" num_packets;
 
+  Cstruct.unfold (fun (tot,acc) packet buf ->
+    tot, acc, buf)
+    
+    
 let _ = parse ()
