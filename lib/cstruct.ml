@@ -151,25 +151,22 @@ let iter lenfn pfn buf =
   let body = ref (Some buf) in
   fun () ->
     match !body with
-      | Some buf ->
-          if len buf = 0 then ( 
-            body := None; 
-            None 
-          ) else (
-            let hlen,plen = lenfn buf in
-            let p,rest = split buf (hlen+plen) in
-            body := Some rest;
-            Some (pfn hlen p)
-          )
-      | None -> None
+      |Some buf when len buf = 0 ->
+        body := None;
+        None
+      |Some buf -> begin
+        match lenfn buf with
+        |None ->
+          body := None;
+          None
+        |Some plen ->
+          let p,rest = split buf plen in
+          body := Some rest;
+          Some (pfn p)
+      end
+      |None -> None
 
 let rec fold f next acc = match next () with
   | None -> acc
   | Some v -> fold f next (f acc v)
 
-let rec unfold f next (acc,tot,buf)  = match next () with
-  | None -> acc, tot, buf
-  | Some v -> unfold f next (f acc v buf)
-
-
-      ...need to manage tot for caller else this is just fold...

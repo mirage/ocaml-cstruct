@@ -141,19 +141,14 @@ let parse () =
   print_pcap_header header;
 
   let packets = Cstruct.iter 
-    (fun buf -> 
-      sizeof_pcap_packet, Int32.to_int (get_pcap_packet_incl_len buf))
-    (fun hlen buf -> Cstruct.split buf hlen)
+    (fun buf -> Some (sizeof_pcap_packet + (Int32.to_int (get_pcap_packet_incl_len buf))))
+    (fun buf -> buf, (Cstruct.shift buf sizeof_pcap_packet))
     body
   in 
   let num_packets = Cstruct.fold
     (fun a packet -> print_pcap_packet packet; (a+1)) 
     packets 0
   in
-  printf "num_packets %d\n" num_packets;
+  printf "num_packets %d\n" num_packets
 
-  Cstruct.unfold (fun (tot,acc) packet buf ->
-    tot, acc, buf)
-    
-    
 let _ = parse ()
