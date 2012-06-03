@@ -115,6 +115,11 @@ module LE = struct
 end
 
 let len buf = dim buf
+let lenv bufv =
+  match bufv with
+  |[] -> 0
+  |[d] -> len d
+  |ds -> List.fold_left (fun a b -> len b + a) 0 ds
 
 external base_offset : buf -> int = "caml_bigarray_base_offset"
 external shift_left : buf -> int -> bool = "caml_bigarray_shift_left"
