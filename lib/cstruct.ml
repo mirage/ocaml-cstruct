@@ -26,8 +26,14 @@ type uint16 = int
 type uint32 = int32
 type uint64 = int64
 
+let get_char s off =
+  get s off
+
 let get_uint8 s off =
   Char.code (get s off)
+
+let set_char s off =
+  set s off
 
 let set_uint8 s off v =
   set s off (Char.chr v)

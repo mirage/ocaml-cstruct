@@ -21,7 +21,9 @@ type uint16 = int
 type uint32 = int32
 type uint64 = int64
 
+val get_char : buf -> int -> char
 val get_uint8 : buf -> int -> uint8
+val set_char : buf -> int -> char -> unit
 val set_uint8 : buf -> int -> uint8 -> unit
 
 val sub_buffer : buf -> int -> int -> buf
