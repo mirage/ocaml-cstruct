@@ -127,6 +127,19 @@ let lenv bufv =
   |[d] -> len d
   |ds -> List.fold_left (fun a b -> len b + a) 0 ds
 
+let copy_buffers bufs =
+  let sz = lenv bufs in
+  let dst = String.create sz in
+  let _ = List.fold_left
+    (fun off src ->
+      let x = len src in
+      for i = 0 to x - 1 do
+        dst.[off+i] <- get src i;
+      done;
+      off + x
+    ) 0 bufs in
+  dst
+
 external base_offset : buf -> int = "caml_bigarray_base_offset"
 external shift_left : buf -> int -> bool = "caml_bigarray_shift_left"
 

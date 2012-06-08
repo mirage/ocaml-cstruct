@@ -28,6 +28,7 @@ val set_uint8 : buf -> int -> uint8 -> unit
 
 val sub_buffer : buf -> int -> int -> buf
 val copy_buffer : buf -> int -> int -> string
+val copy_buffers: buf list -> string
 
 val blit_buffer : buf -> int -> buf -> int -> int -> unit
 val set_buffer : string -> int -> buf -> int -> int -> unit
