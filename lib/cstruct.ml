@@ -54,8 +54,8 @@ let blit_buffer src srcoff dst dstoff len =
   blit src dst
 
 let set_buffer src srcoff dst dstoff len =
-  for i = srcoff to srcoff + len - 1 do
-    set dst (dstoff+i) src.[i]
+  for i = 0 to len - 1 do
+    set dst (dstoff+i) src.[srcoff+i]
   done
 
 module BE = struct
