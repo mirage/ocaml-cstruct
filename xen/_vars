@@ -1,0 +1,4 @@
+NAME=cstruct
+VERSION=0.1dev
+SYNTAX="cstruct-syntax"
+LIB="bigarray cstruct"

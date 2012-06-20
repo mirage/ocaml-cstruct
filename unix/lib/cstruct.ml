@@ -19,7 +19,7 @@ open Printf
 open Bigarray
 open Array1 
 
-type buf = (char, int8_unsigned_elt, c_layout) Bigarray.Array1.t
+type buf = (char, int8_unsigned_elt, c_layout) t
 
 type uint8 = int
 type uint16 = int
@@ -90,7 +90,6 @@ module BE = struct
 end
 
 module LE = struct
-  open Bigarray.Array1 
 
   let get_uint16 s off =
     let lo = get_uint8 s off in

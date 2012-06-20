@@ -1,0 +1,12 @@
+version = "@VERSION@"
+description = "Syntax extension to map C structs onto Bigarray buffers"
+archive(byte) = "bigarray.cma cstruct.cma"
+archive(native) = "bigarray.cmxa cstruct.cmxa"
+exists_if = "cstruct.cma"
+package "syntax" (
+ description = "Syntax extension for cstruct"
+ requires = "camlp4"
+ archive(syntax, preprocessor) = "cstruct-syntax.cma"
+ archive(syntax, toploop) = "cstruct-syntax.cma"
+ exists_if = "cstruct-syntax.cma"
+)
