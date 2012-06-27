@@ -1,4 +1,4 @@
 <lib_test/*>: use_lib, custom
 <syntax/*>: build_syntax
 not <syntax/*>: use_syntax
-true: camlp4o
+true: camlp4of
