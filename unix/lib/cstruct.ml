@@ -21,10 +21,63 @@ open Array1
 
 type buf = (char, int8_unsigned_elt, c_layout) t
 
+type byte = char
+
+let byte (i:int) : byte = Char.chr i
+let byte_to_int (b:byte) = int_of_char b
+
+type bytes = string
+
+let bytes (s:string) : bytes = s
+
 type uint8 = int
+
+let uint8 (i:int) : uint8 = min i 0xff
+
 type uint16 = int
+
+let uint16 (i:int) : uint16 = min i 0xffff
+
 type uint32 = int32
 type uint64 = int64
+
+type ipv4 = int32
+
+let ipv4_to_string i =   
+  let (&&&) x y = Int32.logand x y in
+  let (>>>) x y = Int32.shift_right_logical x y in 
+  sprintf "%ld.%ld.%ld.%ld" 
+    ((i &&& 0x0_ff000000_l) >>> 24) ((i &&& 0x0_00ff0000_l) >>> 16)
+    ((i &&& 0x0_0000ff00_l) >>>  8) ((i &&& 0x0_000000ff_l)       )
+  
+let bytes_to_ipv4 bs = 
+  let (|||) x y = Int32.logor x y in
+  let (<<<) x y = Int32.shift_left x y in
+  let a = Int32.of_int (byte_to_int bs.[0]) in 
+  let b = Int32.of_int (byte_to_int bs.[1]) in 
+  let c = Int32.of_int (byte_to_int bs.[2]) in 
+  let d = Int32.of_int (byte_to_int bs.[3]) in 
+  (a <<< 24) ||| (b <<< 16) ||| (c <<< 8) ||| d
+
+type ipv6 = int64 * int64
+let ipv6_to_string (hi, lo) = 
+  let (&&&&) x y = Int64.logand x y in
+  let (>>>>) x y = Int64.shift_right_logical x y in
+  sprintf "%Lx:%Lx:%Lx:%Lx:%Lx:%Lx:%Lx:%Lx"
+    ((hi >>>> 48) &&&& 0xffff_L) ((hi >>>> 32) &&&& 0xffff_L) 
+    ((hi >>>> 16) &&&& 0xffff_L) ( hi          &&&& 0xffff_L) 
+    ((lo >>>> 48) &&&& 0xffff_L) ((lo >>>> 32) &&&& 0xffff_L) 
+    ((lo >>>> 16) &&&& 0xffff_L) ( lo          &&&& 0xffff_L) 
+
+let bytes_to_ipv6 bs = 
+  let (++++) x y = Int64.add x y in
+  let (<<<<) x y = Int64.shift_left x y in
+  let hihi = bytes_to_ipv4 (String.sub bs 0 4) in
+  let hilo = bytes_to_ipv4 (String.sub bs 4 4) in
+  let lohi = bytes_to_ipv4 (String.sub bs 8 4) in
+  let lolo = bytes_to_ipv4 (String.sub bs 12 4) in
+  ((Int64.of_int32 hihi) <<<< 48) ++++ (Int64.of_int32 hilo),
+  ((Int64.of_int32 lohi) <<<< 48) ++++ (Int64.of_int32 lolo)
 
 let get_char s off =
   get s off
@@ -192,4 +245,3 @@ let iter lenfn pfn buf =
 let rec fold f next acc = match next () with
   | None -> acc
   | Some v -> fold f next (f acc v)
-
