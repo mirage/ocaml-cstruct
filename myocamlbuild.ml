@@ -39,32 +39,6 @@ module Util = struct
     let run_and_read x = List.hd (split_nl (Ocamlbuild_pack.My_unix.run_and_read x))
 end
 
-(** Host OS detection *)
-module OS = struct
-
-  type unix = Linux | Darwin | FreeBSD
-  type arch = X86_32 | X86_64
-
-  let host =
-    match String.lowercase (Util.run_and_read "uname -s") with
-    | "linux"  -> Linux
-    | "darwin" -> Darwin
-    | "freebsd" -> FreeBSD
-    | os -> eprintf "`%s` is not a supported host OS\n" os; exit (-1)
-
-  let arch =
-    match String.lowercase (Util.run_and_read "uname -m") with
-    | "x86_32" | "i686"  -> X86_32
-    | "i386" -> (match host with Linux | FreeBSD -> X86_32 | Darwin -> X86_64)
-    | "x86_64" | "amd64" -> X86_64
-    | arch -> eprintf "`%s` is not a supported arch\n" arch; exit (-1)
-
-  let js_of_ocaml_installed =
-    try
-      Ocamlbuild_pack.My_unix.run_and_read "which js_of_ocaml" <> ""
-    with _ -> false
-end
-
 (* XXX this wont work with a custom ocamlc not on the path *)
 let ocaml_libdir = Util.run_and_read "ocamlc -where"
 
@@ -89,7 +63,7 @@ module Configure = struct
   (* Flags for building and using syntax extensions *)
   let ppflags () =
     (* Syntax extensions for the libraries being built *)
-    flag ["ocaml"; "pp"; "use_syntax"] & S [config_sh "syntax.deps"];
+    flag ["ocaml"; "pp"; "use_syntax"] & S [config_sh "flags.camlp4"];
     (* Include the camlp4 flags to build an extension *)
     flag ["ocaml"; "pp"; "build_syntax"] & S [config_sh "syntax.build"];
     flag ["ocaml"; "pp"; "build_syntax_r"] & S [config_sh "syntax.build.r"];
@@ -110,11 +84,9 @@ module Configure = struct
     flag ["ocaml"; "compile"] & S [config_sh "flags.ocaml"];
     flag ["ocaml"; "link"] & S [config_sh "flags.ocaml"];
     (* Include the -cclib for any C bindings being built *)
-    let ccinc = (A"-ccopt")::(A"-Lruntime"):: 
-      (List.flatten (List.map (fun x -> [A"-cclib"; A("-l"^x)]) (config "clibs"))) in
-    let clibs_files = List.map (sprintf "runtime/lib%s.a") (config "clibs") in
-    dep ["link"; "library"; "ocaml"] clibs_files;
-    flag ["link"; "library"; "ocaml"] & S ccinc
+    let ccinc = List.flatten (List.map (fun x -> [A"-cclib"; A("-l"^x)]) (config "clibs")) in
+    flag ["link"; "library"; "byte"; "ocaml"] & S ccinc;
+    flag ["link"; "library"; "native"; "ocaml"] & S ccinc
 
   (* Flags for building test binaries, which include just-built extensions and libs *)
   let testflags () =
@@ -154,7 +126,7 @@ module Configure = struct
           let natdynlink = if_natdynlink (fun x -> x-.-"cmxs") libs in
           interface @ byte @ native @ natdynlink @ nativea in
         (* Build runtime libs *)
-        let runtimes = List.map (sprintf "runtime/lib%s.a") (config "clibs") in
+        let runtimes = List.map (sprintf "lib/lib%s.a") (config "clibs") in
         (* Build syntax extensions *)
         let syntaxes =
           let syn = config "syntax" in
@@ -289,5 +261,6 @@ let _ = dispatch begin function
      Xen.rules ();
      (* Required to repack sub-packs (like Pa_css) into Pa_mirage *)
      pflag ["ocaml"; "pack"] "for-repack" (fun param -> S [A "-for-pack"; A param]);
+     flag ["ocaml"; "pp"; "cow_no_open"] & S [A"-cow-no-open"]
   | _ -> ()
 end

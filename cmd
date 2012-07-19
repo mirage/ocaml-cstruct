@@ -1,20 +1,21 @@
-#!/bin/sh -ex
+#!/bin/sh -e
 # Script that invokes ocamlbuild commands for various targets
+# environment variables:
+### OCAMLBUILD overrides ocamlbuild binary
+### OCAMLFIND overrides ocamlfind
+### OCAMLBUILD_FLAGS defaults to verbose
+### NJOBS decides the parallelisation level
+### NO_NATIVE forces disabling native builds
+### NO_NATDYNLINK forces disabling natdynlink
 
-njobs=8
+njobs=${NJOBS:-2}
 
 cmd=$1
 shift
 
-target=$1
-
 # source the package variables
 if [ -e "_vars" ]; then
   . ./_vars
-fi
-
-if [ -x "configure.os" ]; then
-  . ./configure.os ${target}
 fi
 
 OCAMLBUILD=${OCAMLBUILD:-`which ocamlbuild`}
@@ -23,17 +24,12 @@ OCAMLBUILD_FLAGS="-classic-display -j ${njobs}"
 
 # create entries in the _config/ directory 
 configure() {
-  # initialise _config directory
   rm -rf _config && mkdir -p _config
-  # _config/inc has -I flags
   ${OCAMLFIND} query -r -i-format ${DEPS} > _config/flags.ocaml
-  # _config/archives.* contains dependency archives for linking tests
   ${OCAMLFIND} query -r -a-format -predicates native ${DEPS} > _config/archives.native
   ${OCAMLFIND} query -r -a-format -predicates byte ${DEPS} > _config/archives.byte
-  # _config/pp has camlp4 flags for the library and binaries
-  ${OCAMLFIND} query -r -predicates syntax,preprocessor -format '-I %d %A' ${DEPS} ${SYNTAX_DEPS} > _config/syntax.deps
-  ${OCAMLFIND} query -r -predicates byte -format '-I %d %A' ${SYNTAX_EXTRA_DEPS} >> _config/syntax.deps
-  # _config/syntax has flags to build p4 extensions in syntax/
+  ${OCAMLFIND} query -r -predicates syntax,preprocessor -format '-I %d %A' ${DEPS} ${SYNTAX_DEPS} > _config/flags.camlp4
+  ${OCAMLFIND} query -r -predicates byte -format '-I %d %A' str >> _config/flags.camlp4
   ${OCAMLFIND} query -r -predicates syntax,preprocessor -format '-I %d' camlp4.quotations.o camlp4.lib camlp4.extend > _config/syntax.build
   ${OCAMLFIND} query -r -predicates syntax,preprocessor -format '-I %d' camlp4.quotations.r camlp4.lib camlp4.extend ${SYNTAX_DEPS} > _config/syntax.build.r
  
@@ -44,15 +40,16 @@ configure() {
   echo ${LIB} > _config/lib
   echo ${CFLAGS} > _config/cflags
   echo ${EXTRA} > _config/extra
-  # TODO check ocamlopt is installed
-  touch _config/flag.opt
-  # TODO getopt parsing for this and implement various options
-  touch _config/flag.natdynlink
+
+  ocamlopt -v >/dev/null 2>&1 && touch _config/flag.opt
+  if [ ! -z "${NO_NATIVE}" ]; then rm -f _config/flag.opt; fi
+  # TODO: how to detect natdynlink? test for dynlink.cmxa?
+  # touch _config/flag.natdynlink
+  if [ ! -z "${NO_NATDYNLINK}" ]; then rm -f _config/flag.natdynlik; fi
 }
 
 # invoke native code and byte code compiler targets
 compile() {
-  # build bytecode files and C bindings always
   ${OCAMLBUILD} ${OCAMLBUILD_FLAGS} ${NAME}.all
 }
 
