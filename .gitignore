@@ -1,3 +1,5 @@
+unix/setup.data
+unix/setup.log
 *.swp
 _build/
 _config/

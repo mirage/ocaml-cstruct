@@ -1,9 +1,12 @@
 all: build
 
-NAME=crypto_keys
+NAME=cstruct
 J=4
 
 export OCAMLRUNPARAM=b
+
+setup.ml: _oasis
+	oasis setup
 
 setup.data: setup.ml
 	ocaml setup.ml -configure
