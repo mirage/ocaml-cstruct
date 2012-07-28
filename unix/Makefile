@@ -3,8 +3,6 @@ all: build
 NAME=cstruct
 J=4
 
-export OCAMLRUNPARAM=b
-
 setup.ml: _oasis
 	oasis setup
 
