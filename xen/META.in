@@ -1,7 +1,7 @@
 version = "@VERSION@"
 description = "Syntax extension to map C structs onto Bigarray buffers"
-archive(byte) = "bigarray.cma cstruct.cma"
-archive(native) = "bigarray.cmxa cstruct.cmxa"
+archive(byte) = "cstruct.cma"
+archive(native) = "cstruct.cmxa"
 exists_if = "cstruct.cma"
 package "syntax" (
  description = "Syntax extension for cstruct"
