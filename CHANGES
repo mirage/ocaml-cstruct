@@ -1,5 +1,6 @@
-===== 0.4dev (unreleased) =====
+===== 0.4.0 (02-Sep-2012) =====
 
+* Fix META file for use with Xen
 
 ===== 0.3 (25-Aug-2012) =====
 
