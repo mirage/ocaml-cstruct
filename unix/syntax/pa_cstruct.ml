@@ -135,6 +135,24 @@ let output_get _loc s f =
       $
     >>
 
+let type_of_int_field _loc f =
+  match f.ty with
+  |UInt8 -> <:ctyp<Cstruct.uint8>>
+  |UInt16 -> <:ctyp<Cstruct.uint16>>
+  |UInt32 -> <:ctyp<Cstruct.uint32>>
+  |UInt64 -> <:ctyp<Cstruct.uint64>>
+  |Buffer _ -> assert false
+  
+let output_get_sig _loc s f =
+  match f.ty with
+  |Buffer len ->
+    <:sig_item<
+      val $lid:op_name "get" s f$ : Cstruct.buf -> Cstruct.buf
+      val $lid:op_name "copy" s f$ : Cstruct.buf -> string >>
+  |ty ->
+    let retf = type_of_int_field _loc f in
+    <:sig_item< val $lid:getter_name s f$ : Cstruct.buf -> $retf$ >>
+
 let output_set _loc s f =
   let m = mode_mod _loc s.endian in
   let num x = <:expr< $int:string_of_int x$ >> in 
@@ -155,23 +173,49 @@ let output_set _loc s f =
       $ 
     >>
 
+let output_set_sig _loc s f =
+  match f.ty with
+  |Buffer len ->
+    <:sig_item<
+      val $lid:setter_name s f$ : string -> int -> Cstruct.buf -> unit
+      val $lid:op_name "blit" s f$ : Cstruct.buf -> int -> Cstruct.buf -> unit >>
+  |ty ->
+    let retf = type_of_int_field _loc f in
+    <:sig_item< val $lid:setter_name s f$ : Cstruct.buf -> $retf$ -> unit >>
+
 let output_sizeof _loc s =
   <:str_item<
     let $lid:"sizeof_"^s.name$ = $int:string_of_int s.len$
   >>
 
+let output_sizeof_sig _loc s =
+  <:sig_item<
+    val $lid:"sizeof_"^s.name$ : int
+  >>
+
 let output_struct _loc s =
   (* Generate functions of the form {get/set}_<struct>_<field> *)
   let expr = List.fold_left (fun a f ->
-      <:str_item< 
-          $a$ ;; 
-          $output_sizeof _loc s$ ;;
-          $output_get _loc s f$ ;; 
-          $output_set _loc s f$ 
-      >>
-    ) <:str_item< >> s.fields
-  in
-  expr
+    <:str_item< 
+      $a$ ;; 
+      $output_sizeof _loc s$ ;;
+      $output_get _loc s f$ ;; 
+      $output_set _loc s f$ 
+    >>
+  ) <:str_item< >> s.fields
+  in expr
+
+let output_struct_sig _loc s =
+  (* Generate signaturs of the form {get/set}_<struct>_<field> *)
+  let expr = List.fold_left (fun a f ->
+    <:sig_item<
+      $a$ ;;
+      $output_sizeof_sig _loc s$ ;;
+      $output_get_sig _loc s f$ ;;
+      $output_set_sig _loc s f$ ;;
+    >>
+  ) <:sig_item< >> s.fields
+  in expr
 
 let output_enum _loc name fields width =
   let intfn,pattfn = match ty_of_string width with 
@@ -207,8 +251,23 @@ let output_enum _loc name fields width =
     let $lid:printer name$ = function $printers$ ;;
   >>
 
+let output_enum_sig _loc name fields width =
+  let decls = tyOr_of_list (List.map (fun (f,_) ->
+    <:ctyp< $uid:f$ >>) fields) in
+  let getter x = sprintf "int_to_%s" x in
+  let setter x = sprintf "%s_to_int" x in
+  let printer x = sprintf "%s_to_string" x in
+  let ctyo = <:ctyp< $lid:name$ option >> in
+  let cty = <:ctyp< $lid:name$ >> in
+  <:sig_item<
+    type $lid:name$ = $decls$
+    val $lid:getter name$ : int -> $ctyo$
+    val $lid:setter name$ : $cty$ -> int
+    val $lid:printer name$ : $cty$ -> string
+  >>
+
 EXTEND Gram
-  GLOBAL: str_item;
+  GLOBAL: str_item sig_item;
 
   constr_field: [
     [ fty = LIDENT; fname = LIDENT; sz = OPT [ "["; sz = INT; "]" -> sz ] ->
@@ -225,6 +284,23 @@ EXTEND Gram
   constr_enum: [
     [ f = UIDENT -> (f, None)
     | f = UIDENT; "="; i = INT -> (f, Some (int_of_string i)) ]
+  ];
+
+  sig_item: [
+    [ "cstruct"; name = LIDENT; fields = constr_fields;
+      "as"; endian = LIDENT ->
+        output_struct_sig _loc (create_struct _loc endian name fields)
+    ] |
+    [ "cenum"; name = LIDENT; "{"; fields = LIST0 [ constr_enum ] SEP ";"; "}";
+      "as"; width = LIDENT ->
+        let n = ref (-1) in
+        let fields =
+          List.map (function
+            | (f, None)   -> incr n; (f, !n)
+            | (f, Some i) -> (f, i)
+          ) fields in
+        output_enum_sig _loc name fields width
+    ]
   ];
 
   str_item: [
