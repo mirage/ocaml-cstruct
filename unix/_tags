@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 7a2a636dbc479dab875834a7a3f75927)
+# DO NOT EDIT (digest: 8638544cff7c44b188030d7179d64c58)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -23,11 +23,10 @@
 # Library cstruct-syntax
 "syntax/cstruct-syntax.cmxs": use_cstruct-syntax
 <syntax/*.ml{,i}>: pkg_camlp4.lib
-<syntax/*.ml{,i}>: pkg_camlp4.quotations.o
+<syntax/*.ml{,i}>: pkg_camlp4.quotations.r
 <syntax/*.ml{,i}>: pkg_camlp4.extend
 <syntax/*.ml{,i}>: pkg_bigarray
 # OASIS_STOP
-<**/*.ml>: syntax_camlp4o, pkg_camlp4
-<**/*.ml>: pa_lwt_options, pa_lwt, pa_lwt_log, pa_optcomp
-<syntax/*.ml>: -pa_lwt_options, -pa_lwt, -pa_lwt_log, -pa_optcomp
+<syntax/*.ml>: syntax_camlp4o, pkg_camlp4
+<lib_test/*.ml{i}>: syntax_camlp4o, pkg_camlp4, pkg_cstruct.syntax
 true: annot

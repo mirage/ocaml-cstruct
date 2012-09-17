@@ -1,10 +1,11 @@
-OASISFormat: 0.2
+OASISFormat: 0.3
 Name:        cstruct
 Version:     0.4.1
 Synopsis:    Manipulate external buffers as C-like structs
 Authors:     Anil Madhavapeddy, Richard Mortier
 License:     ISC
-Plugins:     META (0.2)
+Plugins:     META (0.3)
+BuildTools:  ocamlbuild
 
 Library cstruct
   Path:       lib/
@@ -19,8 +20,9 @@ Library "cstruct-syntax"
   FindlibParent: cstruct
   BuildTools: ocamlbuild
   Path: syntax
-  BuildDepends: camlp4.lib, camlp4.quotations.o, camlp4.extend, bigarray
+  BuildDepends: camlp4.lib, camlp4.quotations.r, camlp4.extend, bigarray
   Modules: Pa_cstruct
+  XMETAEnable: true
   XMETAType: syntax
   XMETADescription: Syntax extension for Cstruct
   XMETARequires: camlp4

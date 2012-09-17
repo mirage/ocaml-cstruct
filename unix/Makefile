@@ -19,7 +19,7 @@ install: setup.data setup.ml
 	ocaml setup.ml -install
 
 test: setup.ml build
-	ocaml setup.ml -test
+	./test.sh
 
 reinstall: setup.ml
 	ocamlfind remove $(NAME) || true
