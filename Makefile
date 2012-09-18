@@ -13,5 +13,7 @@ clean:
 	cd $(OS) && $(MAKE) clean
 install:
 	cd $(OS) && $(MAKE) install
+reinstall:
+	cd $(OS) && $(MAKE) reinstall
 test:
 	cd $(OS) && $(MAKE) test
