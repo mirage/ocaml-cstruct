@@ -1,4 +1,4 @@
-===== 0.5.0 (unreleased) =====
+===== 0.5.0 (20-Sep-2012) =====
 
 * Add a signature generator for cstruct and cenum to permit
   their use in .mli files.
