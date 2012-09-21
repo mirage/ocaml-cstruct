@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: 15cb2f0b3bfec6289996f03c9f6eed48)
-version = "0.5.0"
+# DO NOT EDIT (digest: 7450489c2f9f83c364a837d1498d8098)
+version = "0.5.1"
 description = "Manipulate external buffers as C-like structs"
 archive(byte) = "cstruct.cma"
 archive(byte, plugin) = "cstruct.cma"
@@ -8,7 +8,7 @@ archive(native) = "cstruct.cmxa"
 archive(native, plugin) = "cstruct.cmxs"
 exists_if = "cstruct.cma"
 package "syntax" (
- version = "0.5.0"
+ version = "0.5.1"
  description = "Syntax extension for Cstruct"
  requires = "camlp4"
  archive(syntax, preprocessor) = "cstruct-syntax.cma"
