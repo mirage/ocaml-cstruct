@@ -241,14 +241,18 @@ let output_enum _loc name fields width =
   ) fields) in
   let printers = mcOr_of_list (List.map (fun (f,_) ->
     <:match_case< $uid:f$ -> $str:f$ >>) fields) in
+  let parsers = mcOr_of_list (List.map (fun (f,_) ->
+    <:match_case< $str:f$ -> Some $uid:f$ >>) fields) in
   let getter x = sprintf "int_to_%s" x in
   let setter x = sprintf "%s_to_int" x in
   let printer x = sprintf "%s_to_string" x in
+  let parse x = sprintf "string_to_%s" x in
   <:str_item<
     type $lid:name$ = [ $decls$ ] ;
     value $lid:getter name$ x = match x with [ $getters$ ] ; 
     value $lid:setter name$ x = match x with [ $setters$ ] ;
-    value $lid:printer name$ x= match x with [ $printers$ ] ;
+    value $lid:printer name$ x = match x with [ $printers$ ] ;
+    value $lid:parse name$ x = match x with [ $parsers$ | _ -> None ] ;
   >>
 
 let output_enum_sig _loc name fields width =
@@ -264,13 +268,15 @@ let output_enum_sig _loc name fields width =
   let getter x = sprintf "int_to_%s" x in
   let setter x = sprintf "%s_to_int" x in
   let printer x = sprintf "%s_to_string" x in
+  let parse x = sprintf "string_to_%s" x in
   let ctyo = <:ctyp< option $lid:name$ >> in
   let cty = <:ctyp< $lid:name$ >> in
   <:sig_item<
     type $lid:name$ = [ $decls$ ] ;
     value $lid:getter name$ : $oty$ -> $ctyo$ ;
     value $lid:setter name$ : $cty$ -> $oty$ ;
-    value $lid:printer name$ : $cty$ -> string
+    value $lid:printer name$ : $cty$ -> string ;
+    value $lid:parse name$ : string -> option $cty$ ;
   >>
 
 EXTEND Gram

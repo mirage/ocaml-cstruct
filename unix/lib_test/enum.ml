@@ -51,4 +51,5 @@ let _ =
   assert(foo32_to_int THREE32 = 1l);
   assert(int_to_foo32 3l = Some (TWO32));
   assert(int_to_foo32 1l = Some (THREE32));
+  assert(string_to_foo16 "ONE16" = Some ONE16);
   print_endline (foo8_to_string ONE8)

@@ -1,3 +1,8 @@
+===== 0.5.1 (28-Sep-2012) =====
+
+* Add string_to_<cenum> function to match the <cenum>_to_string,
+  primarily to help with command-line parsing of enum arguments.
+ 
 ===== 0.5.0 (20-Sep-2012) =====
 
 * Add a signature generator for cstruct and cenum to permit
