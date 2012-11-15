@@ -22,7 +22,7 @@ ocamlc -custom -I ../lib unix.cma bigarray.cma cstruct.cma $1.cmo -o $1.byte
 cd ../..
 }
 
-test basic
-test enum
+#test basic
+#test enum
 cp lib_test/http.cap _build/lib_test/http.cap
 test pcap
