@@ -83,7 +83,7 @@ let print_packet p =
      let ttl = get_ipv4_ttl ip in
      let proto = get_ipv4_proto ip in
      printf "ipv%d hlen %d ttl %d proto %d\n" version hlen ttl proto;
-     match proto with 
+     match proto with
      |6 -> begin (* tcp *)
        let tcp = Cstruct.shift ip sizeof_ipv4 in
        let off = 0 in
@@ -106,15 +106,15 @@ let print_packet p =
      |_ -> printf "unknown ip proto %d\n" proto
   end
   |_ -> printf "unknown body\n"
- 
+
 let rec print_pcap_packet (hdr,pkt) =
-  printf "\n** %lu.%lu  bytes %lu (of %lu)\n" 
+  printf "\n** %lu.%lu  bytes %lu (of %lu)\n"
     (get_pcap_packet_ts_sec hdr)
     (get_pcap_packet_ts_usec hdr)
     (get_pcap_packet_incl_len hdr)
     (get_pcap_packet_orig_len hdr);
   print_packet pkt
-  
+
 let print_pcap_header buf =
   let magic = get_pcap_header_magic_number buf in
   let endian =
@@ -125,7 +125,7 @@ let print_pcap_header buf =
   in
   printf "pcap_header (len %d)\n" sizeof_pcap_header;
   printf "magic_number %lx (%s)\n%!" magic endian;
-  printf "version %d %d\n" 
+  printf "version %d %d\n"
    (get_pcap_header_version_major buf) (get_pcap_header_version_minor buf);
   printf "timezone shift %lu\n" (get_pcap_header_thiszone buf);
   printf "timestamp accuracy %lu\n" (get_pcap_header_sigfigs buf);
@@ -140,13 +140,13 @@ let parse () =
   let header, body = Cstruct.split buf sizeof_pcap_header in
   print_pcap_header header;
 
-  let packets = Cstruct.iter 
+  let packets = Cstruct.iter
     (fun buf -> Some (sizeof_pcap_packet + (Int32.to_int (get_pcap_packet_incl_len buf))))
     (fun buf -> buf, (Cstruct.shift buf sizeof_pcap_packet))
     body
-  in 
+  in
   let num_packets = Cstruct.fold
-    (fun a packet -> print_pcap_packet packet; (a+1)) 
+    (fun a packet -> (*print_pcap_packet packet;*) (a+1))
     packets 0
   in
   printf "num_packets %d\n" num_packets
