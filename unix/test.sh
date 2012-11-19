@@ -26,5 +26,5 @@ cd ../..
 
 #test basic
 #test enum
-cp lib_test/http.cap _build/lib_test/http.cap
+rm -f _build/lib_test/http.cap && cd _build/lib_test && ln -s ../../lib_test/http.cap && cd ../..
 test pcap
