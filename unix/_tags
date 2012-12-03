@@ -1,3 +1,5 @@
+true: inline(10)
+true: debug
 # OASIS_START
 # DO NOT EDIT (digest: f8e7f449102e2e71fc883522e612dca5)
 # Ignore VCS directories, you can use the same kind of rule outside 
