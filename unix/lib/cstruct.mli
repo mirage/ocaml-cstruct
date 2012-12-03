@@ -14,7 +14,15 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type buf = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
+type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
+
+type t = {
+  buffer: buffer;
+  off   : int;
+  len   : int;
+}
+
+val of_fd: Unix.file_descr -> t
 
 type byte = char
 val byte : int -> byte
@@ -28,54 +36,69 @@ type uint32 = int32
 type uint64 = int64
 
 type ipv4 = int32
+
+val ipv4_to_string: ipv4 -> string
+
 type ipv6 = int64 * int64
 
-val ipv4_to_string : ipv4 -> string
-val ipv6_to_string : ipv6 -> string
+val ipv6_to_string: ipv6 -> string
 
-val get_char : buf -> int -> char
-val get_uint8 : buf -> int -> uint8
-val set_char : buf -> int -> char -> unit
-val set_uint8 : buf -> int -> uint8 -> unit
+val get_char: t -> int -> char
 
-val sub_buffer : buf -> int -> int -> buf
-val copy_buffer : buf -> int -> int -> string
-val copy_buffers: buf list -> string
+val get_uint8: t -> int -> uint8
 
-val blit_buffer : buf -> int -> buf -> int -> int -> unit
-val set_buffer : string -> int -> buf -> int -> int -> unit
+val set_char: t -> int -> char -> unit
+
+val set_uint8: t -> int -> uint8 -> unit
+
+val sub: t -> int -> int -> t
+
+val shift: t -> int -> t
+
+val copy: t -> int -> int -> string
+
+val blit: t -> int -> t -> int -> int -> unit
+
+val blit_string: string -> int -> t -> int -> int -> unit
+
+val len: t -> int
+
+val split: ?start:int -> t -> int -> t * t
+
+val to_string: t -> string
+
+val hexdump: t -> unit
 
 module BE : sig
-  val get_uint16 : buf -> int -> uint16
-  val get_uint32 : buf -> int -> uint32
-  val get_uint64 : buf -> int -> uint64
+  val get_uint16: t -> int -> uint16
+  val get_uint32: t -> int -> uint32
+  val get_uint64: t -> int -> uint64
 
-  val set_uint16 : buf -> int -> uint16 -> unit
-  val set_uint32 : buf -> int -> uint32 -> unit
-  val set_uint64 : buf -> int -> uint64 -> unit
+  val set_uint16: t -> int -> uint16 -> unit
+  val set_uint32: t -> int -> uint32 -> unit
+  val set_uint64: t -> int -> uint64 -> unit
 end
 
 module LE : sig
-  val get_uint16 : buf -> int -> uint16
-  val get_uint32 : buf -> int -> uint32
-  val get_uint64 : buf -> int -> uint64
+  val get_uint16: t -> int -> uint16
+  val get_uint32: t -> int -> uint32
+  val get_uint64: t -> int -> uint64
 
-  val set_uint16 : buf -> int -> uint16 -> unit
-  val set_uint32 : buf -> int -> uint32 -> unit
-  val set_uint64 : buf -> int -> uint64 -> unit
+  val set_uint16: t -> int -> uint16 -> unit
+  val set_uint32: t -> int -> uint32 -> unit
+  val set_uint64: t -> int -> uint64 -> unit
 end
 
-val len : buf -> int
-val lenv : buf list -> int
-val base_offset : buf -> int
-val shift_left : buf -> int -> bool
-val sub : buf -> int -> int -> buf
-val shift : buf -> int -> buf
-val split : ?start:int -> buf -> int -> buf * buf
-val to_string : buf -> string
+(** {2 List of buffers} *)
 
-val hexdump : buf -> unit
+val lenv: t list -> int
+
+val copyv: t list -> string
+
+(** {2 Iterations} *)
 
 type 'a iter = unit -> 'a option
-val iter : (buf -> int option) -> (buf -> 'a) -> buf -> 'a iter
-val fold : ('b -> 'a -> 'b) -> 'a iter -> 'b -> 'b
+
+val iter: (t -> int option) -> (t -> 'a) -> t -> 'a iter
+
+val fold: ('b -> 'a -> 'b) -> 'a iter -> 'b -> 'b

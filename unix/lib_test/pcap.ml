@@ -70,6 +70,9 @@ let mac_to_string buf =
   sprintf "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
     (i 0) (i 1) (i 2) (i 3) (i 4) (i 5)
 
+let printf fmt =
+  Printf.kprintf (fun _ -> ()) fmt
+
 let print_packet p =
   let dst_mac = mac_to_string (get_ethernet_dst p) in
   let src_mac = mac_to_string (get_ethernet_src p) in
@@ -134,19 +137,19 @@ let print_pcap_header buf =
 
 let parse () =
   let fd = Unix.(openfile "http.cap" [O_RDONLY] 0) in
-  let buf = Bigarray.(Array1.map_file fd Bigarray.char c_layout false (-1)) in
-  printf "total pcap file length %d\n" (Cstruct.len buf);
+  let t = Cstruct.of_fd fd in
+  printf "total pcap file length %d\n" (Cstruct.len t);
 
-  let header, body = Cstruct.split buf sizeof_pcap_header in
+  let header, body = Cstruct.split t sizeof_pcap_header in
   print_pcap_header header;
 
   let packets = Cstruct.iter
-    (fun buf -> Some (sizeof_pcap_packet + (Int32.to_int (get_pcap_packet_incl_len buf))))
-    (fun buf -> buf, (Cstruct.shift buf sizeof_pcap_packet))
+    (fun buf -> Some (sizeof_pcap_packet + Int32.to_int (get_pcap_packet_incl_len buf)))
+    (fun buf -> buf, Cstruct.shift buf sizeof_pcap_packet)
     body
   in
   let num_packets = Cstruct.fold
-    (fun a packet -> (*print_pcap_packet packet;*) (a+1))
+    (fun a packet -> print_pcap_packet packet; (a+1))
     packets 0
   in
   printf "num_packets %d\n" num_packets

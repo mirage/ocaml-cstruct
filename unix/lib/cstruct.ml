@@ -16,10 +16,21 @@
 
 open Printf
 
-open Bigarray
-open Array1
+type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
 
-type buf = (char, int8_unsigned_elt, c_layout) t
+type t = {
+  buffer: buffer;
+  off   : int;
+  len   : int;
+}
+
+let of_fd fd =
+  let buffer = Bigarray.(Array1.map_file fd char c_layout false (-1)) in
+  {
+    buffer;
+    off = 0;
+    len = Bigarray.Array1.dim buffer;
+  }
 
 type byte = char
 
@@ -79,97 +90,115 @@ let bytes_to_ipv6 bs =
   ((Int64.of_int32 hihi) <<<< 48) ++++ (Int64.of_int32 hilo),
   ((Int64.of_int32 lohi) <<<< 48) ++++ (Int64.of_int32 lolo)
 
-let sub_buffer src srcoff len =
-  sub src srcoff len
+let debug t =
+  let max_len = Bigarray.Array1.dim t.buffer in
+  let str = Printf.sprintf "t=[%d,%d](%d)" t.off t.len max_len in
+  if t.off+t.len > max_len || t.len < 0 || t.off < 0 then (
+    Printf.printf "ERROR: t.off+t.len=%d %s\n" (t.off+t.len) str;
+    assert false;
+  );
+  str
 
-let copy_buffer src srcoff len =
+let sub t off len =
+  { t with off = t.off + off; len }
+
+let shift t off =
+  { t with off = t.off + off; len = t.len - off }
+
+let copy src srcoff len =
   let s = String.create len in
   for i = 0 to len - 1 do
-    s.[i] <- get src (srcoff+i)
+    s.[i] <- Bigarray.Array1.get src.buffer (src.off+srcoff+i)
   done;
   s
 
-let blit_buffer src srcoff dst dstoff len =
-  let src = sub src srcoff len in
-  let dst = sub dst dstoff len in
-  blit src dst
+let blit src srcoff dst dstoff len =
+  let src = Bigarray.Array1.sub src.buffer (src.off+srcoff) len in
+  let dst = Bigarray.Array1.sub dst.buffer (dst.off+dstoff) len in
+  Bigarray.Array1.blit src dst
 
-let set_buffer src srcoff dst dstoff len =
+let blit_string src srcoff dst dstoff len =
   for i = 0 to len - 1 do
-    set dst (dstoff+i) src.[srcoff+i]
+    Bigarray.Array1.set dst.buffer (dst.off+dstoff+i) src.[srcoff+i]
   done
 
-let set_uint8 = EndianBigstring.BigEndian_unsafe.set_int8
-let set_char = EndianBigstring.BigEndian_unsafe.set_char
-let get_uint8 = EndianBigstring.BigEndian_unsafe.get_uint8
-let get_char = EndianBigstring.BigEndian_unsafe.get_char
+let set_uint8 t i c =
+  EndianBigstring.BigEndian_unsafe.set_int8 t.buffer (t.off+i) c
+
+let set_char t i c =
+  EndianBigstring.BigEndian_unsafe.set_char t.buffer (t.off+i) c
+
+let get_uint8 t i =
+  EndianBigstring.BigEndian_unsafe.get_uint8 t.buffer (t.off+i)
+
+let get_char t i =
+  EndianBigstring.BigEndian_unsafe.get_char t.buffer (t.off+i)
 
 module BE = struct
   include EndianBigstring.BigEndian_unsafe
-  let set_uint16 = set_int16
-  let set_uint32 = set_int32
-  let get_uint32 = get_int32
-  let set_uint64 = set_int64
-  let get_uint64 = get_int64
+
+  let set_uint16 t i c = set_int16 t.buffer (t.off+i) c
+  let set_uint32 t i c = set_int32 t.buffer (t.off+i) c
+  let set_uint64 t i c = set_int64 t.buffer (t.off+i) c
+
+  let get_uint16 t i = get_uint16 t.buffer (t.off+i)
+  let get_uint32 t i = get_int32 t.buffer (t.off+i)
+  let get_uint64 t i = get_int64 t.buffer (t.off+i)
 end
 
 module LE = struct
   include EndianBigstring.LittleEndian_unsafe
-  let set_uint16 = set_int16
-  let set_uint32 = set_int32
-  let get_uint32 = get_int32
-  let set_uint64 = set_int64
-  let get_uint64 = get_int64
+
+  let set_uint16 t i c = set_int16 t.buffer (t.off+i) c
+  let set_uint32 t i c = set_int32 t.buffer (t.off+i) c
+  let set_uint64 t i c = set_int64 t.buffer (t.off+i) c
+
+  let get_uint16 t i = get_uint16 t.buffer (t.off+i)
+  let get_uint32 t i = get_int32 t.buffer (t.off+i)
+  let get_uint64 t i = get_int64 t.buffer (t.off+i)
 end
 
-let len buf = dim buf
-let lenv bufv =
-  match bufv with
-  |[] -> 0
-  |[d] -> len d
-  |ds -> List.fold_left (fun a b -> len b + a) 0 ds
+let len t =
+  t.len
 
-let copy_buffers bufs =
-  let sz = lenv bufs in
+let lenv = function
+  | []  -> 0
+  | [t] -> len t
+  | ts  -> List.fold_left (fun a b -> len b + a) 0 ts
+
+let copyv ts =
+  let sz = lenv ts in
   let dst = String.create sz in
   let _ = List.fold_left
     (fun off src ->
       let x = len src in
       for i = 0 to x - 1 do
-        dst.[off+i] <- get src i;
+        dst.[off+i] <- Bigarray.Array1.get src.buffer (src.off+i);
       done;
       off + x
-    ) 0 bufs in
+    ) 0 ts in
   dst
 
-external base_offset : buf -> int = "caml_bigarray_base_offset"
-external shift_left : buf -> int -> bool = "caml_bigarray_shift_left"
-
-let sub buf off len = sub buf off len
-
-let to_string buf =
-  let sz = len buf in
+let to_string t =
+  let sz = len t in
   let s = String.create sz in
   for i = 0 to sz - 1 do
-    s.[i] <- get buf i
+    s.[i] <- Bigarray.Array1.get t.buffer (t.off+i)
   done;
   s
 
-let hexdump buf =
+let hexdump t =
   let c = ref 0 in
-  for i = 0 to len buf - 1 do
+  for i = 0 to len t - 1 do
     if !c mod 16 = 0 then print_endline "";
-    printf "%.2x " (Char.code (get buf i));
+    printf "%.2x " (Char.code (Bigarray.Array1.get t.buffer (t.off+i)));
     incr c;
   done;
   print_endline ""
 
-let shift buf off =
-  sub buf off (len buf - off)
-
-let split ?(start=0) buf off =
-  let header = sub buf start off in
-  let body = sub buf (start+off) (len buf - off - start) in
+let split ?(start=0) t off =
+  let header = sub t start off in
+  let body = sub t (start+off) (len t - off - start) in
   header, body
 
 type 'a iter = unit -> 'a option
