@@ -65,8 +65,15 @@ let num_packets = ref 0
 
 let mac_to_string buf =
   let i n = Cstruct.get_uint8 buf n in
-  Printf.sprintf "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
-    (i 0) (i 1) (i 2) (i 3) (i 4) (i 5)
+  let i0 = i 0 in
+  let i1 = i 1 in
+  let i2 = i 2 in
+  let i3 = i 3 in
+  let i4 = i 4 in
+  let i5 = i 5 in
+  (* Printf.sprintf "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
+    (i 0) (i 1) (i 2) (i 3) (i 4) (i 5) *)
+  ""
 
 let printf fmt =
   Printf.kprintf (fun _ -> ()) fmt
