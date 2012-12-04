@@ -17,6 +17,7 @@
 #include <sys/param.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <string.h>
 
 #include <caml/mlvalues.h>
 #include <caml/memory.h>
@@ -61,4 +62,12 @@ caml_bigarray_shift_left(value v_ba, value v_len)
   ba->data = ba->data - len;
   ba->dim[0] = ba->dim[0] + len;
   CAMLreturn(Val_int(1));
+}
+
+CAMLprim value caml_blit_bigstring_to_string(value val_buf1, value val_ofs1, value val_buf2, value val_ofs2, value val_len)
+{
+  memcpy(String_val(val_buf2) + Long_val(val_ofs2),
+         (char*)Caml_ba_data_val(val_buf1) + Long_val(val_ofs1),
+         Long_val(val_len));
+  return Val_unit;
 }

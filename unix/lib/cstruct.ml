@@ -179,12 +179,12 @@ let copyv ts =
     ) 0 ts in
   dst
 
+external unsafe_blit_bigstring_to_string : buffer -> int -> string -> int -> int -> unit = "caml_blit_bigstring_to_string" "noalloc"
+
 let to_string t =
   let sz = len t in
   let s = String.create sz in
-  for i = 0 to sz - 1 do
-    s.[i] <- Bigarray.Array1.get t.buffer (t.off+i)
-  done;
+  unsafe_blit_bigstring_to_string t.buffer t.off s 0 sz;
   s
 
 let hexdump t =
