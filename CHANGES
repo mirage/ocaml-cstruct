@@ -1,5 +1,7 @@
 ===== 0.6.0 (unreleased) =====
 
+* Add an Lwt sub-package to expose a write call.
+
 * Depend on ocplib-endian for fast low-level parsing of integers.
 
 * Make Cstruct.t a record type that doesn't use Bigarray slicing

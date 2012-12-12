@@ -1,5 +1,7 @@
 all: build
 
+LWT ?= $(shell if ocamlfind query lwt.unix >/dev/null 2>&1; then echo --enable-lwt; fi)
+
 NAME=cstruct
 J=4
 
@@ -7,7 +9,7 @@ setup.ml: _oasis
 	oasis setup
 
 setup.data: setup.ml
-	ocaml setup.ml -configure
+	ocaml setup.ml -configure $(LWT)
 
 build: setup.data setup.ml
 	ocaml setup.ml -build -j $(J)

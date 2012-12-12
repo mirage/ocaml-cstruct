@@ -7,14 +7,24 @@ License:     ISC
 Plugins:     META (0.3)
 BuildTools:  ocamlbuild
 
+Flag lwt
+  Description: build the Lwt library
+  Default: false
+
 Library cstruct
   Path:       lib/
-  BuildTools: ocamlbuild
   Modules:    Cstruct
   BuildDepends: bigarray, ocplib-endian, ocplib-endian.bigstring
   CSources: cstruct_stubs.c
   CCOpt:    -O3
 
+Library cstruct_lwt
+  Path:       lwt/
+  BuildDepends: cstruct,lwt.unix
+  Findlibname: lwt
+  Findlibparent: cstruct
+  Modules: Lwt_cstruct
+ 
 Library "cstruct-syntax"
   FindlibName: syntax
   FindlibParent: cstruct

@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 8e8ce7571087d6b8da35d28680ff13de)
+# DO NOT EDIT (digest: 33b9d25ccdbeb48069cde47bb10f1112)
 version = "0.6.0"
 description = "Manipulate external buffers as C-like structs"
 requires = "bigarray ocplib-endian ocplib-endian.bigstring"
@@ -15,6 +15,17 @@ package "syntax" (
  archive(syntax, preprocessor) = "cstruct-syntax.cma"
  archive(syntax, toploop) = "cstruct-syntax.cma"
  exists_if = "cstruct-syntax.cma"
+)
+
+package "lwt" (
+ version = "0.6.0"
+ description = "Manipulate external buffers as C-like structs"
+ requires = "cstruct lwt.unix"
+ archive(byte) = "cstruct_lwt.cma"
+ archive(byte, plugin) = "cstruct_lwt.cma"
+ archive(native) = "cstruct_lwt.cmxa"
+ archive(native, plugin) = "cstruct_lwt.cmxs"
+ exists_if = "cstruct_lwt.cma"
 )
 # OASIS_STOP
 
