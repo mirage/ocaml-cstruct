@@ -16,7 +16,7 @@
 
 type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
 
-type t = {
+type t = private {
   buffer: buffer;
   off   : int;
   len   : int;
@@ -24,6 +24,7 @@ type t = {
 
 val of_bigarray: ?off:int -> ?len:int -> buffer -> t
 val create : int -> t
+val check_bounds : t -> int -> bool
 
 type byte = char
 val byte : int -> byte

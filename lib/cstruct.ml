@@ -35,6 +35,9 @@ let create len =
   let ba = Bigarray.Array1.create Bigarray.char Bigarray.c_layout len in
   of_bigarray ba
 
+let check_bounds t len =
+  Bigarray.Array1.dim t.buffer >= len
+
 type byte = char
 
 let byte (i:int) : byte = Char.chr i
