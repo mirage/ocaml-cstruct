@@ -1,0 +1,20 @@
+# OASIS_START
+# DO NOT EDIT (digest: 0e9171d140eca7b3b04c55dbac05241e)
+version = "0.6.0"
+description = "Manipulate external buffers as C-like structs"
+requires = "bigarray ocplib-endian"
+archive(byte) = "cstruct.cma"
+archive(byte, plugin) = "cstruct.cma"
+archive(native) = "cstruct.cmxa"
+archive(native, plugin) = "cstruct.cmxs"
+exists_if = "cstruct.cma"
+package "syntax" (
+ version = "0.6.0"
+ description = "Syntax extension for Cstruct"
+ requires = "camlp4"
+ archive(syntax, preprocessor) = "cstruct-syntax.cma"
+ archive(syntax, toploop) = "cstruct-syntax.cma"
+ exists_if = "cstruct-syntax.cma"
+)
+# OASIS_STOP
+
