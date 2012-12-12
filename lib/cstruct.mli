@@ -22,6 +22,9 @@ type t = {
   len   : int;
 }
 
+val of_bigarray: ?off:int -> ?len:int -> buffer -> t
+val create : int -> t
+
 type byte = char
 val byte : int -> byte
 val byte_to_int : byte -> int

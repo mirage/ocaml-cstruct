@@ -24,6 +24,17 @@ type t = {
   len   : int;
 }
 
+let of_bigarray ?(off=0) ?len buffer =
+  let len =
+    match len with
+    |None -> Bigarray.Array1.dim buffer
+    |Some len -> min len (Bigarray.Array1.dim buffer)
+  in { buffer; off; len }
+
+let create len =
+  let ba = Bigarray.Array1.create Bigarray.char Bigarray.c_layout len in
+  of_bigarray ba
+
 type byte = char
 
 let byte (i:int) : byte = Char.chr i
