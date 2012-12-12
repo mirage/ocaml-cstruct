@@ -105,22 +105,31 @@ let sub t off len =
 let shift t off =
   { t with off = t.off + off; len = t.len - off }
 
+external unsafe_blit_bigstring_to_bigstring : buffer -> int -> buffer -> int -> int -> unit = "caml_blit_bigstring_to_bigstring" "noalloc"
+
+external unsafe_blit_string_to_bigstring : string -> int -> buffer -> int -> int -> unit = "caml_blit_string_to_bigstring" "noalloc"
+
+external unsafe_blit_bigstring_to_string : buffer -> int -> string -> int -> int -> unit = "caml_blit_bigstring_to_string" "noalloc"
+
 let copy src srcoff len =
+  assert (src.len - srcoff >= len);
   let s = String.create len in
-  for i = 0 to len - 1 do
-    s.[i] <- Bigarray.Array1.get src.buffer (src.off+srcoff+i)
-  done;
+  unsafe_blit_bigstring_to_string src.buffer (src.off+srcoff) s 0 len;
   s
 
 let blit src srcoff dst dstoff len =
-  let src = Bigarray.Array1.sub src.buffer (src.off+srcoff) len in
-  let dst = Bigarray.Array1.sub dst.buffer (dst.off+dstoff) len in
-  Bigarray.Array1.blit src dst
+  assert (src.len - srcoff >= len);
+  assert (dst.len - dstoff < len);
+  unsafe_blit_bigstring_to_bigstring src.buffer (src.off+srcoff)
+                                     dst.buffer (dst.off+dstoff)
+                                     len
 
 let blit_string src srcoff dst dstoff len =
-  for i = 0 to len - 1 do
-    Bigarray.Array1.set dst.buffer (dst.off+dstoff+i) src.[srcoff+i]
-  done
+  assert (String.length src - srcoff >= len);
+  assert (dst.len - dstoff < len);
+  unsafe_blit_string_to_bigstring src srcoff
+                                  dst.buffer (dst.off+dstoff)
+                                  len
 
 let set_uint8 t i c =
   EndianBigstring.BigEndian_unsafe.set_int8 t.buffer (t.off+i) c
@@ -172,14 +181,10 @@ let copyv ts =
   let _ = List.fold_left
     (fun off src ->
       let x = len src in
-      for i = 0 to x - 1 do
-        dst.[off+i] <- Bigarray.Array1.get src.buffer (src.off+i);
-      done;
+      unsafe_blit_bigstring_to_string src.buffer src.off dst off x;
       off + x
     ) 0 ts in
   dst
-
-external unsafe_blit_bigstring_to_string : buffer -> int -> string -> int -> int -> unit = "caml_blit_bigstring_to_string" "noalloc"
 
 let to_string t =
   let sz = len t in
