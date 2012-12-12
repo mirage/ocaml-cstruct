@@ -11,7 +11,7 @@ Library cstruct
   Path:       lib/
   BuildTools: ocamlbuild
   Modules:    Cstruct
-  BuildDepends: bigarray, ocplib-endian
+  BuildDepends: bigarray, ocplib-endian, ocplib-endian.bigstring
   CSources: cstruct_stubs.c
   CCOpt:    -O3
 
