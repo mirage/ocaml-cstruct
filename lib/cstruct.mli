@@ -22,8 +22,6 @@ type t = {
   len   : int;
 }
 
-val of_fd: Unix.file_descr -> t
-
 type byte = char
 val byte : int -> byte
 val byte_to_int : byte -> int

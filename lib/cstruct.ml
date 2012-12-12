@@ -24,14 +24,6 @@ type t = {
   len   : int;
 }
 
-let of_fd fd =
-  let buffer = Bigarray.(Array1.map_file fd char c_layout false (-1)) in
-  {
-    buffer;
-    off = 0;
-    len = Bigarray.Array1.dim buffer;
-  }
-
 type byte = char
 
 let byte (i:int) : byte = Char.chr i
