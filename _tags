@@ -1,5 +1,7 @@
+true: inline(10)
+true: debug
 # OASIS_START
-# DO NOT EDIT (digest: 8638544cff7c44b188030d7179d64c58)
+# DO NOT EDIT (digest: f8e7f449102e2e71fc883522e612dca5)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -19,7 +21,9 @@
 "lib/cstruct_stubs.c": oasis_library_cstruct_ccopt
 <lib/cstruct.{cma,cmxa}>: use_libcstruct_stubs
 <lib/*.ml{,i}>: pkg_bigarray
+<lib/*.ml{,i}>: pkg_ocplib-endian
 "lib/cstruct_stubs.c": pkg_bigarray
+"lib/cstruct_stubs.c": pkg_ocplib-endian
 # Library cstruct-syntax
 "syntax/cstruct-syntax.cmxs": use_cstruct-syntax
 <syntax/*.ml{,i}>: pkg_camlp4.lib
