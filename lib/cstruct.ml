@@ -118,24 +118,20 @@ external unsafe_blit_string_to_bigstring : string -> int -> buffer -> int -> int
 external unsafe_blit_bigstring_to_string : buffer -> int -> string -> int -> int -> unit = "caml_blit_bigstring_to_string" "noalloc"
 
 let copy src srcoff len =
-  assert (src.len - srcoff >= len);
+  (* assert (src.len - srcoff >= len); *)
   let s = String.create len in
   unsafe_blit_bigstring_to_string src.buffer (src.off+srcoff) s 0 len;
   s
 
 let blit src srcoff dst dstoff len =
-  assert (src.len - srcoff >= len);
-  assert (dst.len - dstoff < len);
-  unsafe_blit_bigstring_to_bigstring src.buffer (src.off+srcoff)
-                                     dst.buffer (dst.off+dstoff)
-                                     len
+  (* assert (src.len - srcoff >= len);
+  assert (dst.len - dstoff < len); *)
+  unsafe_blit_bigstring_to_bigstring src.buffer (src.off+srcoff) dst.buffer (dst.off+dstoff) len
 
 let blit_string src srcoff dst dstoff len =
-  assert (String.length src - srcoff >= len);
-  assert (dst.len - dstoff < len);
-  unsafe_blit_string_to_bigstring src srcoff
-                                  dst.buffer (dst.off+dstoff)
-                                  len
+  (* assert (String.length src - srcoff >= len);
+  assert (dst.len - dstoff < len); *)
+  unsafe_blit_string_to_bigstring src srcoff dst.buffer (dst.off+dstoff) len
 
 let set_uint8 t i c =
   EndianBigstring.BigEndian_unsafe.set_int8 t.buffer (t.off+i) c
