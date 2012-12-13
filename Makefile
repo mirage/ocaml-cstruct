@@ -1,6 +1,10 @@
 all: build
 
 LWT ?= $(shell if ocamlfind query lwt.unix >/dev/null 2>&1; then echo --enable-lwt; fi)
+UNIX = --enable-unix
+ifeq ($(MIRAGE_OS),xen)
+UNIX=
+endif
 
 NAME=cstruct
 J=4
@@ -9,7 +13,7 @@ setup.ml: _oasis
 	oasis setup
 
 setup.data: setup.ml
-	ocaml setup.ml -configure $(LWT)
+	ocaml setup.ml -configure $(LWT) $(UNIX)
 
 build: setup.data setup.ml
 	ocaml setup.ml -build -j $(J)

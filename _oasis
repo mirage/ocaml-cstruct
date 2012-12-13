@@ -11,6 +11,10 @@ Flag lwt
   Description: build the Lwt library
   Default: false
 
+Flag unix
+  Description: build the UNIX library
+  Default: true
+
 Library cstruct
   Path:       lib/
   Modules:    Cstruct
@@ -18,12 +22,19 @@ Library cstruct
   CSources: cstruct_stubs.c
   CCOpt:    -O3
 
-Library cstruct_lwt
+Library lwt_cstruct
   Path:       lwt/
   BuildDepends: cstruct,lwt.unix
   Findlibname: lwt
   Findlibparent: cstruct
   Modules: Lwt_cstruct
+
+Library unix_cstruct
+  Path:       unix/
+  BuildDepends: cstruct,unix
+  Findlibname: unix
+  Findlibparent: cstruct
+  Modules: Unix_cstruct
  
 Library "cstruct-syntax"
   FindlibName: syntax

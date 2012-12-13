@@ -1,5 +1,7 @@
 ===== 0.6.0 (unreleased) =====
 
+* Add fast bigarray<->string functions to replace byte-by-byte copies.
+
 * Add an Lwt sub-package to expose a write call.
 
 * Depend on ocplib-endian for fast low-level parsing of integers.
