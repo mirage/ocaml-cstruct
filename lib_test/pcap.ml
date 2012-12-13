@@ -158,7 +158,7 @@ let print_pcap_header buf =
 
 let parse () =
   let fd = Unix.(openfile "http.cap" [O_RDONLY] 0) in
-  let t = Cstruct.of_fd fd in
+  let t = Unix_cstruct.of_fd fd in
   printf "total pcap file length %d\n" (Cstruct.len t);
 
   let header, body = Cstruct.split t sizeof_pcap_header in
