@@ -61,7 +61,9 @@ val copy: t -> int -> int -> string
 
 val blit: t -> int -> t -> int -> int -> unit
 
-val blit_string: string -> int -> t -> int -> int -> unit
+val blit_from_string: string -> int -> t -> int -> int -> unit
+
+val blit_to_string: t -> int -> string -> int -> int -> unit
 
 val len: t -> int
 
