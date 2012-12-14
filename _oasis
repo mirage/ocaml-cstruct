@@ -13,7 +13,7 @@ Flag lwt
 
 Flag unix
   Description: build the UNIX library
-  Default: true
+  Default: false
 
 Library cstruct
   Path:       lib/
@@ -23,6 +23,7 @@ Library cstruct
   CCOpt:    -O3
 
 Library lwt_cstruct
+  Build$:             flag(lwt)
   Path:       lwt/
   BuildDepends: cstruct,lwt.unix
   Findlibname: lwt
@@ -30,6 +31,7 @@ Library lwt_cstruct
   Modules: Lwt_cstruct
 
 Library unix_cstruct
+  Build$:             flag(unix)
   Path:       unix/
   BuildDepends: cstruct,unix
   Findlibname: unix
