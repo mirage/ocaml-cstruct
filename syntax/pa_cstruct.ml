@@ -159,7 +159,7 @@ let output_set _loc s f =
   match f.ty with
   |Buffer len ->
     <:str_item<
-      value $lid:setter_name s f$ src srcoff dst = Cstruct.blit_string src srcoff dst $num f.off$ $num len$ ;
+      value $lid:setter_name s f$ src srcoff dst = Cstruct.blit_from_string src srcoff dst $num f.off$ $num len$ ;
       value $lid:op_name "blit" s f$ src srcoff dst = Cstruct.blit src srcoff dst $num f.off$ $num len$
     >>
   |ty ->
