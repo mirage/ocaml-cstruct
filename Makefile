@@ -1,9 +1,9 @@
 all: build
 
-LWT ?= $(shell if ocamlfind query lwt.unix >/dev/null 2>&1; then echo --enable-lwt; fi)
+LWT ?= $(shell if ocamlfind query lwt.unix >/dev/null 2>&1; then echo --enable-lwt; else echo --disable-lwt; fi)
 UNIX = --enable-unix
 ifeq ($(MIRAGE_OS),xen)
-UNIX=
+UNIX= --disable-unix
 endif
 
 NAME=cstruct
