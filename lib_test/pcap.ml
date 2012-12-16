@@ -61,20 +61,28 @@ cstruct tcpv4 {
   uint16_t       urg
 } as big_endian
 
-open Printf
-
 let num_packets = ref 0
 
 let mac_to_string buf =
   let i n = Cstruct.get_uint8 buf n in
-  sprintf "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
-    (i 0) (i 1) (i 2) (i 3) (i 4) (i 5)
+  let i0 = i 0 in
+  let i1 = i 1 in
+  let i2 = i 2 in
+  let i3 = i 3 in
+  let i4 = i 4 in
+  let i5 = i 5 in
+  (* Printf.sprintf "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
+    (i 0) (i 1) (i 2) (i 3) (i 4) (i 5) *)
+  ""
+
+let printf fmt =
+  Printf.kprintf (fun _ -> ()) fmt
 
 let print_packet p =
   let dst_mac = mac_to_string (get_ethernet_dst p) in
   let src_mac = mac_to_string (get_ethernet_src p) in
   let ethertype = get_ethernet_ethertype p in
-  printf "ether %s -> %s etype %x\n" src_mac dst_mac ethertype;
+  (* printf "ether %s -> %s etype %x\n" src_mac dst_mac ethertype; *)
   match ethertype with
   |0x0800 -> begin
      let ip = Cstruct.shift p sizeof_ethernet in
@@ -82,8 +90,8 @@ let print_packet p =
      let hlen = (get_ipv4_hlen_version ip land 0xf) * 4 in
      let ttl = get_ipv4_ttl ip in
      let proto = get_ipv4_proto ip in
-     printf "ipv%d hlen %d ttl %d proto %d\n" version hlen ttl proto;
-     match proto with 
+     (* printf "ipv%d hlen %d ttl %d proto %d\n" version hlen ttl proto; *)
+     match proto with
      |6 -> begin (* tcp *)
        let tcp = Cstruct.shift ip sizeof_ipv4 in
        let off = 0 in
@@ -98,23 +106,32 @@ let print_packet p =
        let fin = (x land 1) = 1 in
        let syn = (x land 2) = 2 in
        let flags = "?" in
-       printf "tcpv4 port %d->%d seq %lu ack %lu win %d off %d flags %s opt %d fin %b syn %b\n"
-         (get_tcpv4_src_port tcp) (get_tcpv4_dst_port tcp) (get_tcpv4_seqnum tcp)
-         (get_tcpv4_acknum tcp) (get_tcpv4_window tcp) off flags options fin syn;
-       printf "%S\n" (Cstruct.to_string payload)
+       let src_port = get_tcpv4_src_port tcp in
+       let dst_port = get_tcpv4_dst_port tcp in
+       let seqnum = get_tcpv4_seqnum tcp in
+       let acknum = get_tcpv4_acknum tcp in
+       let window = get_tcpv4_window tcp in
+(*     printf "tcpv4 port %d->%d seq %lu ack %lu win %d off %d flags %s opt %d fin %b syn %b\n"
+         src_port dst_port seqnum
+         acknum window off flags options fin syn;
+       printf "%S\n" (Cstruct.to_string payload) *)
+       ()
      end
      |_ -> printf "unknown ip proto %d\n" proto
   end
   |_ -> printf "unknown body\n"
- 
+
 let rec print_pcap_packet (hdr,pkt) =
-  printf "\n** %lu.%lu  bytes %lu (of %lu)\n" 
-    (get_pcap_packet_ts_sec hdr)
-    (get_pcap_packet_ts_usec hdr)
-    (get_pcap_packet_incl_len hdr)
-    (get_pcap_packet_orig_len hdr);
+  let ts_sec = get_pcap_packet_ts_sec hdr in
+  let ts_usec = get_pcap_packet_ts_usec hdr in
+  let incl_len = get_pcap_packet_incl_len hdr in
+  let orig_len = get_pcap_packet_orig_len hdr in
+(*
+  printf "\n** %lu.%lu  bytes %lu (of %lu)\n"
+    ts_sec ts_used incl_len orig_len
+*)
   print_packet pkt
-  
+
 let print_pcap_header buf =
   let magic = get_pcap_header_magic_number buf in
   let endian =
@@ -123,30 +140,37 @@ let print_pcap_header buf =
     |0xd4c3b2a1l -> "littlendian"
     |_ -> "not a pcap file"
   in
-  printf "pcap_header (len %d)\n" sizeof_pcap_header;
+  let version_major = get_pcap_header_version_major buf in
+  let version_minor = get_pcap_header_version_minor buf in
+  let thiszone = get_pcap_header_thiszone buf in
+  let sigfis = get_pcap_header_sigfigs buf in
+  let snaplen = get_pcap_header_snaplen buf in
+  let header_network = get_pcap_header_network buf in
+(*  printf "pcap_header (len %d)\n" sizeof_pcap_header;
   printf "magic_number %lx (%s)\n%!" magic endian;
-  printf "version %d %d\n" 
-   (get_pcap_header_version_major buf) (get_pcap_header_version_minor buf);
-  printf "timezone shift %lu\n" (get_pcap_header_thiszone buf);
-  printf "timestamp accuracy %lu\n" (get_pcap_header_sigfigs buf);
-  printf "snaplen %lu\n" (get_pcap_header_snaplen buf);
-  printf "lltype %lx\n" (get_pcap_header_network buf)
+  printf "version %d %d\n" version_major version_minor;
+  printf "timezone shift %lu\n" thiszone;
+  printf "timestamp accuracy %lu\n" sigfis;
+  printf "snaplen %lu\n" snaplen;
+  printf "lltype %lx\n" header_network
+*)
+  ()
 
 let parse () =
   let fd = Unix.(openfile "http.cap" [O_RDONLY] 0) in
-  let buf = Bigarray.(Array1.map_file fd Bigarray.char c_layout false (-1)) in
-  printf "total pcap file length %d\n" (Cstruct.len buf);
+  let t = Unix_cstruct.of_fd fd in
+  printf "total pcap file length %d\n" (Cstruct.len t);
 
-  let header, body = Cstruct.split buf sizeof_pcap_header in
+  let header, body = Cstruct.split t sizeof_pcap_header in
   print_pcap_header header;
 
-  let packets = Cstruct.iter 
-    (fun buf -> Some (sizeof_pcap_packet + (Int32.to_int (get_pcap_packet_incl_len buf))))
-    (fun buf -> buf, (Cstruct.shift buf sizeof_pcap_packet))
+  let packets = Cstruct.iter
+    (fun buf -> Some (sizeof_pcap_packet + Int32.to_int (get_pcap_packet_incl_len buf)))
+    (fun buf -> buf, Cstruct.shift buf sizeof_pcap_packet)
     body
-  in 
+  in
   let num_packets = Cstruct.fold
-    (fun a packet -> print_pcap_packet packet; (a+1)) 
+    (fun a packet -> print_pcap_packet packet; (a+1))
     packets 0
   in
   printf "num_packets %d\n" num_packets

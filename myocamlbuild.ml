@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: 4b6b6116865a876562a6dcbf2f08d0e9) *)
+(* DO NOT EDIT (digest: f76301a9ac2f3955a6f9eeb1b7e9233c) *)
 module OASISGettext = struct
 (* # 21 "/home/avsm/.opam/4.00.1+mirage-xen/build/oasis-mirage.0.3.0/src/oasis/OASISGettext.ml" *)
 
@@ -499,19 +499,24 @@ open Ocamlbuild_plugin;;
 let package_default =
   {
      MyOCamlbuildBase.lib_ocaml =
-       [("cstruct", ["lib"]); ("cstruct-syntax", ["syntax"])];
+       [
+          ("cstruct", ["lib"]);
+          ("lwt_cstruct", ["lwt"]);
+          ("unix_cstruct", ["unix"]);
+          ("cstruct-syntax", ["syntax"])
+       ];
      lib_c = [("cstruct", "lib/", [])];
      flags =
        [
           (["oasis_library_cstruct_ccopt"; "compile"],
             [(OASISExpr.EBool true, S [A "-ccopt"; A "-O3"])])
        ];
-     includes = [];
+     includes = [("unix", ["lib"]); ("lwt", ["lib"])];
      }
   ;;
 
 let dispatch_default = MyOCamlbuildBase.dispatch_default package_default;;
 
-# 516 "myocamlbuild.ml"
+# 521 "myocamlbuild.ml"
 (* OASIS_STOP *)
 Ocamlbuild_plugin.dispatch dispatch_default;;

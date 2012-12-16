@@ -1,20 +1,43 @@
 OASISFormat: 0.3
 Name:        cstruct
-Version:     0.5.3
+Version:     0.6.0
 Synopsis:    Manipulate external buffers as C-like structs
-Authors:     Anil Madhavapeddy, Richard Mortier
+Authors:     Anil Madhavapeddy, Richard Mortier, Thomas Gazagnaire, Pierre Chambart
 License:     ISC
 Plugins:     META (0.3)
 BuildTools:  ocamlbuild
 
+Flag lwt
+  Description: build the Lwt library
+  Default: false
+
+Flag unix
+  Description: build the UNIX library
+  Default: false
+
 Library cstruct
   Path:       lib/
-  BuildTools: ocamlbuild
   Modules:    Cstruct
-  BuildDepends: bigarray
+  BuildDepends: bigarray, ocplib-endian, ocplib-endian.bigstring
   CSources: cstruct_stubs.c
   CCOpt:    -O3
 
+Library lwt_cstruct
+  Build$:             flag(lwt)
+  Path:       lwt/
+  BuildDepends: cstruct,lwt.unix
+  Findlibname: lwt
+  Findlibparent: cstruct
+  Modules: Lwt_cstruct
+
+Library unix_cstruct
+  Build$:             flag(unix)
+  Path:       unix/
+  BuildDepends: cstruct,unix
+  Findlibname: unix
+  Findlibparent: cstruct
+  Modules: Unix_cstruct
+ 
 Library "cstruct-syntax"
   FindlibName: syntax
   FindlibParent: cstruct

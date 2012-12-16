@@ -1,3 +1,16 @@
+===== 0.6.0 (unreleased) =====
+
+* Add fast bigarray<->string functions to replace byte-by-byte copies.
+
+* Add an Lwt sub-package to expose a write call.
+
+* Depend on ocplib-endian for fast low-level parsing of integers.
+
+* Make Cstruct.t a record type that doesn't use Bigarray slicing
+  to provide views onto buffers. This lets views be allocated directly
+  on the minor heap rather than forcing a major heap allocation. It
+  does alter the external API, so previous users of cstruct wont work.
+
 ===== 0.5.3 (16-Dec-2012) =====
 
 * No functional changes, just OASIS packaging fix to right version.
