@@ -1,3 +1,7 @@
+===== 0.5.3 (16-Dec-2012) =====
+
+* No functional changes, just OASIS packaging fix to right version.
+
 ===== 0.5.2 (11-Dec-2012) =====
 
 * Remove the separate `xen` and `unix` subdirectories, as the
