@@ -17,12 +17,11 @@
 0.5.1 (28-Sep-2012):
 * Add `string_to_<cenum>` function to match the `<cenum>_to_string`,
   primarily to help with command-line parsing of enum arguments.
- 
+
 0.5.0 (20-Sep-2012):
-* Add a signature generator for cstruct and cenum to permit
-  their use in `.mli` files.
-* Use the more reliable revised syntax camlp4 quotation
-  expander, to avoid broken AST output from antiquotations.
+* Add a signature generator for cstruct and cenum to permit their use in `.mli` files.
+* Use the more reliable revised syntax camlp4 quotation expander, to avoid 
+  broken AST output from antiquotations.
 * Switch the `xen/` version over to using OASIS also.
 
 0.4.0 (02-Sep-2012):
