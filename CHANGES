@@ -1,44 +1,32 @@
-===== 0.6.0 (unreleased) =====
-
+0.6.0 (unreleased):
 * Add fast bigarray<->string functions to replace byte-by-byte copies.
-
 * Add an Lwt sub-package to expose a write call.
-
 * Depend on ocplib-endian for fast low-level parsing of integers.
-
-* Make Cstruct.t a record type that doesn't use Bigarray slicing
+* Make `Cstruct.t` a record type that doesn't use Bigarray slicing
   to provide views onto buffers. This lets views be allocated directly
   on the minor heap rather than forcing a major heap allocation. It
   does alter the external API, so previous users of cstruct wont work.
 
-===== 0.5.3 (16-Dec-2012) =====
-
+0.5.3 (16-Dec-2012):
 * No functional changes, just OASIS packaging fix to right version.
 
-===== 0.5.2 (11-Dec-2012) =====
-
+0.5.2 (11-Dec-2012):
 * Remove the separate `xen` and `unix` subdirectories, as the
   portable `Bigarray` is now provided by the `xenbigarray` package.
 
-===== 0.5.1 (28-Sep-2012) =====
-
-* Add string_to_<cenum> function to match the <cenum>_to_string,
+0.5.1 (28-Sep-2012):
+* Add `string_to_<cenum>` function to match the `<cenum>_to_string`,
   primarily to help with command-line parsing of enum arguments.
  
-===== 0.5.0 (20-Sep-2012) =====
-
+0.5.0 (20-Sep-2012):
 * Add a signature generator for cstruct and cenum to permit
-  their use in .mli files.
-
+  their use in `.mli` files.
 * Use the more reliable revised syntax camlp4 quotation
   expander, to avoid broken AST output from antiquotations.
+* Switch the `xen/` version over to using OASIS also.
 
-* Switch the xen/ version over to using OASIS also.
-
-===== 0.4.0 (02-Sep-2012) =====
-
+0.4.0 (02-Sep-2012):
 * Fix META file for use with Xen
 
-===== 0.3 (25-Aug-2012) =====
-
+0.3 (25-Aug-2012):
 * Initial public release
