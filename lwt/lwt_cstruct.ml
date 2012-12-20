@@ -16,3 +16,6 @@
 
 let write fd t =
   Lwt_bytes.write fd t.Cstruct.buffer t.Cstruct.off t.Cstruct.len
+
+let sendto fd t flags dst =
+  Lwt_bytes.sendto fd t.Cstruct.buffer t.Cstruct.off t.Cstruct.len flags dst
