@@ -1,4 +1,7 @@
-===== 0.6.0 (20-Dec-2012) =====
+0.6.1 (20-Dec-2012):
+* Add `sendto`, `read` and `recvfrom` functions to the Lwt subpackage.
+
+0.6.0 (20-Dec-2012):
 * Add fast bigarray<->string functions to replace byte-by-byte copies.
 * Add an Lwt sub-package to expose a write call.
 * Depend on ocplib-endian for fast low-level parsing of integers.
