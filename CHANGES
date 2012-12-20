@@ -1,4 +1,4 @@
-===== 0.6.0 (unreleased) =====
+===== 0.6.0 (20-Dec-2012) =====
 
 * Add fast bigarray<->string functions to replace byte-by-byte copies.
 
