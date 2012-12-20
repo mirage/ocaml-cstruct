@@ -1,5 +1,6 @@
 (*
  * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012 Citrix Systems Inc
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -14,4 +15,10 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+val read: Lwt_unix.file_descr -> Cstruct.t -> int Lwt.t
+
 val write: Lwt_unix.file_descr -> Cstruct.t -> int Lwt.t
+
+val sendto: Lwt_unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> Unix.sockaddr -> int Lwt.t
+
+val recvfrom: Lwt_unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> (int * Unix.sockaddr) Lwt.t
