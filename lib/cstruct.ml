@@ -111,6 +111,12 @@ let sub t off len =
 let shift t off =
   { t with off = t.off + off; len = t.len - off }
 
+let set_len t len =
+  { t with len = len }
+
+let add_len t len =
+  { t with len = t.len + len }
+
 external unsafe_blit_bigstring_to_bigstring : buffer -> int -> buffer -> int -> int -> unit = "caml_blit_bigstring_to_bigstring" "noalloc"
 
 external unsafe_blit_string_to_bigstring : string -> int -> buffer -> int -> int -> unit = "caml_blit_string_to_bigstring" "noalloc"

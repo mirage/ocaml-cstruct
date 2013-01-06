@@ -1,3 +1,8 @@
+0.6.2 (trunk):
+
+* Expose the `Cstruct.debug` to dump internal state of a buffer to a string.
+* Add `set_len` and `add_len` to manipulate the total-length field directly.
+
 0.6.1 (20-Dec-2012):
 * Add `sendto`, `read` and `recvfrom` functions to the Lwt subpackage.
 

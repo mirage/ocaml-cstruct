@@ -67,11 +67,16 @@ val blit_to_string: t -> int -> string -> int -> int -> unit
 
 val len: t -> int
 
+val set_len : t -> int -> t
+
+val add_len : t -> int -> t
+
 val split: ?start:int -> t -> int -> t * t
 
 val to_string: t -> string
 
 val hexdump: t -> unit
+val debug: t -> string
 
 module BE : sig
   val get_uint16: t -> int -> uint16
