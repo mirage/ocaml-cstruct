@@ -124,40 +124,40 @@ external unsafe_blit_string_to_bigstring : string -> int -> buffer -> int -> int
 external unsafe_blit_bigstring_to_string : buffer -> int -> string -> int -> int -> unit = "caml_blit_bigstring_to_string" "noalloc"
 
 let copy src srcoff len =
-  (* assert (src.len - srcoff >= len); *)
+  if src.len - srcoff < len then raise (Failure "copy");
   let s = String.create len in
   unsafe_blit_bigstring_to_string src.buffer (src.off+srcoff) s 0 len;
   s
 
 let blit src srcoff dst dstoff len =
-  (* assert (src.len - srcoff >= len);
-  assert (dst.len - dstoff >= len); *)
+  if src.len - srcoff < len then raise (Failure "blit");
+  if dst.len - dstoff < len then raise (Failure "blitdst");
   unsafe_blit_bigstring_to_bigstring src.buffer (src.off+srcoff) dst.buffer (dst.off+dstoff) len
 
 let blit_from_string src srcoff dst dstoff len =
-  (* assert (String.length src - srcoff >= len);
-  assert (dst.len - dstoff >= len); *)
+  if String.length src - srcoff < len then raise (Failure "blit_from_string");
+  if dst.len - dstoff < len then raise (Failure "blit_from_string dst");
   unsafe_blit_string_to_bigstring src srcoff dst.buffer (dst.off+dstoff) len
 
 let blit_to_string src srcoff dst dstoff len =
-  (* assert (len src - srcoff >= len);
-  assert (String.length dst - dstoff >= len); *)
+  if src.len - srcoff < len then raise (Failure "blit_to_string");
+  if String.length dst - dstoff < len then raise (Failure "blit_to_string dst");
   unsafe_blit_bigstring_to_string src.buffer (src.off+srcoff) dst dstoff len
 
 let set_uint8 t i c =
-  EndianBigstring.BigEndian_unsafe.set_int8 t.buffer (t.off+i) c
+  EndianBigstring.BigEndian.set_int8 t.buffer (t.off+i) c
 
 let set_char t i c =
-  EndianBigstring.BigEndian_unsafe.set_char t.buffer (t.off+i) c
+  EndianBigstring.BigEndian.set_char t.buffer (t.off+i) c
 
 let get_uint8 t i =
-  EndianBigstring.BigEndian_unsafe.get_uint8 t.buffer (t.off+i)
+  EndianBigstring.BigEndian.get_uint8 t.buffer (t.off+i)
 
 let get_char t i =
-  EndianBigstring.BigEndian_unsafe.get_char t.buffer (t.off+i)
+  EndianBigstring.BigEndian.get_char t.buffer (t.off+i)
 
 module BE = struct
-  include EndianBigstring.BigEndian_unsafe
+  include EndianBigstring.BigEndian
 
   let set_uint16 t i c = set_int16 t.buffer (t.off+i) c
   let set_uint32 t i c = set_int32 t.buffer (t.off+i) c
@@ -169,7 +169,7 @@ module BE = struct
 end
 
 module LE = struct
-  include EndianBigstring.LittleEndian_unsafe
+  include EndianBigstring.LittleEndian
 
   let set_uint16 t i c = set_int16 t.buffer (t.off+i) c
   let set_uint32 t i c = set_int32 t.buffer (t.off+i) c
