@@ -1,6 +1,6 @@
 #!/bin/sh -ex
 
-endian=`ocamlfind query ocplib-endian.bigstring -format "-I %d %a" -predicates native,archive)`
+endian=$(ocamlfind query ocplib-endian.bigstring -format "-I %d %a" -predicates native,archive)
 
 test() {
 echo $1
