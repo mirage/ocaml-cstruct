@@ -1,5 +1,6 @@
 0.6.2 (trunk):
 
+* Add experimental `cstruct.obuild` for the `obuild` build tool.
 * Use bounds checked version of all functions in the external interface.
 * Expose the `Cstruct.debug` to dump internal state of a buffer to a string.
 * Add `set_len` and `add_len` to manipulate the total-length field directly.

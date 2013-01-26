@@ -1,0 +1,37 @@
+name:        cstruct
+version:     0.6.2
+synopsis:    manipulate external buffers as C-like structs
+authors:     Anil Madhavapeddy, Richard Mortier, Thomas Gazagnaire, Pierre Chambart
+license:     isc
+obuild-ver:  1
+
+library cstruct
+  path:       lib/
+  modules:    cstruct
+  builddepends: bigarray, ocplib-endian, ocplib-endian.bigstring
+  cdir: lib/
+  csources: cstruct_stubs.c
+  ccopt:    -o3
+
+  sub lwt
+    path:         lwt/
+    builddepends: cstruct,lwt.unix
+    modules:      lwt_cstruct
+
+  sub unix
+    path:         unix/
+    builddepends: cstruct,unix
+    modules:      unix_cstruct
+ 
+  sub syntax
+    path:         syntax
+    builddepends: camlp4.lib, camlp4.quotations.r, camlp4.extend
+    modules:      pa_cstruct
+    syntax:       true
+    pp:           camlp4o
+
+example pcap
+  path: lib_test/
+  main-is: pcap.ml
+  builddepends: cstruct.unix,cstruct.syntax
+  pp: camlp4o
