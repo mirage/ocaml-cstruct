@@ -1,4 +1,4 @@
-0.6.2 (trunk):
+0.6.2 (08-Feb-2013):
 
 * Use bounds checked version of all functions in the external interface.
 * Expose the `Cstruct.debug` to dump internal state of a buffer to a string.
