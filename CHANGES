@@ -1,4 +1,8 @@
-0.6.2 (trunk):
+0.6.3 (trunk):
+
+* no changes yet
+
+0.6.2 (08-Feb-2013):
 
 * Add experimental `cstruct.obuild` for the `obuild` build tool.
 * Use bounds checked version of all functions in the external interface.
