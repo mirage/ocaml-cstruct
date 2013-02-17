@@ -11,6 +11,10 @@ Flag lwt
   Description: build the Lwt library
   Default: false
 
+Flag async
+  Description: build the Async_unix library
+  Default: false
+
 Flag unix
   Description: build the UNIX library
   Default: false
@@ -22,8 +26,16 @@ Library cstruct
   CSources: cstruct_stubs.c
   CCOpt:    -O3
 
+Library lwt_async
+  Build$:     flag(async)
+  Path:       async/
+  BuildDepends: cstruct,async,threads
+  Findlibname: async
+  Findlibparent: cstruct
+  Modules: Async_cstruct
+
 Library lwt_cstruct
-  Build$:             flag(lwt)
+  Build$:     flag(lwt)
   Path:       lwt/
   BuildDepends: cstruct,lwt.unix
   Findlibname: lwt
