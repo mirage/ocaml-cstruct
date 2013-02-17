@@ -1,6 +1,6 @@
 OASISFormat: 0.3
 Name:        cstruct
-Version:     0.6.3
+Version:     0.7.0
 Synopsis:    Manipulate external buffers as C-like structs
 Authors:     Anil Madhavapeddy, Richard Mortier, Thomas Gazagnaire, Pierre Chambart
 License:     ISC
@@ -26,7 +26,7 @@ Library cstruct
   CSources: cstruct_stubs.c
   CCOpt:    -O3
 
-Library lwt_async
+Library async_cstruct
   Build$:     flag(async)
   Path:       async/
   BuildDepends: cstruct,async,threads
