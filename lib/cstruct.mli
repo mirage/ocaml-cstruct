@@ -75,6 +75,8 @@ val split: ?start:int -> t -> int -> t * t
 
 val to_string: t -> string
 
+val of_string: ?allocator:(int -> t) -> string -> t
+
 val hexdump: t -> unit
 val debug: t -> string
 
