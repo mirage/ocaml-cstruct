@@ -1,3 +1,6 @@
+0.7.1 (trunk):
+* Add `Async_cstruct.Pipe` to map pipes of `Cstruct` buffers to strings or `Bigsubstring`.
+
 0.7.0 (25-Feb-2013):
 
 * Add zero-copy conversion functions to/from the Core `Bigsubstring`.

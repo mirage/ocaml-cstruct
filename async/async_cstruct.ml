@@ -35,3 +35,17 @@ let read rd t =
 let schedule_write wr t =
   let open Cstruct in
   Writer.schedule_bigstring ~pos:t.off ~len:t.len wr t.buffer
+
+module Pipe = struct
+  let map_string rd wr =
+    let rd = Pipe.map rd ~f:Cstruct.to_string in
+    let rd',wr' = Pipe.create () in
+    don't_wait_for (Pipe.transfer rd' wr ~f:Cstruct.of_string);
+    rd,wr'
+
+  let map_bigsubstring rd wr =
+    let rd = Pipe.map rd ~f:to_bigsubstring in
+    let rd',wr' = Pipe.create () in
+    don't_wait_for (Pipe.transfer rd' wr ~f:of_bigsubstring);
+    rd,wr'
+end
