@@ -1,4 +1,4 @@
-0.7.0 (trunk):
+0.7.0 (25-Feb-2013):
 
 * Add an `of_string` function to simplify the construction from OCaml values.
 * Add Async interface to interoperate with Jane Street Core code.
