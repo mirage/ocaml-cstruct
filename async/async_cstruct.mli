@@ -14,7 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Core.Std
 open Async.Std
+
+val to_bigsubstring : Cstruct.t -> Bigsubstring.t
+val of_bigsubstring : Bigsubstring.t -> Cstruct.t
 
 val read: Reader.t -> Cstruct.t -> int Reader.Read_result.t Deferred.t
 val schedule_write: Writer.t -> Cstruct.t -> unit

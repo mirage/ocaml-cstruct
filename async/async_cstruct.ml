@@ -17,11 +17,21 @@
 open Core.Std
 open Async.Std
 
+let to_bigsubstring t =
+  Bigsubstring.create 
+    ~pos:t.Cstruct.off 
+    ~len:t.Cstruct.len 
+    t.Cstruct.buffer
+
+let of_bigsubstring t =
+  Cstruct.of_bigarray
+    ~off:(Bigsubstring.pos t) 
+    ~len:(Bigsubstring.length t)
+    (Bigsubstring.base t)
+
 let read rd t =
-  let open Cstruct in
-  let ss = Bigsubstring.create ~pos:t.off ~len:t.len t.Cstruct.buffer in
-  Reader.read_bigsubstring rd ss
+  Reader.read_bigsubstring rd (to_bigsubstring t)
 
 let schedule_write wr t =
   let open Cstruct in
-  Writer.schedule_bigstring ~pos:t.off ~len:t.len wr t.Cstruct.buffer
+  Writer.schedule_bigstring ~pos:t.off ~len:t.len wr t.buffer
