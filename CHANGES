@@ -1,4 +1,4 @@
-0.7.1 (trunk):
+0.7.1 (06-Mar-2013):
 * Add `Async_cstruct.Pipe` to map pipes of `Cstruct` buffers to strings or `Bigsubstring`.
 
 0.7.0 (25-Feb-2013):
