@@ -1,0 +1,6 @@
+# OASIS_START
+# DO NOT EDIT (digest: 0ef43544ccdcb315230e1f71d392a21d)
+Cstruct
+Lwt_cstruct
+Unix_cstruct
+# OASIS_STOP

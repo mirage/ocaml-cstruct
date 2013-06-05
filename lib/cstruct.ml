@@ -117,6 +117,14 @@ let set_len t len =
 let add_len t len =
   { t with len = t.len + len }
 
+let invalid_arg fmt =
+  let b = Buffer.create 20 in (* for thread safety. *)
+  let ppf = Format.formatter_of_buffer b in
+  let k ppf = Format.pp_print_flush ppf (); invalid_arg (Buffer.contents b) in
+  Format.kfprintf k ppf fmt
+
+let invalid_bounds j l = invalid_arg "invalid bounds (index %d, length %d)" j l
+
 external unsafe_blit_bigstring_to_bigstring : buffer -> int -> buffer -> int -> int -> unit = "caml_blit_bigstring_to_bigstring" "noalloc"
 
 external unsafe_blit_string_to_bigstring : string -> int -> buffer -> int -> int -> unit = "caml_blit_string_to_bigstring" "noalloc"
@@ -124,24 +132,24 @@ external unsafe_blit_string_to_bigstring : string -> int -> buffer -> int -> int
 external unsafe_blit_bigstring_to_string : buffer -> int -> string -> int -> int -> unit = "caml_blit_bigstring_to_string" "noalloc"
 
 let copy src srcoff len =
-  if src.len - srcoff < len then raise (Failure "copy");
+  if src.len - srcoff < len then raise (Invalid_argument (invalid_bounds srcoff len));
   let s = String.create len in
   unsafe_blit_bigstring_to_string src.buffer (src.off+srcoff) s 0 len;
   s
 
 let blit src srcoff dst dstoff len =
-  if src.len - srcoff < len then raise (Failure "blit");
-  if dst.len - dstoff < len then raise (Failure "blitdst");
+  if src.len - srcoff < len then raise (Invalid_argument (invalid_bounds srcoff len));
+  if dst.len - dstoff < len then raise (Invalid_argument (invalid_bounds dstoff len));
   unsafe_blit_bigstring_to_bigstring src.buffer (src.off+srcoff) dst.buffer (dst.off+dstoff) len
 
 let blit_from_string src srcoff dst dstoff len =
-  if String.length src - srcoff < len then raise (Failure "blit_from_string");
-  if dst.len - dstoff < len then raise (Failure "blit_from_string dst");
+  if String.length src - srcoff < len then raise (Invalid_argument (invalid_bounds srcoff len));
+  if dst.len - dstoff < len then raise (Invalid_argument (invalid_bounds dstoff len));
   unsafe_blit_string_to_bigstring src srcoff dst.buffer (dst.off+dstoff) len
 
 let blit_to_string src srcoff dst dstoff len =
-  if src.len - srcoff < len then raise (Failure "blit_to_string");
-  if String.length dst - dstoff < len then raise (Failure "blit_to_string dst");
+  if src.len - srcoff < len then raise (Invalid_argument (invalid_bounds srcoff len));
+  if String.length dst - dstoff < len then raise (Invalid_argument (invalid_bounds dstoff len));
   unsafe_blit_bigstring_to_string src.buffer (src.off+srcoff) dst dstoff len
 
 let set_uint8 t i c =

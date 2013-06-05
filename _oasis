@@ -49,7 +49,7 @@ Library unix_cstruct
   Findlibname: unix
   Findlibparent: cstruct
   Modules: Unix_cstruct
- 
+
 Library "cstruct-syntax"
   FindlibName: syntax
   FindlibParent: cstruct
@@ -61,3 +61,11 @@ Library "cstruct-syntax"
   XMETAType: syntax
   XMETADescription: Syntax extension for Cstruct
   XMETARequires: camlp4
+
+Document api
+  Title: Documentation and API reference
+  Type: ocamlbuild (0.3)
+  BuildTools+: ocamldoc
+  XOcamlbuildPath: doc
+  XOcamlbuildModules: Cstruct, Lwt_cstruct, Unix_cstruct
+  Install: false
