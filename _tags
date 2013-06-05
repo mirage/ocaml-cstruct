@@ -57,4 +57,8 @@ true: debug
 # OASIS_STOP
 <syntax/*.ml>: syntax_camlp4o, pkg_camlp4
 <lib_test/*.ml{i}>: syntax_camlp4o, pkg_camlp4, pkg_cstruct.syntax
+<lib>: include
+<lwt>: include
+<async>: include
+<unix>: include
 true: annot
