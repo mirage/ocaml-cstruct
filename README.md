@@ -53,3 +53,6 @@ cenum foo64 {
 ```
 
 Please see the `lib_test/` directory for more in-depth examples.
+
+[![Build Status](https://travis-ci.org/avsm/ocaml-cstruct.png)](https://travis-ci.org/avsm/ocaml-cstruct)
+
