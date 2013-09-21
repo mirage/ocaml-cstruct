@@ -13,3 +13,4 @@ opam install ${OPAM_PACKAGES}
 
 eval `opam config -env`
 make 
+./test.sh
