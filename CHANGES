@@ -1,3 +1,7 @@
+0.7.2 (trunk):
+* Improved ocamldoc for BE/LE modules.
+* Add Travis-CI test scripts.
+
 0.7.1 (06-Mar-2013):
 * Add `Async_cstruct.Pipe` to map pipes of `Cstruct` buffers to strings or `Bigsubstring`.
 
