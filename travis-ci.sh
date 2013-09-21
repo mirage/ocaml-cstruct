@@ -2,7 +2,7 @@
 OPAM_PACKAGES="ocplib-endian"
 
 export OPAM_PACKAGES
-sudo apt-get install software-properties-common
+sudo apt-get install python-software-properties
 echo "yes" | sudo add-apt-repository ppa:avsm/ppa-testing
 sudo apt-get update -qq
 sudo apt-get install -qq ocaml opam
