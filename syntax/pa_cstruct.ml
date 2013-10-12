@@ -198,11 +198,10 @@ let output_struct _loc s =
   let expr = List.fold_left (fun a f ->
     <:str_item<
       $a$ ;
-      $output_sizeof _loc s$ ;
       $output_get _loc s f$ ;
       $output_set _loc s f$
     >>
-  ) <:str_item< >> s.fields
+  ) <:str_item< $output_sizeof _loc s$ >> s.fields
   in expr
 
 let output_struct_sig _loc s =
