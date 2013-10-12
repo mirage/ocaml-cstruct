@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -309,11 +309,12 @@ EXTEND Gram
     ] |
     [ "cenum"; name = LIDENT; "{"; fields = LIST0 [ constr_enum ] SEP ";"; "}";
       "as"; width = LIDENT ->
-        let n = ref (-1) in
+        let n = ref Int64.minus_one in
+        let incr_n () = n := Int64.succ !n in
         let fields =
           List.map (function
-            | (f, None)   -> incr n; (f, (Int64.of_int !n))
-            | (f, Some i) -> (f, i)
+            | (f, None)   -> incr_n (); (f, !n)
+            | (f, Some i) -> n := i; (f, i)
           ) fields in
         output_enum_sig _loc name fields width
     ]
@@ -326,11 +327,12 @@ EXTEND Gram
     ] |
     [ "cenum"; name = LIDENT; "{"; fields = LIST0 [ constr_enum ] SEP ";"; "}";
       "as"; width = LIDENT ->
-        let n = ref (-1) in
+        let n = ref Int64.minus_one in
+        let incr_n () = n := Int64.succ !n in
         let fields =
           List.map (function
-            | (f, None)   -> incr n; (f, (Int64.of_int !n))
-            | (f, Some i) -> (f, i)
+            | (f, None)   -> incr_n (); (f, !n)
+            | (f, Some i) -> n := i; (f, i)
           ) fields in
         output_enum _loc name fields width
     ]
