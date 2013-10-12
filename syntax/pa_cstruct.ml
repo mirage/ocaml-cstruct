@@ -219,8 +219,8 @@ let output_hexdump _loc s =
 
 let output_hexdump_sig _loc s =
   <:sig_item<
-    value $lid:"hexdump_"^s.name^"_to_buffer"$ : Buffer.t -> $lid:s.name$ -> unit;
-    value $lid:"hexdump_"^s.name$ : $lid:s.name$ -> unit;
+    value $lid:"hexdump_"^s.name^"_to_buffer"$ : Buffer.t -> Cstruct.t -> unit;
+    value $lid:"hexdump_"^s.name$ : Cstruct.t -> unit;
   >>
 
 let output_struct _loc s =

@@ -82,6 +82,8 @@ val get_pcap_packet_incl_len : Cstruct.t -> Cstruct.uint32
 val set_pcap_packet_incl_len : Cstruct.t -> Cstruct.uint32 -> unit
 val get_pcap_packet_orig_len : Cstruct.t -> Cstruct.uint32
 val set_pcap_packet_orig_len : Cstruct.t -> Cstruct.uint32 -> unit
+val hexdump_pcap_packet_to_buffer : Buffer.t -> pcap_packet -> unit
+val hexdump_pcap_packet : Cstruct.t -> unit
 
 val sizeof_ethernet : int
 val get_ethernet_dst : Cstruct.t -> Cstruct.t
