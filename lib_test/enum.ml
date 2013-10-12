@@ -23,7 +23,7 @@ cenum foo64 {
 cenum foo32 {
   ONE32;
   TWO32 = 3;
-  THREE32
+  THREE32 = 0xffffffff
 } as uint32_t
 
 cenum foo16 {

@@ -220,15 +220,15 @@ let output_struct_sig _loc s =
 let output_enum _loc name fields width =
   let intfn,pattfn = match ty_of_string width with
     |None -> loc_err _loc ("enum: unknown width specifier " ^ width)
-    |Some UInt8|Some UInt16 ->
-      (fun i -> <:expr< $int:string_of_int i$ >>),
-      (fun i -> <:patt< $int:string_of_int i$ >>)
+    |Some UInt8 |Some UInt16 ->
+      (fun i -> <:expr< $int:Int64.to_string i$ >>),
+      (fun i -> <:patt< $int:Int64.to_string i$ >>)
     |Some UInt32 ->
-      (fun i -> <:expr< $int32:string_of_int i$ >>),
-      (fun i -> <:patt< $int32:string_of_int i$ >>)
+      (fun i -> <:expr< $int32:Int64.to_string i$ >>),
+      (fun i -> <:patt< $int32:Int64.to_string i$ >>)
     |Some UInt64 ->
-      (fun i -> <:expr< $int64:string_of_int i$ >>),
-      (fun i -> <:patt< $int64:string_of_int i$ >>)
+      (fun i -> <:expr< $int64:Int64.to_string i$ >>),
+      (fun i -> <:patt< $int64:Int64.to_string i$ >>)
     |Some (Buffer _) -> loc_err _loc "enum: array types not allowed"
   in
   let decls = tyOr_of_list (List.map (fun (f,_) ->
@@ -296,7 +296,7 @@ EXTEND Gram
 
   constr_enum: [
     [ f = UIDENT -> (f, None)
-    | f = UIDENT; "="; i = INT -> (f, Some (int_of_string i)) ]
+    | f = UIDENT; "="; i = INT64 -> (f, Some (Int64.of_string i)) ]
   ];
 
   sig_item: [
@@ -309,7 +309,7 @@ EXTEND Gram
         let n = ref (-1) in
         let fields =
           List.map (function
-            | (f, None)   -> incr n; (f, !n)
+            | (f, None)   -> incr n; (f, (Int64.of_int !n))
             | (f, Some i) -> (f, i)
           ) fields in
         output_enum_sig _loc name fields width
@@ -326,7 +326,7 @@ EXTEND Gram
         let n = ref (-1) in
         let fields =
           List.map (function
-            | (f, None)   -> incr n; (f, !n)
+            | (f, None)   -> incr n; (f, (Int64.of_int !n))
             | (f, Some i) -> (f, i)
           ) fields in
         output_enum _loc name fields width
