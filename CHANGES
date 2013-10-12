@@ -1,3 +1,10 @@
+0.7.2 (trunk):
+* Improved ocamldoc for BE/LE modules.
+* Add Travis-CI test scripts and fix `test.sh` script compilation.
+* Check and raise error in case of negative offsets for blits (#4).
+* Correctly preserve the sequence after a constant constructor is set during a `cenum` definition.
+* Do not repeat the `sizeof_<field>` binding for every get/set field (should be no externally observable change).
+
 0.7.1 (06-Mar-2013):
 * Add `Async_cstruct.Pipe` to map pipes of `Cstruct` buffers to strings or `Bigsubstring`.
 

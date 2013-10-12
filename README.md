@@ -42,14 +42,91 @@ cstruct ipv4 {
 } as big_endian
 ```
 
+This auto-generates generates functions of the form below in the `ml` file:
+
+```
+let sizeof_pcap_packet = 16
+let get_pcap_packet_ts_sec v = Cstruct.LE.get_uint32 v 0
+let set_pcap_packet_ts_sec v x = Cstruct.LE.set_uint32 v 0 x
+let get_pcap_packet_ts_usec v = Cstruct.LE.get_uint32 v 4
+let set_pcap_packet_ts_usec v x = Cstruct.LE.set_uint32 v 4 x
+let get_pcap_packet_incl_len v = Cstruct.LE.get_uint32 v 8
+let set_pcap_packet_incl_len v x = Cstruct.LE.set_uint32 v 8 x
+let get_pcap_packet_orig_len v = Cstruct.LE.get_uint32 v 12
+let set_pcap_packet_orig_len v x = Cstruct.LE.set_uint32 v 12 x
+
+let sizeof_ethernet = 14
+let get_ethernet_dst src = Cstruct.sub src 0 6
+let copy_ethernet_dst src = Cstruct.copy src 0 6
+let set_ethernet_dst src srcoff dst =
+  Cstruct.blit_from_string src srcoff dst 0 6
+let blit_ethernet_dst src srcoff dst = Cstruct.blit src srcoff dst 0 6
+let get_ethernet_src src = Cstruct.sub src 6 6
+let copy_ethernet_src src = Cstruct.copy src 6 6
+let set_ethernet_src src srcoff dst =
+  Cstruct.blit_from_string src srcoff dst 6 6
+let blit_ethernet_src src srcoff dst = Cstruct.blit src srcoff dst 6 6
+let get_ethernet_ethertype v = Cstruct.BE.get_uint16 v 12
+let set_ethernet_ethertype v x = Cstruct.BE.set_uint16 v 12 x
+```
+
+The `mli` file will have signatures of this form:
+
+```
+val sizeof_pcap_packet : int
+val get_pcap_packet_ts_sec : Cstruct.t -> Cstruct.uint32
+val set_pcap_packet_ts_sec : Cstruct.t -> Cstruct.uint32 -> unit
+val get_pcap_packet_ts_usec : Cstruct.t -> Cstruct.uint32
+val set_pcap_packet_ts_usec : Cstruct.t -> Cstruct.uint32 -> unit
+val get_pcap_packet_incl_len : Cstruct.t -> Cstruct.uint32
+val set_pcap_packet_incl_len : Cstruct.t -> Cstruct.uint32 -> unit
+val get_pcap_packet_orig_len : Cstruct.t -> Cstruct.uint32
+val set_pcap_packet_orig_len : Cstruct.t -> Cstruct.uint32 -> unit
+
+val sizeof_ethernet : int
+val get_ethernet_dst : Cstruct.t -> Cstruct.t
+val copy_ethernet_dst : Cstruct.t -> string
+val set_ethernet_dst : string -> int -> Cstruct.t -> unit
+val blit_ethernet_dst : Cstruct.t -> int -> Cstruct.t -> unit
+val get_ethernet_src : Cstruct.t -> Cstruct.t
+val copy_ethernet_src : Cstruct.t -> string
+val set_ethernet_src : string -> int -> Cstruct.t -> unit
+val blit_ethernet_src : Cstruct.t -> int -> Cstruct.t -> unit
+val get_ethernet_ethertype : Cstruct.t -> Cstruct.uint16
+val set_ethernet_ethertype : Cstruct.t -> Cstruct.uint16 -> unit
+```
 You can also declare C-like enums:
 
 ```
-cenum foo64 {
-  ONE64;
-  TWO64;
-  THREE64
-} as uint64_t
+cenum foo32 {
+  ONE32;
+  TWO32 = 0xfffffffel;
+  THREE32
+} as uint32_t
+
+cenum bar16 {
+  ONE = 1;
+  TWO;
+  FOUR = 4;
+  FIVE
+} as uint16_t
+```
+
+This generates signatures of the form:
+
+```
+type foo32 = | ONE32 | TWO32 | THREE32
+val int_to_foo32 : int32 -> foo32 option
+val foo32_to_int : foo32 -> int32
+val foo32_to_string : foo32 -> string
+val string_to_foo32 : string -> foo32 option
+type bar16 = | ONE | TWO | FOUR | FIVE
+val int_to_bar16 : int -> bar16 option
+val bar16_to_int : bar16 -> int
+val bar16_to_string : bar16 -> string
+val string_to_bar16 : string -> bar16 option
 ```
 
 Please see the `lib_test/` directory for more in-depth examples.
+
+[![Build Status](https://travis-ci.org/avsm/ocaml-cstruct.png)](https://travis-ci.org/avsm/ocaml-cstruct)

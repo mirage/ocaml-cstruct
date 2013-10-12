@@ -22,9 +22,16 @@ cenum foo64 {
 
 cenum foo32 {
   ONE32;
-  TWO32 = 3;
+  TWO32 = 0xfffffffel;
   THREE32
 } as uint32_t
+
+cenum bar16 {
+  ONE = 1;
+  TWO;
+  FOUR = 4;
+  FIVE
+} as uint16_t
 
 cenum foo16 {
   ONE16;
@@ -47,9 +54,11 @@ let _ =
   ignore(foo32_to_int ONE32);
   ignore(foo16_to_int ONE16);
   ignore(foo8_to_int ONE8);
-  assert(foo32_to_int TWO32 = 3l);
-  assert(foo32_to_int THREE32 = 1l);
-  assert(int_to_foo32 3l = Some (TWO32));
-  assert(int_to_foo32 1l = Some (THREE32));
+  assert(bar16_to_int FOUR = 4);
+  assert(bar16_to_int FIVE = 5);
+  assert(foo32_to_int TWO32   = 0xfffffffel);
+  assert(foo32_to_int THREE32 = 0xffffffffl);
+  assert(int_to_foo32 0xfffffffel = Some (TWO32));
+  assert(int_to_foo32 0xffffffffl = Some (THREE32));
   assert(string_to_foo16 "ONE16" = Some ONE16);
-  print_endline (foo8_to_string ONE8)
+  assert(foo8_to_string ONE8 = "ONE8")
