@@ -1,6 +1,7 @@
 0.7.2 (trunk):
 * Improved ocamldoc for BE/LE modules.
 * Add Travis-CI test scripts and fix `test.sh` script compilation.
+* Support int32/int64 constant values in cenum like `VAL = 0xffffffffl`, useful for 32-bit hosts.
 * Check and raise error in case of negative offsets for blits (#4).
 * Correctly preserve the sequence after a constant constructor is set during a `cenum` definition.
 * Do not repeat the `sizeof_<field>` binding for every get/set field (should be no externally observable change).
