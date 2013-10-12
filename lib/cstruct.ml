@@ -234,6 +234,15 @@ let hexdump t =
   done;
   print_endline ""
 
+let hexdump_to_buffer buf t =
+  let c = ref 0 in
+  for i = 0 to len t - 1 do
+    if !c mod 16 = 0 then Buffer.add_char buf '\n';
+    bprintf buf "%.2x " (Char.code (Bigarray.Array1.get t.buffer (t.off+i)));
+    incr c;
+  done;
+  Buffer.add_char buf '\n'
+
 let split ?(start=0) t off =
   let header = sub t start off in
   let body = sub t (start+off) (len t - off - start) in
