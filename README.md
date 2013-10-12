@@ -42,6 +42,20 @@ cstruct ipv4 {
 } as big_endian
 ```
 
+This generates functions of the form:
+
+```
+let sizeof_pcap_packet = 16
+let get_pcap_packet_ts_sec v = Cstruct.LE.get_uint32 v 0
+let set_pcap_packet_ts_sec v x = Cstruct.LE.set_uint32 v 0 x
+let get_pcap_packet_ts_usec v = Cstruct.LE.get_uint32 v 4
+let set_pcap_packet_ts_usec v x = Cstruct.LE.set_uint32 v 4 x
+let get_pcap_packet_incl_len v = Cstruct.LE.get_uint32 v 8
+let set_pcap_packet_incl_len v x = Cstruct.LE.set_uint32 v 8 x
+let get_pcap_packet_orig_len v = Cstruct.LE.get_uint32 v 12
+let set_pcap_packet_orig_len v x = Cstruct.LE.set_uint32 v 12 x
+```
+
 You can also declare C-like enums:
 
 ```
@@ -55,4 +69,3 @@ cenum foo64 {
 Please see the `lib_test/` directory for more in-depth examples.
 
 [![Build Status](https://travis-ci.org/avsm/ocaml-cstruct.png)](https://travis-ci.org/avsm/ocaml-cstruct)
-

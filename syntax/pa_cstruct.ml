@@ -209,11 +209,10 @@ let output_struct_sig _loc s =
   let expr = List.fold_left (fun a f ->
     <:sig_item<
       $a$ ;
-      $output_sizeof_sig _loc s$ ;
       $output_get_sig _loc s f$ ;
       $output_set_sig _loc s f$ ;
     >>
-  ) <:sig_item< >> s.fields
+  ) <:sig_item< $output_sizeof_sig _loc s$ >> s.fields
   in expr
 
 let output_enum _loc name fields width =
