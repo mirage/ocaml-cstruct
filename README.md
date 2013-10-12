@@ -96,7 +96,13 @@ val set_ethernet_src : string -> int -> Cstruct.t -> unit
 val blit_ethernet_src : Cstruct.t -> int -> Cstruct.t -> unit
 val get_ethernet_ethertype : Cstruct.t -> Cstruct.uint16
 val set_ethernet_ethertype : Cstruct.t -> Cstruct.uint16 -> unit
+val hexdump_ethernet_to_buffer : Buffer.t -> Cstruct.t -> unit
+val hexdump_ethernet : Cstruct.t -> unit
 ```
+
+The `hexdump` functions above are convenient pretty-printing functions
+to help you debug, and aren't intended to be high performance.
+
 You can also declare C-like enums:
 
 ```
