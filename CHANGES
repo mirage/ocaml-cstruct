@@ -1,6 +1,6 @@
 0.7.2 (trunk):
 * Improved ocamldoc for BE/LE modules.
-* Add Travis-CI test scripts.
+* Add Travis-CI test scripts and fix `test.sh` script compilation.
 * Check and raise error in case of negative offsets for blits (#4).
 
 0.7.1 (06-Mar-2013):
