@@ -224,11 +224,11 @@ let output_enum _loc name fields width =
       (fun i -> <:expr< $int:Int64.to_string i$ >>),
       (fun i -> <:patt< $int:Int64.to_string i$ >>)
     |Some UInt32 ->
-      (fun i -> <:expr< $int32:Int64.to_string i$ >>),
-      (fun i -> <:patt< $int32:Int64.to_string i$ >>)
+      (fun i -> <:expr< $int32:Printf.sprintf "0x%Lx" i$ >>),
+      (fun i -> <:patt< $int32:Printf.sprintf "0x%Lx" i$ >>)
     |Some UInt64 ->
-      (fun i -> <:expr< $int64:Int64.to_string i$ >>),
-      (fun i -> <:patt< $int64:Int64.to_string i$ >>)
+      (fun i -> <:expr< $int64:Printf.sprintf "0x%Lx" i$ >>),
+      (fun i -> <:patt< $int64:Printf.sprintf "0x%Lx" i$ >>)
     |Some (Buffer _) -> loc_err _loc "enum: array types not allowed"
   in
   let decls = tyOr_of_list (List.map (fun (f,_) ->
@@ -296,7 +296,10 @@ EXTEND Gram
 
   constr_enum: [
     [ f = UIDENT -> (f, None)
-    | f = UIDENT; "="; i = INT64 -> (f, Some (Int64.of_string i)) ]
+    | f = UIDENT; "="; i = INT64     -> (f, Some (Int64.of_string i)) 
+    | f = UIDENT; "="; i = INT32     -> (f, Some (Int64.of_string i))
+    | f = UIDENT; "="; i = NATIVEINT -> (f, Some (Int64.of_string i))
+    | f = UIDENT; "="; i = INT       -> (f, Some (Int64.of_string i)) ]
   ];
 
   sig_item: [
