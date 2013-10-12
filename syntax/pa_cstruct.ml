@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -198,11 +198,10 @@ let output_struct _loc s =
   let expr = List.fold_left (fun a f ->
     <:str_item<
       $a$ ;
-      $output_sizeof _loc s$ ;
       $output_get _loc s f$ ;
       $output_set _loc s f$
     >>
-  ) <:str_item< >> s.fields
+  ) <:str_item< $output_sizeof _loc s$ >> s.fields
   in expr
 
 let output_struct_sig _loc s =
@@ -210,25 +209,24 @@ let output_struct_sig _loc s =
   let expr = List.fold_left (fun a f ->
     <:sig_item<
       $a$ ;
-      $output_sizeof_sig _loc s$ ;
       $output_get_sig _loc s f$ ;
       $output_set_sig _loc s f$ ;
     >>
-  ) <:sig_item< >> s.fields
+  ) <:sig_item< $output_sizeof_sig _loc s$ >> s.fields
   in expr
 
 let output_enum _loc name fields width =
   let intfn,pattfn = match ty_of_string width with
     |None -> loc_err _loc ("enum: unknown width specifier " ^ width)
-    |Some UInt8|Some UInt16 ->
-      (fun i -> <:expr< $int:string_of_int i$ >>),
-      (fun i -> <:patt< $int:string_of_int i$ >>)
+    |Some UInt8 |Some UInt16 ->
+      (fun i -> <:expr< $int:Int64.to_string i$ >>),
+      (fun i -> <:patt< $int:Int64.to_string i$ >>)
     |Some UInt32 ->
-      (fun i -> <:expr< $int32:string_of_int i$ >>),
-      (fun i -> <:patt< $int32:string_of_int i$ >>)
+      (fun i -> <:expr< $int32:Printf.sprintf "0x%Lx" i$ >>),
+      (fun i -> <:patt< $int32:Printf.sprintf "0x%Lx" i$ >>)
     |Some UInt64 ->
-      (fun i -> <:expr< $int64:string_of_int i$ >>),
-      (fun i -> <:patt< $int64:string_of_int i$ >>)
+      (fun i -> <:expr< $int64:Printf.sprintf "0x%Lx" i$ >>),
+      (fun i -> <:patt< $int64:Printf.sprintf "0x%Lx" i$ >>)
     |Some (Buffer _) -> loc_err _loc "enum: array types not allowed"
   in
   let decls = tyOr_of_list (List.map (fun (f,_) ->
@@ -296,7 +294,10 @@ EXTEND Gram
 
   constr_enum: [
     [ f = UIDENT -> (f, None)
-    | f = UIDENT; "="; i = INT -> (f, Some (int_of_string i)) ]
+    | f = UIDENT; "="; i = INT64     -> (f, Some (Int64.of_string i)) 
+    | f = UIDENT; "="; i = INT32     -> (f, Some (Int64.of_string i))
+    | f = UIDENT; "="; i = NATIVEINT -> (f, Some (Int64.of_string i))
+    | f = UIDENT; "="; i = INT       -> (f, Some (Int64.of_string i)) ]
   ];
 
   sig_item: [
@@ -306,11 +307,12 @@ EXTEND Gram
     ] |
     [ "cenum"; name = LIDENT; "{"; fields = LIST0 [ constr_enum ] SEP ";"; "}";
       "as"; width = LIDENT ->
-        let n = ref (-1) in
+        let n = ref Int64.minus_one in
+        let incr_n () = n := Int64.succ !n in
         let fields =
           List.map (function
-            | (f, None)   -> incr n; (f, !n)
-            | (f, Some i) -> (f, i)
+            | (f, None)   -> incr_n (); (f, !n)
+            | (f, Some i) -> n := i; (f, i)
           ) fields in
         output_enum_sig _loc name fields width
     ]
@@ -323,11 +325,12 @@ EXTEND Gram
     ] |
     [ "cenum"; name = LIDENT; "{"; fields = LIST0 [ constr_enum ] SEP ";"; "}";
       "as"; width = LIDENT ->
-        let n = ref (-1) in
+        let n = ref Int64.minus_one in
+        let incr_n () = n := Int64.succ !n in
         let fields =
           List.map (function
-            | (f, None)   -> incr n; (f, !n)
-            | (f, Some i) -> (f, i)
+            | (f, None)   -> incr_n (); (f, !n)
+            | (f, Some i) -> n := i; (f, i)
           ) fields in
         output_enum _loc name fields width
     ]

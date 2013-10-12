@@ -26,6 +26,13 @@ cenum foo32 {
   THREE32
 } as uint32_t
 
+cenum bar16 {
+  ONE = 1;
+  TWO;
+  FOUR = 4;
+  FIVE
+} as uint16_t
+
 cenum foo16 {
   ONE16;
   TWO16;
