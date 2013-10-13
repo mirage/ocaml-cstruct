@@ -1,4 +1,4 @@
-0.7.2 (trunk):
+0.8.0 (13-Oct-2013):
 * Improved ocamldoc for BE/LE modules.
 * Add Travis-CI test scripts and fix `test.sh` script compilation.
 * Support int32/int64 constant values in cenum like `VAL = 0xffffffffl`, useful for 32-bit hosts.
