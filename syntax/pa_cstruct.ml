@@ -193,6 +193,36 @@ let output_sizeof_sig _loc s =
     value $lid:"sizeof_"^s.name$ : int
   >>
 
+let output_hexdump _loc s =
+  let hexdump =
+    List.fold_left (fun a f ->
+      <:expr<
+        $a$; Buffer.add_string _buf $str:"  "^f.field^" = "$;
+        $match f.ty with
+         |UInt8 |UInt16 -> <:expr< Printf.bprintf _buf "0x%x\n" ($lid:getter_name s f$ v) >>
+         |UInt32 -> <:expr< Printf.bprintf _buf "0x%lx\n" ($lid:getter_name s f$ v) >>
+         |UInt64 -> <:expr< Printf.bprintf _buf "0x%Lx\n" ($lid:getter_name s f$ v) >>
+         |Buffer len -> <:expr< Printf.bprintf _buf "<buffer length %d>" $int:string_of_int len$; Cstruct.hexdump_to_buffer _buf ($lid:getter_name s f$ v) >>
+        $ >>
+    ) <:expr< >> s.fields
+  in
+  <:str_item<
+    value $lid:"hexdump_"^s.name^"_to_buffer"$ _buf v = do { $hexdump$ };
+    value $lid:"hexdump_"^s.name$ v =
+      let _buf = Buffer.create 128 in
+      do {
+        Buffer.add_string _buf $str:s.name ^ " = {\n"$;
+        $lid:"hexdump_"^s.name^"_to_buffer"$ _buf v;
+        print_endline (Buffer.contents _buf);
+        print_endline "}"
+      } >>
+
+let output_hexdump_sig _loc s =
+  <:sig_item<
+    value $lid:"hexdump_"^s.name^"_to_buffer"$ : Buffer.t -> Cstruct.t -> unit;
+    value $lid:"hexdump_"^s.name$ : Cstruct.t -> unit;
+  >>
+
 let output_struct _loc s =
   (* Generate functions of the form {get/set}_<struct>_<field> *)
   let expr = List.fold_left (fun a f ->
@@ -202,7 +232,7 @@ let output_struct _loc s =
       $output_set _loc s f$
     >>
   ) <:str_item< $output_sizeof _loc s$ >> s.fields
-  in expr
+  in <:str_item< $expr$; $output_hexdump _loc s$ >>
 
 let output_struct_sig _loc s =
   (* Generate signaturs of the form {get/set}_<struct>_<field> *)
@@ -213,7 +243,7 @@ let output_struct_sig _loc s =
       $output_set_sig _loc s f$ ;
     >>
   ) <:sig_item< $output_sizeof_sig _loc s$ >> s.fields
-  in expr
+  in <:sig_item< $expr$; $output_hexdump_sig _loc s$ >>
 
 let output_enum _loc name fields width =
   let intfn,pattfn = match ty_of_string width with

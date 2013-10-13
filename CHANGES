@@ -1,9 +1,12 @@
 0.7.2 (trunk):
 * Improved ocamldoc for BE/LE modules.
 * Add Travis-CI test scripts and fix `test.sh` script compilation.
+* Support int32/int64 constant values in cenum like `VAL = 0xffffffffl`, useful for 32-bit hosts.
 * Check and raise error in case of negative offsets for blits (#4).
 * Correctly preserve the sequence after a constant constructor is set during a `cenum` definition.
 * Do not repeat the `sizeof_<field>` binding for every get/set field (should be no externally observable change).
+* Add `Cstruct.hexdump_to_buffer` to make spooling hexdump output easier.
+* Generate `hexdump_foo` and `hexdump_foo_to_buffer` prettyprinting functions for a `cstruct foo`.
 
 0.7.1 (06-Mar-2013):
 * Add `Async_cstruct.Pipe` to map pipes of `Cstruct` buffers to strings or `Bigsubstring`.

@@ -82,6 +82,8 @@ val get_pcap_packet_incl_len : Cstruct.t -> Cstruct.uint32
 val set_pcap_packet_incl_len : Cstruct.t -> Cstruct.uint32 -> unit
 val get_pcap_packet_orig_len : Cstruct.t -> Cstruct.uint32
 val set_pcap_packet_orig_len : Cstruct.t -> Cstruct.uint32 -> unit
+val hexdump_pcap_packet_to_buffer : Buffer.t -> pcap_packet -> unit
+val hexdump_pcap_packet : Cstruct.t -> unit
 
 val sizeof_ethernet : int
 val get_ethernet_dst : Cstruct.t -> Cstruct.t
@@ -94,7 +96,13 @@ val set_ethernet_src : string -> int -> Cstruct.t -> unit
 val blit_ethernet_src : Cstruct.t -> int -> Cstruct.t -> unit
 val get_ethernet_ethertype : Cstruct.t -> Cstruct.uint16
 val set_ethernet_ethertype : Cstruct.t -> Cstruct.uint16 -> unit
+val hexdump_ethernet_to_buffer : Buffer.t -> Cstruct.t -> unit
+val hexdump_ethernet : Cstruct.t -> unit
 ```
+
+The `hexdump` functions above are convenient pretty-printing functions
+to help you debug, and aren't intended to be high performance.
+
 You can also declare C-like enums:
 
 ```

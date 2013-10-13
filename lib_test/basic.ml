@@ -85,5 +85,6 @@ let _ =
   assert(Cstruct.BE.get_uint32 be2 0 = 0xbeef_l);
   assert(Cstruct.BE.get_uint32 be 3 = 0xbeef_l);
   assert(get_foo_b be = 44);
-  assert(get_foo_a be = 7)
+  assert(get_foo_a be = 7);
+  hexdump_foo be
 

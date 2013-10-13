@@ -133,6 +133,7 @@ val split: ?start:int -> t -> int -> t * t
 val to_string: t -> string
 
 val hexdump: t -> unit
+val hexdump_to_buffer: Buffer.t -> t -> unit
 val debug: t -> string
 
 module BE : sig
