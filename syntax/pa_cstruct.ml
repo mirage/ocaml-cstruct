@@ -316,10 +316,14 @@ EXTEND Gram
     ]
   ];
 
+  constr_field_decl: [
+    [ field = constr_field -> [field]
+    | field = constr_field; ";"; rest = constr_field_decl -> field::rest
+    | field = constr_field; ";" -> [field] ]
+  ];
+
   constr_fields: [
-    [ "{"; fields = LIST0 constr_field SEP ";"; "}" ->
-	fields
-    ]
+    [ "{"; fields = constr_field_decl; "}" -> fields ]
   ];
 
   constr_enum: [
@@ -330,12 +334,22 @@ EXTEND Gram
     | f = UIDENT; "="; i = INT       -> (f, Some (Int64.of_string i)) ]
   ];
 
+  constr_enum_decl: [
+    [ enum = constr_enum -> [enum]
+    | enum = constr_enum; ";"; rest = constr_enum_decl -> enum::rest
+    | enum = constr_enum; ";" -> [enum] ]
+  ];
+
+  constr_enums: [
+    [ "{"; enums = constr_enum_decl; "}" -> enums ]
+  ];
+
   sig_item: [
     [ "cstruct"; name = LIDENT; fields = constr_fields;
       "as"; endian = LIDENT ->
         output_struct_sig _loc (create_struct _loc endian name fields)
     ] |
-    [ "cenum"; name = LIDENT; "{"; fields = LIST0 [ constr_enum ] SEP ";"; "}";
+    [ "cenum"; name = LIDENT; fields = constr_enums;
       "as"; width = LIDENT ->
         let n = ref Int64.minus_one in
         let incr_n () = n := Int64.succ !n in
@@ -353,7 +367,7 @@ EXTEND Gram
       "as"; endian = LIDENT ->
 	output_struct _loc (create_struct _loc endian name fields)
     ] |
-    [ "cenum"; name = LIDENT; "{"; fields = LIST0 [ constr_enum ] SEP ";"; "}";
+    [ "cenum"; name = LIDENT; fields = constr_enums;
       "as"; width = LIDENT ->
         let n = ref Int64.minus_one in
         let incr_n () = n := Int64.succ !n in
