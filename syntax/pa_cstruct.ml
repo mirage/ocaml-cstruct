@@ -22,12 +22,15 @@ open Ast
 
 type mode = Big_endian | Little_endian | Host_endian
 
+type prim =
+  | UInt8
+  | UInt16
+  | UInt32
+  | UInt64
+
 type ty =
-  |UInt8
-  |UInt16
-  |UInt32
-  |UInt64
-  |Buffer of int
+  | Prim of prim
+  | Buffer of prim * int
 
 type field = {
   field: string;
@@ -51,22 +54,24 @@ let ty_of_string =
   |_ -> None
 
 let width_of_field f =
-  match f.ty with
-  |UInt8 -> 1
-  |UInt16 -> 2
-  |UInt32 -> 4
-  |UInt64 -> 8
-  |Buffer len -> len
+  let rec width = function
+    |Prim UInt8 -> 1
+    |Prim UInt16 -> 2
+    |Prim UInt32 -> 4
+    |Prim UInt64 -> 8
+    |Buffer (prim, len) -> (width (Prim prim)) * len
+  in
+  width f.ty
 
 let field_to_string f =
-  sprintf "%s %s"
-    (match f.ty with
-     |UInt8 -> "uint8_t"
-     |UInt16 -> "uint16_t"
-     |UInt32 -> "uint32_t"
-     |UInt64 -> "uint64_t"
-     |Buffer len -> sprintf "uint8_t[%d]" len
-    ) f.field
+  let rec string = function
+    |Prim UInt8 -> "uint8_t"
+    |Prim UInt16 -> "uint16_t"
+    |Prim UInt32 -> "uint32_t"
+    |Prim UInt64 -> "uint64_t"
+    |Buffer (prim, len) -> sprintf "%s[%d]" (string (Prim prim)) len
+  in
+  sprintf "%s %s" (string f.ty) f.field
 
 let to_string t =
   sprintf "cstruct[%d] %s { %s }" t.len t.name
@@ -79,9 +84,8 @@ let parse_field _loc field field_type sz =
   |None -> loc_err _loc (sprintf "Unknown type %s" field_type)
   |Some ty -> begin
     let ty = match ty,sz with
-      |_,None -> ty
-      |UInt8,Some sz -> Buffer (int_of_string sz)
-      |_,Some sz -> loc_err _loc "only uint8_t buffers supported"
+      |_,None -> Prim ty
+      |prim,Some sz -> Buffer (prim, int_of_string sz)
     in
     let off = -1 in
     { field; ty; off }
@@ -118,69 +122,67 @@ let output_get _loc s f =
   let m = mode_mod _loc s.endian in
   let num x = <:expr< $int:string_of_int x$ >> in
   match f.ty with
-  |Buffer len ->
+  |Buffer (_, _) ->
+    let len = width_of_field f in
     <:str_item<
       value $lid:op_name "get" s f$ src = Cstruct.sub src $num f.off$ $num len$ ;
       value $lid:op_name "copy" s f$ src = Cstruct.copy src $num f.off$ $num len$
     >>
-  |ty ->
+  |Prim prim ->
     <:str_item<
       value $lid:getter_name s f$ v =
-      $match f.ty with
+      $match prim with
        |UInt8 -> <:expr< Cstruct.get_uint8 v $num f.off$ >>
        |UInt16 -> <:expr< $m$.get_uint16 v $num f.off$ >>
        |UInt32 -> <:expr< $m$.get_uint32 v $num f.off$ >>
        |UInt64 -> <:expr< $m$.get_uint64 v $num f.off$ >>
-       |Buffer len -> assert false
       $
     >>
 
-let type_of_int_field _loc f =
-  match f.ty with
+let type_of_int_field _loc = function
   |UInt8 -> <:ctyp<Cstruct.uint8>>
   |UInt16 -> <:ctyp<Cstruct.uint16>>
   |UInt32 -> <:ctyp<Cstruct.uint32>>
   |UInt64 -> <:ctyp<Cstruct.uint64>>
-  |Buffer _ -> assert false
 
 let output_get_sig _loc s f =
   match f.ty with
-  |Buffer len ->
+  |Buffer (_,_) ->
     <:sig_item<
       value $lid:op_name "get" s f$ : Cstruct.t -> Cstruct.t ;
       value $lid:op_name "copy" s f$ : Cstruct.t -> string >>
-  |ty ->
-    let retf = type_of_int_field _loc f in
+  |Prim prim ->
+    let retf = type_of_int_field _loc prim in
     <:sig_item< value $lid:getter_name s f$ : Cstruct.t -> $retf$ ; >>
 
 let output_set _loc s f =
   let m = mode_mod _loc s.endian in
   let num x = <:expr< $int:string_of_int x$ >> in
   match f.ty with
-  |Buffer len ->
+  |Buffer (_,_) ->
+    let len = width_of_field f in
     <:str_item<
       value $lid:setter_name s f$ src srcoff dst = Cstruct.blit_from_string src srcoff dst $num f.off$ $num len$ ;
       value $lid:op_name "blit" s f$ src srcoff dst = Cstruct.blit src srcoff dst $num f.off$ $num len$
     >>
-  |ty ->
+  |Prim prim ->
     <:str_item<
-      value $lid:setter_name s f$ v x = $match f.ty with
+      value $lid:setter_name s f$ v x = $match prim with
        |UInt8 -> <:expr< Cstruct.set_uint8 v $num f.off$ x >>
        |UInt16 -> <:expr< $m$.set_uint16 v $num f.off$ x >>
        |UInt32 -> <:expr< $m$.set_uint32 v $num f.off$ x >>
        |UInt64 -> <:expr< $m$.set_uint64 v $num f.off$ x >>
-       |Buffer len -> assert false
       $
     >>
 
 let output_set_sig _loc s f =
   match f.ty with
-  |Buffer len ->
+  |Buffer (_,_) ->
     <:sig_item<
       value $lid:setter_name s f$ : string -> int -> Cstruct.t -> unit ;
       value $lid:op_name "blit" s f$ : Cstruct.t -> int -> Cstruct.t -> unit >>
-  |ty ->
-    let retf = type_of_int_field _loc f in
+  |Prim prim ->
+    let retf = type_of_int_field _loc prim in
     <:sig_item< value $lid:setter_name s f$ : Cstruct.t -> $retf$ -> unit >>
 
 let output_sizeof _loc s =
@@ -199,10 +201,16 @@ let output_hexdump _loc s =
       <:expr<
         $a$; Buffer.add_string _buf $str:"  "^f.field^" = "$;
         $match f.ty with
-         |UInt8 |UInt16 -> <:expr< Printf.bprintf _buf "0x%x\n" ($lid:getter_name s f$ v) >>
-         |UInt32 -> <:expr< Printf.bprintf _buf "0x%lx\n" ($lid:getter_name s f$ v) >>
-         |UInt64 -> <:expr< Printf.bprintf _buf "0x%Lx\n" ($lid:getter_name s f$ v) >>
-         |Buffer len -> <:expr< Printf.bprintf _buf "<buffer length %d>" $int:string_of_int len$; Cstruct.hexdump_to_buffer _buf ($lid:getter_name s f$ v) >>
+         |Prim (UInt8|UInt16) ->
+           <:expr< Printf.bprintf _buf "0x%x\n" ($lid:getter_name s f$ v) >>
+         |Prim UInt32 ->
+           <:expr< Printf.bprintf _buf "0x%lx\n" ($lid:getter_name s f$ v) >>
+         |Prim UInt64 ->
+           <:expr< Printf.bprintf _buf "0x%Lx\n" ($lid:getter_name s f$ v) >>
+         |Buffer (_,_) ->
+           <:expr< Printf.bprintf _buf "<buffer %s>"
+                     $str: field_to_string f$;
+                     Cstruct.hexdump_to_buffer _buf ($lid:getter_name s f$ v) >>
         $ >>
     ) <:expr< >> s.fields
   in
@@ -248,7 +256,7 @@ let output_struct_sig _loc s =
 let output_enum _loc name fields width =
   let intfn,pattfn = match ty_of_string width with
     |None -> loc_err _loc ("enum: unknown width specifier " ^ width)
-    |Some UInt8 |Some UInt16 ->
+    |Some (UInt8 | UInt16) ->
       (fun i -> <:expr< $int:Int64.to_string i$ >>),
       (fun i -> <:patt< $int:Int64.to_string i$ >>)
     |Some UInt32 ->
@@ -257,7 +265,6 @@ let output_enum _loc name fields width =
     |Some UInt64 ->
       (fun i -> <:expr< $int64:Printf.sprintf "0x%Lx" i$ >>),
       (fun i -> <:patt< $int64:Printf.sprintf "0x%Lx" i$ >>)
-    |Some (Buffer _) -> loc_err _loc "enum: array types not allowed"
   in
   let decls = tyOr_of_list (List.map (fun (f,_) ->
     <:ctyp< $uid:f$ >>) fields) in
@@ -286,10 +293,9 @@ let output_enum _loc name fields width =
 let output_enum_sig _loc name fields width =
   let oty = match ty_of_string width with
     |None -> loc_err _loc ("enum: unknown width specifier " ^ width)
-    |Some UInt8|Some UInt16 -> <:ctyp<int>>
+    |Some (UInt8|UInt16) -> <:ctyp<int>>
     |Some UInt32 -> <:ctyp<int32>>
     |Some UInt64 -> <:ctyp<int64>>
-    |Some (Buffer _) -> loc_err _loc "enum: array types not allowed"
   in
   let decls = tyOr_of_list (List.map (fun (f,_) ->
     <:ctyp< $uid:f$ >>) fields) in
@@ -316,10 +322,14 @@ EXTEND Gram
     ]
   ];
 
+  constr_field_decl: [
+    [ field = constr_field -> [field]
+    | field = constr_field; ";"; rest = constr_field_decl -> field::rest
+    | field = constr_field; ";" -> [field] ]
+  ];
+
   constr_fields: [
-    [ "{"; fields = LIST0 constr_field SEP ";"; "}" ->
-	fields
-    ]
+    [ "{"; fields = constr_field_decl; "}" -> fields ]
   ];
 
   constr_enum: [
@@ -330,12 +340,22 @@ EXTEND Gram
     | f = UIDENT; "="; i = INT       -> (f, Some (Int64.of_string i)) ]
   ];
 
+  constr_enum_decl: [
+    [ enum = constr_enum -> [enum]
+    | enum = constr_enum; ";"; rest = constr_enum_decl -> enum::rest
+    | enum = constr_enum; ";" -> [enum] ]
+  ];
+
+  constr_enums: [
+    [ "{"; enums = constr_enum_decl; "}" -> enums ]
+  ];
+
   sig_item: [
     [ "cstruct"; name = LIDENT; fields = constr_fields;
       "as"; endian = LIDENT ->
         output_struct_sig _loc (create_struct _loc endian name fields)
     ] |
-    [ "cenum"; name = LIDENT; "{"; fields = LIST0 [ constr_enum ] SEP ";"; "}";
+    [ "cenum"; name = LIDENT; fields = constr_enums;
       "as"; width = LIDENT ->
         let n = ref Int64.minus_one in
         let incr_n () = n := Int64.succ !n in
@@ -353,7 +373,7 @@ EXTEND Gram
       "as"; endian = LIDENT ->
 	output_struct _loc (create_struct _loc endian name fields)
     ] |
-    [ "cenum"; name = LIDENT; "{"; fields = LIST0 [ constr_enum ] SEP ";"; "}";
+    [ "cenum"; name = LIDENT; fields = constr_enums;
       "as"; width = LIDENT ->
         let n = ref Int64.minus_one in
         let incr_n () = n := Int64.succ !n in
