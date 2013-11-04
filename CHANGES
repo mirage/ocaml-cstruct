@@ -1,4 +1,8 @@
-0.8.0 (13-Oct-2013):
+0.8.1 (trunk):
+* Trailing semicolons are allowed in cstruct field definitions
+* Buffer elements can be any primitive integer, not just uint8
+
+0.8.0 (2013-10-13):
 * Improved ocamldoc for BE/LE modules.
 * Add Travis-CI test scripts and fix `test.sh` script compilation.
 * Support int32/int64 constant values in cenum like `VAL = 0xffffffffl`, useful for 32-bit hosts.
@@ -8,26 +12,24 @@
 * Add `Cstruct.hexdump_to_buffer` to make spooling hexdump output easier.
 * Generate `hexdump_foo` and `hexdump_foo_to_buffer` prettyprinting functions for a `cstruct foo`.
 
-0.7.1 (06-Mar-2013):
+0.7.1 (2013-03-06):
 * Add `Async_cstruct.Pipe` to map pipes of `Cstruct` buffers to strings or `Bigsubstring`.
 
-0.7.0 (25-Feb-2013):
-
+0.7.0 (2013-02-25):
 * Add zero-copy conversion functions to/from the Core `Bigsubstring`.
 * Add an `of_string` function to simplify the construction from OCaml values.
 * Add Async interface to interoperate with Jane Street Core code.
 
-0.6.2 (08-Feb-2013):
-
+0.6.2 (2013-02-08):
 * Add experimental `cstruct.obuild` for the `obuild` build tool.
 * Use bounds checked version of all functions in the external interface.
 * Expose the `Cstruct.debug` to dump internal state of a buffer to a string.
 * Add `set_len` and `add_len` to manipulate the total-length field directly.
 
-0.6.1 (20-Dec-2012):
+0.6.1 (2012-12-20):
 * Add `sendto`, `read` and `recvfrom` functions to the Lwt subpackage.
 
-0.6.0 (20-Dec-2012):
+0.6.0 (2012-12-20):
 * Add fast bigarray<->string functions to replace byte-by-byte copies.
 * Add an Lwt sub-package to expose a write call.
 * Depend on ocplib-endian for fast low-level parsing of integers.
@@ -36,25 +38,25 @@
   on the minor heap rather than forcing a major heap allocation. It
   does alter the external API, so previous users of cstruct wont work.
 
-0.5.3 (16-Dec-2012):
+0.5.3 (2012-12-16):
 * No functional changes, just OASIS packaging fix to right version.
 
-0.5.2 (11-Dec-2012):
+0.5.2 (2012-12-11):
 * Remove the separate `xen` and `unix` subdirectories, as the
   portable `Bigarray` is now provided by the `xenbigarray` package.
 
-0.5.1 (28-Sep-2012):
+0.5.1 (2012-09-28):
 * Add `string_to_<cenum>` function to match the `<cenum>_to_string`,
   primarily to help with command-line parsing of enum arguments.
 
-0.5.0 (20-Sep-2012):
+0.5.0 (2012-09-20):
 * Add a signature generator for cstruct and cenum to permit their use in `.mli` files.
 * Use the more reliable revised syntax camlp4 quotation expander, to avoid 
   broken AST output from antiquotations.
 * Switch the `xen/` version over to using OASIS also.
 
-0.4.0 (02-Sep-2012):
+0.4.0 (2012-09-02):
 * Fix META file for use with Xen
 
-0.3 (25-Aug-2012):
+0.3 (2012-08-25):
 * Initial public release
