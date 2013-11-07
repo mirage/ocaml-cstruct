@@ -1,6 +1,6 @@
-0.8.1 (trunk):
-* Trailing semicolons are allowed in cstruct field definitions
-* Buffer elements can be any primitive integer, not just uint8
+0.8.1 (2013-11-06):
+* Trailing semicolons are allowed in cstruct field definitions.
+* Buffer elements can be any primitive integer, not just `uint8`.
 
 0.8.0 (2013-10-13):
 * Improved ocamldoc for BE/LE modules.
