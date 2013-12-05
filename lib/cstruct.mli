@@ -141,10 +141,19 @@ val blit_to_string: t -> int -> string -> int -> int -> unit
     a valid substring of [dst]. *)
 
 val len: t -> int
+(** Returns the length of the current cstruct view.  Note that this
+    length is potentially smaller than the actual size of the underlying
+    buffer, as the {sub} or {set_len} functions can construct a smaller view. *)
 
 val set_len : t -> int -> t
+(** Set the length of the buffer to a new absolute value, and return
+    a fresh cstruct with these settings.  A length that exceeds the size
+    of the underlying buffer will raise an [Invalid_argument] exception. *)
 
 val add_len : t -> int -> t
+(** [add_len t l] will add [l] bytes to the length of the buffer, and return
+    a fresh cstruct with these settings.  A length that exceeds the size
+    of the underlying buffer will raise an [Invalid_argument] exception. *)
 
 val split: ?start:int -> t -> int -> t * t
 (** [split ~start cstr len] is a tuple containing the cstruct
@@ -153,6 +162,8 @@ val split: ?start:int -> t -> int -> t * t
     element. *)
 
 val to_string: t -> string
+(** [to_string t] will allocate a fresh OCaml [string] and copy the
+    contents of the cstruct into it, and return that string copy. *)
 
 val hexdump: t -> unit
 val hexdump_to_buffer: Buffer.t -> t -> unit
