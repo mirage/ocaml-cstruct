@@ -62,8 +62,8 @@ val create : int -> t
 (** [create len] is a cstruct of size [len] with an offset of 0. *)
 
 val of_string: ?allocator:(int -> t) -> string -> t
-(** [of_string ~alloc str] is the cstruct representation of [str],
-    with the underlying buffer allocated by [alloc]. If [alloc] is not
+(** [of_string ~allocator str] is the cstruct representation of [str],
+    with the underlying buffer allocated by [alloc]. If [allocator] is not
     provided, [create] is used. *)
 
 (** {2 Getters and Setters } *)
@@ -143,7 +143,7 @@ val blit_to_string: t -> int -> string -> int -> int -> unit
 val len: t -> int
 (** Returns the length of the current cstruct view.  Note that this
     length is potentially smaller than the actual size of the underlying
-    buffer, as the {sub} or {set_len} functions can construct a smaller view. *)
+    buffer, as the [sub] or [set_len] functions can construct a smaller view. *)
 
 val set_len : t -> int -> t
 (** Set the length of the buffer to a new absolute value, and return
@@ -165,9 +165,21 @@ val to_string: t -> string
 (** [to_string t] will allocate a fresh OCaml [string] and copy the
     contents of the cstruct into it, and return that string copy. *)
 
+(** {2 Debugging } *)
+
 val hexdump: t -> unit
+(** When the going gets tough, the tough hexdump their cstructs
+    and peer at it until the bug disappears.  This will directly
+    prettyprint the contents of the cstruct to the standard output. *)
+
 val hexdump_to_buffer: Buffer.t -> t -> unit
+(** [hexdump_to_buffer buf c] will append the pretty-printed hexdump
+    of the cstruct [c] to the buffer [buf]. *)
+ 
 val debug: t -> string
+(** [debug t] will print out the internal details of a cstruct such
+    as its base offset and the length, and raise an assertion failure
+    if invariants have been violated.  Not intended for casual use. *)
 
 module BE : sig
 
