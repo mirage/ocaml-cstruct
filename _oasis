@@ -24,7 +24,7 @@ Library cstruct
   Modules:    Cstruct
   BuildDepends: bigarray, ocplib-endian, ocplib-endian.bigstring
   CSources: cstruct_stubs.c
-  CCOpt:    -O3
+  CCOpt:    -O3 -Wall
 
 Library async_cstruct
   Build$:     flag(async)
