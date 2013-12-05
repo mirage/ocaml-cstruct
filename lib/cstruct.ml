@@ -68,16 +68,28 @@ let debug t =
   str
 
 let sub t off len =
-  { t with off = t.off + off; len }
+  let off = t.off + off in
+  if not (check_bounds t (off+len)) then
+    raise (Invalid_argument "Cstruct.sub");
+  { t with off; len }
 
 let shift t off =
-  { t with off = t.off + off; len = t.len - off }
+  let off = t.off + off in
+  let len = t.len - off in
+  if not (check_bounds t (off+len)) then
+    raise (Invalid_argument "Cstruct.shift");
+  { t with off; len }
 
 let set_len t len =
-  { t with len = len }
+  if not (check_bounds t (t.off+len)) then
+    raise (Invalid_argument "Cstruct.set_len");
+  { t with len }
 
 let add_len t len =
-  { t with len = t.len + len }
+  let len = t.len + len in
+  if not (check_bounds t (t.off+len)) then
+    raise (Invalid_argument "Cstruct.add_len");
+  { t with len }
 
 let invalid_arg fmt =
   let b = Buffer.create 20 in (* for thread safety. *)
