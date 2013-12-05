@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -16,6 +16,8 @@
 
 (** Manipulate external buffers as C-like structs *)
 
+(** {2 Base types } *)
+
 type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
 (** Type of a buffer. A cstruct is composed of an underlying buffer
     and position/length within this buffer. *)
@@ -27,7 +29,30 @@ type t = private {
 }
 (** Type of a cstruct. *)
 
-(** Functions that create a new cstruct. *)
+type byte = char
+(** A single byte type *)
+
+val byte : int -> byte
+(** Convert an integer to a single byte.  A value greater than
+    255 will raise an [Invalid_argument] exception *)
+
+type uint8 = int
+(** 8-bit unsigned integer.  The representation is currently an
+    unboxed OCaml integer. *)
+
+type uint16 = int
+(** 16-bit unsigned integer.  The representation is currently an
+    unboxed OCaml integer. *)
+
+type uint32 = int32
+(** 32-bit unsigned integer.  The representation is currently a
+    boxed OCaml int32. *)
+
+type uint64 = int64
+(** 64-bit unsigned integer.  The representation is currently a
+    boxed OCaml int64. *)
+
+(** {2 Creation} *)
 
 val of_bigarray: ?off:int -> ?len:int -> buffer -> t
 (** [of_bigarray ~off ~len b] is the cstruct contained in [b] starting
@@ -41,31 +66,36 @@ val of_string: ?allocator:(int -> t) -> string -> t
     with the underlying buffer allocated by [alloc]. If [alloc] is not
     provided, [create] is used. *)
 
-(** Functions that operate over cstructs. *)
+(** {2 Getters and Setters } *)
+
+val byte_to_int : byte -> int
+(** Convert a byte to an integer *)
 
 val check_bounds : t -> int -> bool
 (** [check_bounds cstr len] is [true] if [cstr.buffer]'s size is
     greater or equal than [len], [false] otherwise. *)
 
-type byte = char
-
-val byte : int -> byte
-val byte_to_int : byte -> int
-
-type bytes = string
-
-type uint8 = int
-type uint16 = int
-type uint32 = int32
-type uint64 = int64
-
 val get_char: t -> int -> char
+(** [get_char t off] returns the character contained in the cstruct
+     at offset [off].  It raises an [Invalid_argument] exception
+     if the offset exceeds the bounds of the cstruct. *)
 
 val get_uint8: t -> int -> uint8
+(** [get_uint8 t off] returns the byte contained in the cstruct
+     at offset [off].  It raises an [Invalid_argument] exception
+     if the offset exceeds the bounds of the cstruct. *)
 
 val set_char: t -> int -> char -> unit
+(** [set_char t off c] sets the byte contained in the cstruct
+     at offset [off] to character [c].
+     It raises an [Invalid_argument] exception if the offset
+     exceeds the bounds of the cstruct. *)
 
 val set_uint8: t -> int -> uint8 -> unit
+(** [set_uint8 t off c] sets the byte contained in the cstruct
+     at offset [off] to byte [c].
+     It raises an [Invalid_argument] exception if the offset
+     exceeds the bounds of the cstruct. *)
 
 val sub: t -> int -> int -> t
 (** [sub cstr off len] is [{ t with off = t.off + off; len }] *)
