@@ -1,3 +1,6 @@
+1.0.0 (trunk):
+* Remove IPv4/IPv6 types (now moved to `ocaml-ipaddr`).
+
 0.8.1 (2013-11-06):
 * Trailing semicolons are allowed in cstruct field definitions.
 * Buffer elements can be any primitive integer, not just `uint8`.

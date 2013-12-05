@@ -59,14 +59,6 @@ type uint16 = int
 type uint32 = int32
 type uint64 = int64
 
-type ipv4 = int32
-
-val ipv4_to_string: ipv4 -> string
-
-type ipv6 = int64 * int64
-
-val ipv6_to_string: ipv6 -> string
-
 val get_char: t -> int -> char
 
 val get_uint8: t -> int -> uint8
