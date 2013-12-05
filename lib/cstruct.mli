@@ -14,7 +14,117 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-(** Manipulate external buffers as C-like structs *)
+(** Manipulate external memory buffers as C-like structures.
+
+Cstruct is a library and syntax extension to make it easier to access C-like
+structures directly from OCaml.  It supports both reading and writing to these
+memory buffers, and they are accessed via the [Bigarray] module.
+
+The library interface below is intended to be used in conjunction with the
+[pa_cstruct] camlp4 syntax extension that is also supplied with this library
+(in the [cstruct.syntax] ocamlfind package).
+
+An example description for the pcap packet format is:
+
+{[
+cstruct pcap_header {
+  uint32_t magic_number;   (* magic number *)
+  uint16_t version_major;  (* major version number *)
+  uint16_t version_minor;  (* minor version number *)
+  uint32_t thiszone;       (* GMT to local correction *)
+  uint32_t sigfigs;        (* accuracy of timestamps *)
+  uint32_t snaplen;        (* max length of captured packets, in octets *)
+  uint32_t network         (* data link type *)
+} as little_endian
+
+cstruct pcap_packet {
+  uint32_t ts_sec;         (* timestamp seconds *)
+  uint32_t ts_usec;        (* timestamp microseconds *)
+  uint32_t incl_len;       (* number of octets of packet saved in file *)
+  uint32_t orig_len        (* actual length of packet *)
+} as little_endian
+
+cstruct ethernet {
+  uint8_t        dst[6];
+  uint8_t        src[6];
+  uint16_t       ethertype
+} as big_endian
+
+cstruct ipv4 {
+  uint8_t        hlen_version;
+  uint8_t        tos;
+  uint16_t       len;
+  uint16_t       id;
+  uint16_t       off;
+  uint8_t        ttl;
+  uint8_t        proto;
+  uint16_t       csum;
+  uint8_t        src[4];
+  uint8_t        dst[4]
+} as big_endian
+]}
+
+These will expand to get and set functions for every field, with types
+appropriate to the particular definition.  For instance:
+
+{[
+val get_pcap_packet_ts_sec : Cstruct.t -> Cstruct.uint32
+val set_pcap_packet_ts_sec : Cstruct.t -> Cstruct.uint32 -> unit
+val get_pcap_packet_ts_usec : Cstruct.t -> Cstruct.uint32
+val set_pcap_packet_ts_usec : Cstruct.t -> Cstruct.uint32 -> unit
+val get_pcap_packet_incl_len : Cstruct.t -> Cstruct.uint32
+val set_pcap_packet_incl_len : Cstruct.t -> Cstruct.uint32 -> unit
+val get_pcap_packet_orig_len : Cstruct.t -> Cstruct.uint32
+val set_pcap_packet_orig_len : Cstruct.t -> Cstruct.uint32 -> unit
+val hexdump_pcap_packet_to_buffer : Buffer.t -> Cstruct.t -> unit
+]}
+
+The buffers generate a different set of functions. For the  [ethernet]
+definitions, we have:
+
+{[
+val sizeof_ethernet : int
+val get_ethernet_dst : Cstruct.t -> Cstruct.t
+val copy_ethernet_dst : Cstruct.t -> string
+val set_ethernet_dst : string -> int -> Cstruct.t -> unit
+val blit_ethernet_dst : Cstruct.t -> int -> Cstruct.t -> unit
+val get_ethernet_src : Cstruct.t -> Cstruct.t
+val copy_ethernet_src : Cstruct.t -> string
+]}
+
+You can also declare C-like enums:
+
+{[
+cenum foo32 {
+  ONE32;
+  TWO32 = 0xfffffffel;
+  THREE32
+} as uint32_t
+
+cenum bar16 {
+  ONE = 1;
+  TWO;
+  FOUR = 4;
+  FIVE
+} as uint16_t
+]}
+
+This generates signatures of the form:
+
+{[
+type foo32 = | ONE32 | TWO32 | THREE32
+val int_to_foo32 : int32 -> foo32 option
+val foo32_to_int : foo32 -> int32
+val foo32_to_string : foo32 -> string
+val string_to_foo32 : string -> foo32 option
+type bar16 = | ONE | TWO | FOUR | FIVE
+val int_to_bar16 : int -> bar16 option
+val bar16_to_int : bar16 -> int
+val bar16_to_string : bar16 -> string
+val string_to_bar16 : string -> bar16 option
+]}
+
+*)
 
 (** {2 Base types } *)
 
