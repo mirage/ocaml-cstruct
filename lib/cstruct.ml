@@ -73,9 +73,9 @@ let sub t off len =
     raise (Invalid_argument "Cstruct.sub");
   { t with off; len }
 
-let shift t off =
-  let off = t.off + off in
-  let len = t.len - off in
+let shift t amount =
+  let off = t.off + amount in
+  let len = t.len - amount in
   if not (check_bounds t (off+len)) then
     raise (Invalid_argument "Cstruct.shift");
   { t with off; len }

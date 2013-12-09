@@ -1,3 +1,6 @@
+1.0.1 (2013-12-09):
+* Fix Cstruct.shift function
+
 1.0.0 (2013-12-05):
 * Remove IPv4/IPv6 types (now moved to `ocaml-ipaddr`).
 * Improved ocamldoc for the interface.
