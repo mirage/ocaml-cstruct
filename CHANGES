@@ -1,3 +1,6 @@
+trunk (unreleased)
+* Improve bounds checks on sub, shift, set_len, add_len
+
 1.0.1 (2013-12-09):
 * Fix Cstruct.shift function
 
