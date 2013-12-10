@@ -187,6 +187,14 @@ let test_blit_len_too_big2 () =
     failwith "test_blit_len_too_big2"
   with Invalid_argument _ -> ()
 
+let test_blit_len_too_small () =
+  let x = Cstruct.create 1 in
+  let y = Cstruct.create 1 in
+  try
+    Cstruct.blit x 0 y 0 (-1);
+    failwith "test_blit_len_too_small"
+  with Invalid_argument _ -> ()
+
 let _ =
   let verbose = ref false in
   Arg.parse [
@@ -216,6 +224,7 @@ let _ =
     "test blit dst offset too small" >:: test_blit_dst_offset_too_small;
     "test blit len too big" >:: test_blit_len_too_big;
     "test blit len too big2" >:: test_blit_len_too_big2;
+    "test blit len too small" >:: test_blit_len_too_small;
   ] in
   run_test_tt ~verbose:!verbose suite
 
