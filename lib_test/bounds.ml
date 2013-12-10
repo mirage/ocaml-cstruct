@@ -28,6 +28,22 @@ let test_positive_shift () =
   let y = Cstruct.shift x 1 in
   assert_equal ~printer:string_of_int 0 (Cstruct.len y)
 
+(* Check we can shift in the -ve direction *)
+let test_negative_shift () =
+  let x = Cstruct.create 10 in
+  let y = Cstruct.sub x 5 5 in
+  let z = Cstruct.shift y (-5) in
+  assert_equal ~printer:string_of_int 0 z.Cstruct.off;
+  assert_equal ~printer:string_of_int 10 z.Cstruct.len
+
+(* Check that an attempt to shift beyond the end of the buffer fails *)
+let test_bad_positive_shift () =
+  let x = Cstruct.create 10 in
+  try
+    let (_: Cstruct.t) = Cstruct.shift x 11 in
+    failwith "test_bad_positive_shift: possible to shift beyond the buffer, length is -ve"
+  with Invalid_argument _ -> ()
+
 let _ =
   let verbose = ref false in
   Arg.parse [
@@ -38,6 +54,8 @@ let _ =
   let suite = "bounds" >::: [
     "test empty cstruct" >:: test_empty_cstruct;
     "test positive shift" >:: test_positive_shift;
+    "test negative shift" >:: test_negative_shift;
+    "test bad positive shift" >:: test_bad_positive_shift;
   ] in
   run_test_tt ~verbose:!verbose suite
 
