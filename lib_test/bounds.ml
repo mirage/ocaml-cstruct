@@ -132,6 +132,13 @@ let test_add_len_too_big () =
     failwith (Printf.sprintf "test_add_len_too_big: %s" (to_string y))
   with Invalid_argument _ -> ()
 
+let test_add_len_too_small () =
+  let x = Cstruct.create 0 in
+  try
+    let y = Cstruct.add_len x (-1) in
+    failwith (Printf.sprintf "test_add_len_too_small: %s" (to_string y))
+  with Invalid_argument _ -> ()
+
 let _ =
   let verbose = ref false in
   Arg.parse [
@@ -154,6 +161,7 @@ let _ =
     "test set len too big" >:: test_set_len_too_big;
     "test set len too small" >:: test_set_len_too_small;
     "test add len too big" >:: test_add_len_too_big;
+    "test add len too small" >:: test_add_len_too_small;
   ] in
   run_test_tt ~verbose:!verbose suite
 
