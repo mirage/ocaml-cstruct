@@ -22,6 +22,12 @@ let test_empty_cstruct () =
   let y = Cstruct.to_string x in
   assert_equal "" y
 
+(* Check we can shift in the +ve direction *)
+let test_positive_shift () =
+  let x = Cstruct.create 1 in
+  let y = Cstruct.shift x 1 in
+  assert_equal ~printer:string_of_int 0 (Cstruct.len y)
+
 let _ =
   let verbose = ref false in
   Arg.parse [
@@ -31,6 +37,7 @@ let _ =
 
   let suite = "bounds" >::: [
     "test empty cstruct" >:: test_empty_cstruct;
+    "test positive shift" >:: test_positive_shift;
   ] in
   run_test_tt ~verbose:!verbose suite
 
