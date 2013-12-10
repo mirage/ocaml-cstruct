@@ -73,6 +73,14 @@ let test_sub () =
   assert_equal ~printer:string_of_int 20 z.Cstruct.off;
   assert_equal ~printer:string_of_int 60 z.Cstruct.len
 
+(* Check that 'sub' can't set 'len' too big *)
+let test_sub_len_too_big () =
+  let x = Cstruct.create 0 in
+  try
+    let y = Cstruct.sub x 0 1 in
+    failwith (Printf.sprintf "test_sub_len_too_big: %s" (to_string y))
+  with Invalid_argument _ -> ()
+
 let _ =
   let verbose = ref false in
   Arg.parse [
@@ -87,7 +95,8 @@ let _ =
     "test negative shift" >:: test_negative_shift;
     "test bad positive shift" >:: test_bad_positive_shift;
     "test bad negative shift" >:: test_bad_negative_shift;
-    "test_sub" >:: test_sub;
+    "test sub" >:: test_sub;
+    "test sub len too big" >:: test_sub_len_too_big;
   ] in
   run_test_tt ~verbose:!verbose suite
 
