@@ -81,6 +81,13 @@ let test_sub_len_too_big () =
     failwith (Printf.sprintf "test_sub_len_too_big: %s" (to_string y))
   with Invalid_argument _ -> ()
 
+let test_sub_len_too_small () =
+  let x = Cstruct.create 0 in
+  try
+    let y = Cstruct.sub x 0 (-1) in
+    failwith (Printf.sprintf "test_sub_len_too_small: %s" (to_string y))
+  with Invalid_argument _ -> ()
+
 let _ =
   let verbose = ref false in
   Arg.parse [
@@ -97,6 +104,7 @@ let _ =
     "test bad negative shift" >:: test_bad_negative_shift;
     "test sub" >:: test_sub;
     "test sub len too big" >:: test_sub_len_too_big;
+    "test sub len too small" >:: test_sub_len_too_small;
   ] in
   run_test_tt ~verbose:!verbose suite
 
