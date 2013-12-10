@@ -15,12 +15,23 @@
  *)
 open OUnit
 
+let to_string { Cstruct.buffer; off; len } =
+  Printf.sprintf "buffer length = %d; off=%d; len=%d" (Bigarray.Array1.dim buffer) off len
+
 (* Check we can create and use an empty cstruct *)
 let test_empty_cstruct () =
   let x = Cstruct.create 0 in
   assert_equal ~printer:string_of_int 0 (Cstruct.len x);
   let y = Cstruct.to_string x in
   assert_equal "" y
+
+(* Check that we can't create a cstruct with a negative length *)
+let test_anti_cstruct () =
+  try
+    let x = Cstruct.create (-1) in
+    failwith (Printf.sprintf "test_anti_cstruct: %s" (to_string x))
+  with Invalid_argument _ ->
+    ()
 
 (* Check we can shift in the +ve direction *)
 let test_positive_shift () =
@@ -35,9 +46,6 @@ let test_negative_shift () =
   let z = Cstruct.shift y (-5) in
   assert_equal ~printer:string_of_int 0 z.Cstruct.off;
   assert_equal ~printer:string_of_int 10 z.Cstruct.len
-
-let to_string { Cstruct.buffer; off; len } =
-  Printf.sprintf "buffer length = %d; off=%d; len=%d" (Bigarray.Array1.dim buffer) off len
 
 (* Check that an attempt to shift beyond the end of the buffer fails *)
 let test_bad_positive_shift () =
@@ -55,6 +63,16 @@ let test_bad_negative_shift () =
     failwith (Printf.sprintf "test_bad_negative_shift: %s" (to_string y))
   with Invalid_argument _ -> ()
 
+(* Check that 'sub' works *)
+let test_sub () =
+  let x = Cstruct.create 100 in
+  let y = Cstruct.sub x 10 80 in
+  assert_equal ~printer:string_of_int 10 y.Cstruct.off;
+  assert_equal ~printer:string_of_int 80 y.Cstruct.len;
+  let z = Cstruct.sub y 10 60 in
+  assert_equal ~printer:string_of_int 20 z.Cstruct.off;
+  assert_equal ~printer:string_of_int 60 z.Cstruct.len
+
 let _ =
   let verbose = ref false in
   Arg.parse [
@@ -64,10 +82,12 @@ let _ =
 
   let suite = "bounds" >::: [
     "test empty cstruct" >:: test_empty_cstruct;
+    "test anti cstruct" >:: test_anti_cstruct;
     "test positive shift" >:: test_positive_shift;
     "test negative shift" >:: test_negative_shift;
     "test bad positive shift" >:: test_bad_positive_shift;
     "test bad negative shift" >:: test_bad_negative_shift;
+    "test_sub" >:: test_sub;
   ] in
   run_test_tt ~verbose:!verbose suite
 

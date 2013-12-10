@@ -1,7 +1,7 @@
 true: inline(10)
 true: debug
 # OASIS_START
-# DO NOT EDIT (digest: 0cbaead08ad7addfb80687ce8e3f2fcf)
+# DO NOT EDIT (digest: 60dceed12f46a3257c5355789042d89e)
 # Ignore VCS directories, you can use the same kind of rule outside 
 # OASIS_START/STOP if you want to exclude directories that contains 
 # useless stuff for the build process
@@ -44,8 +44,8 @@ true: debug
 # Library unix_cstruct
 "unix/unix_cstruct.cmxs": use_unix_cstruct
 <unix/*.ml{,i}>: use_cstruct
-<unix/*.ml{,i}>: pkg_bigarray
 <unix/*.ml{,i}>: pkg_unix
+<unix/*.ml{,i}>: pkg_bigarray
 <unix/*.ml{,i}>: pkg_ocplib-endian
 <unix/*.ml{,i}>: pkg_ocplib-endian.bigstring
 # Library cstruct-syntax
@@ -54,6 +54,19 @@ true: debug
 <syntax/*.ml{,i}>: pkg_camlp4.quotations.r
 <syntax/*.ml{,i}>: pkg_camlp4.extend
 <syntax/*.ml{,i}>: pkg_bigarray
+# Executable test_bounds
+"lib_test/bounds.byte": use_cstruct
+"lib_test/bounds.byte": pkg_unix
+"lib_test/bounds.byte": pkg_oUnit
+"lib_test/bounds.byte": pkg_bigarray
+"lib_test/bounds.byte": pkg_ocplib-endian
+"lib_test/bounds.byte": pkg_ocplib-endian.bigstring
+<lib_test/*.ml{,i}>: use_cstruct
+<lib_test/*.ml{,i}>: pkg_unix
+<lib_test/*.ml{,i}>: pkg_oUnit
+<lib_test/*.ml{,i}>: pkg_bigarray
+<lib_test/*.ml{,i}>: pkg_ocplib-endian
+<lib_test/*.ml{,i}>: pkg_ocplib-endian.bigstring
 # OASIS_STOP
 <syntax/*.ml>: syntax_camlp4o, pkg_camlp4
 <lib_test/*.ml{i}>: syntax_camlp4o, pkg_camlp4, pkg_cstruct.syntax

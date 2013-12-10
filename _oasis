@@ -62,6 +62,16 @@ Library "cstruct-syntax"
   XMETADescription: Syntax extension for Cstruct
   XMETARequires: camlp4
 
+Executable test_bounds
+  Install:      false
+  Path:         lib_test
+  BuildDepends: cstruct,unix,oUnit
+  MainIs:       bounds.ml
+
+Test test_bounds
+  Command:      ./bounds.byte
+  Run:          true
+
 Document api
   Title: Documentation and API reference
   Type: ocamlbuild (0.3)
