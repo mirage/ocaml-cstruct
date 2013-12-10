@@ -139,6 +139,14 @@ let test_add_len_too_small () =
     failwith (Printf.sprintf "test_add_len_too_small: %s" (to_string y))
   with Invalid_argument _ -> ()
 
+let test_blit_offset_too_big () =
+  let x = Cstruct.create 1 in
+  let y = Cstruct.create 1 in
+  try
+    Cstruct.blit x 2 y 1 1;
+    failwith "test_blit_offset_too_big"
+  with Invalid_argument _ -> ()
+
 let _ =
   let verbose = ref false in
   Arg.parse [
@@ -162,6 +170,7 @@ let _ =
     "test set len too small" >:: test_set_len_too_small;
     "test add len too big" >:: test_add_len_too_big;
     "test add len too small" >:: test_add_len_too_small;
+    "test blit offset too big" >:: test_blit_offset_too_big;
   ] in
   run_test_tt ~verbose:!verbose suite
 
