@@ -88,6 +88,22 @@ let test_sub_len_too_small () =
     failwith (Printf.sprintf "test_sub_len_too_small: %s" (to_string y))
   with Invalid_argument _ -> ()
 
+let test_sub_offset_too_big () =
+  let x = Cstruct.create 10 in
+  begin
+    try
+      let y = Cstruct.sub x 11 0 in
+      failwith (Printf.sprintf "test_sub_offset_too_big: %s" (to_string y))
+    with Invalid_argument _ -> ()
+  end;
+  let y = Cstruct.sub x 1 9 in
+  begin
+    try
+      let z = Cstruct.sub y 10 0 in
+      failwith (Printf.sprintf "test_sub_offset_too_big: %s" (to_string z))
+    with Invalid_argument _ -> ()
+  end
+
 let _ =
   let verbose = ref false in
   Arg.parse [
@@ -105,6 +121,7 @@ let _ =
     "test sub" >:: test_sub;
     "test sub len too big" >:: test_sub_len_too_big;
     "test sub len too small" >:: test_sub_len_too_small;
+    "test sub offset too big" >:: test_sub_offset_too_big;
   ] in
   run_test_tt ~verbose:!verbose suite
 
