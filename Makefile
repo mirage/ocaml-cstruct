@@ -14,7 +14,7 @@ setup.ml: _oasis
 	oasis setup
 
 setup.data: setup.ml
-	ocaml setup.ml -configure $(LWT) $(UNIX) $(ASYNC)
+	ocaml setup.ml -configure $(LWT) $(UNIX) $(ASYNC) --enable-tests
 
 build: setup.data setup.ml
 	ocaml setup.ml -build -j $(J)
@@ -27,6 +27,7 @@ install: setup.data setup.ml
 
 test: setup.ml build
 	./test.sh
+	ocaml setup.ml -test
 
 reinstall: setup.ml
 	ocamlfind remove $(NAME) || true

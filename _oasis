@@ -1,6 +1,6 @@
 OASISFormat: 0.3
 Name:        cstruct
-Version:     1.0.0
+Version:     1.0.1
 Synopsis:    Manipulate external buffers as C-like structs
 Authors:     Anil Madhavapeddy, Richard Mortier, Thomas Gazagnaire, Pierre Chambart
 License:     ISC
@@ -61,6 +61,16 @@ Library "cstruct-syntax"
   XMETAType: syntax
   XMETADescription: Syntax extension for Cstruct
   XMETARequires: camlp4
+
+Executable test_bounds
+  Install:      false
+  Path:         lib_test
+  BuildDepends: cstruct,unix,oUnit
+  MainIs:       bounds.ml
+
+Test test_bounds
+  Command:      ./bounds.byte
+  Run:          true
 
 Document api
   Title: Documentation and API reference
