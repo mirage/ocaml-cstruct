@@ -36,12 +36,23 @@ let test_negative_shift () =
   assert_equal ~printer:string_of_int 0 z.Cstruct.off;
   assert_equal ~printer:string_of_int 10 z.Cstruct.len
 
+let to_string { Cstruct.buffer; off; len } =
+  Printf.sprintf "buffer length = %d; off=%d; len=%d" (Bigarray.Array1.dim buffer) off len
+
 (* Check that an attempt to shift beyond the end of the buffer fails *)
 let test_bad_positive_shift () =
   let x = Cstruct.create 10 in
   try
-    let (_: Cstruct.t) = Cstruct.shift x 11 in
-    failwith "test_bad_positive_shift: possible to shift beyond the buffer, length is -ve"
+    let y = Cstruct.shift x 11 in
+    failwith (Printf.sprintf "test_bad_positive_shift: %s" (to_string y))
+  with Invalid_argument _ -> ()
+
+(* Check that an attempt to shift before the start of the buffer fails *)
+let test_bad_negative_shift () =
+  let x = Cstruct.create 10 in
+  try
+    let y = Cstruct.shift x (-1) in
+    failwith (Printf.sprintf "test_bad_negative_shift: %s" (to_string y))
   with Invalid_argument _ -> ()
 
 let _ =
@@ -56,6 +67,7 @@ let _ =
     "test positive shift" >:: test_positive_shift;
     "test negative shift" >:: test_negative_shift;
     "test bad positive shift" >:: test_bad_positive_shift;
+    "test bad negative shift" >:: test_bad_negative_shift;
   ] in
   run_test_tt ~verbose:!verbose suite
 
