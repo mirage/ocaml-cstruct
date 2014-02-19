@@ -1,5 +1,6 @@
-trunk (unreleased)
-* Improve bounds checks on sub, shift, set_len, add_len
+1.1.0 (2014-02-19)
+* Improve bounds checks on sub, shift, set_len, add_len.
+* Add `to_bigarray` to convert back into a Bigarray slice.
 
 1.0.1 (2013-12-09):
 * Fix Cstruct.shift function

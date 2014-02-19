@@ -31,6 +31,9 @@ let of_bigarray ?(off=0) ?len buffer =
     |Some len -> min len (Bigarray.Array1.dim buffer)
   in { buffer; off; len }
 
+let to_bigarray buffer =
+  Bigarray.Array1.sub buffer.buffer buffer.off buffer.len
+
 let create len =
   let ba = Bigarray.Array1.create Bigarray.char Bigarray.c_layout len in
   of_bigarray ba
