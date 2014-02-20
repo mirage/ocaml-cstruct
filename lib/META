@@ -1,6 +1,6 @@
 # OASIS_START
-# DO NOT EDIT (digest: 762d7a6f73f805c365e1539014f0009c)
-version = "1.0.1"
+# DO NOT EDIT (digest: b4981197fe71fb2a248209688d5e96a0)
+version = "1.1.0"
 description = "Manipulate external buffers as C-like structs"
 requires = "bigarray ocplib-endian ocplib-endian.bigstring"
 archive(byte) = "cstruct.cma"
@@ -9,7 +9,7 @@ archive(native) = "cstruct.cmxa"
 archive(native, plugin) = "cstruct.cmxs"
 exists_if = "cstruct.cma"
 package "unix" (
- version = "1.0.1"
+ version = "1.1.0"
  description = "Manipulate external buffers as C-like structs"
  requires = "cstruct unix"
  archive(byte) = "unix_cstruct.cma"
@@ -20,16 +20,20 @@ package "unix" (
 )
 
 package "syntax" (
- version = "1.0.1"
+ version = "1.1.0"
  description = "Syntax extension for Cstruct"
  requires = "camlp4"
  archive(syntax, preprocessor) = "cstruct-syntax.cma"
  archive(syntax, toploop) = "cstruct-syntax.cma"
+ archive(syntax, byte) = "cstruct-syntax.cma"
+ archive(syntax, byte, plugin) = "cstruct-syntax.cma"
+ archive(syntax, native) = "cstruct-syntax.cmxa"
+ archive(syntax, native, plugin) = "cstruct-syntax.cmxs"
  exists_if = "cstruct-syntax.cma"
 )
 
 package "lwt" (
- version = "1.0.1"
+ version = "1.1.0"
  description = "Manipulate external buffers as C-like structs"
  requires = "cstruct lwt.unix"
  archive(byte) = "lwt_cstruct.cma"
@@ -40,7 +44,7 @@ package "lwt" (
 )
 
 package "async" (
- version = "1.0.1"
+ version = "1.1.0"
  description = "Manipulate external buffers as C-like structs"
  requires = "cstruct async threads"
  archive(byte) = "async_cstruct.cma"

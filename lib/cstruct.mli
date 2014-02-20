@@ -162,11 +162,16 @@ type uint64 = int64
 (** 64-bit unsigned integer.  The representation is currently a
     boxed OCaml int64. *)
 
-(** {2 Creation} *)
+(** {2 Creation and conversion} *)
 
 val of_bigarray: ?off:int -> ?len:int -> buffer -> t
 (** [of_bigarray ~off ~len b] is the cstruct contained in [b] starting
     at [off], of length [len]. *)
+
+val to_bigarray: t -> buffer 
+(** [to_bigarray t] converts a {!t} into a {!buffer} Bigarray, using
+    the Bigarray slicing to allocate a fresh array that preserves
+    sharing of the underlying buffer. *)
 
 val create : int -> t
 (** [create len] is a cstruct of size [len] with an offset of 0. *)
