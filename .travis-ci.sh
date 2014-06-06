@@ -28,3 +28,6 @@ opam install ${OPAM_DEPENDS}
 eval `opam config env`
 make
 ./test.sh
+
+opam pin cstruct .
+opam install mirage-www
