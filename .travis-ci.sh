@@ -30,4 +30,5 @@ make
 ./test.sh
 
 opam pin cstruct .
+unset OPAMVERBOSE
 opam install mirage-www
