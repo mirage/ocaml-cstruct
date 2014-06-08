@@ -135,6 +135,21 @@ val bar16_to_string : bar16 -> string
 val string_to_bar16 : string -> bar16 option
 ```
 
+You can also add a `(sexp)` decorator to output s-expression convertors
+for use with the `sexplib` library.
+
+```
+cenum foo32 {
+  ONE32;
+  TWO32 = 0xfffffffel;
+  THREE32
+} as uint32_t(sexp)
+```
+
+And `sexp_of_foo64` and `foo64_of_sexp` functions will also be available.
+The representation of the Sexp is the string representation of the enum.
+
+
 Please see the `lib_test/` directory for more in-depth examples.
 
 [![Build Status](https://travis-ci.org/avsm/ocaml-cstruct.png)](https://travis-ci.org/avsm/ocaml-cstruct)

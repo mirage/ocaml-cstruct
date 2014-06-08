@@ -1,4 +1,20 @@
-1.1.0 (2014-02-19)
+1.2.0 (2014-06-06):
+
+Add a `sexp` optional decorator to `cenum` to output the values as s-expressions.
+This is compatible with the `sexplib` convention.  The syntax is;
+
+```
+cenum foo64 {
+  ONE64;
+  TWO64;
+  THREE64
+} as uint64_t(sexp)
+```
+
+And `sexp_of_foo64` and `foo64_of_sexp` functions will also be available.
+The representation of the Sexp is the string representation of the enum.
+
+1.1.0 (2014-02-19):
 * Improve bounds checks on sub, shift, set_len, add_len.
 * Add `to_bigarray` to convert back into a Bigarray slice.
 

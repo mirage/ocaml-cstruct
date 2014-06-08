@@ -253,7 +253,7 @@ let output_struct_sig _loc s =
   ) <:sig_item< $output_sizeof_sig _loc s$ >> s.fields
   in <:sig_item< $expr$; $output_hexdump_sig _loc s$ >>
 
-let output_enum _loc name fields width =
+let output_enum _loc name fields width ~sexp =
   let intfn,pattfn = match ty_of_string width with
     |None -> loc_err _loc ("enum: unknown width specifier " ^ width)
     |Some (UInt8 | UInt16) ->
@@ -282,15 +282,32 @@ let output_enum _loc name fields width =
   let setter x = sprintf "%s_to_int" x in
   let printer x = sprintf "%s_to_string" x in
   let parse x = sprintf "string_to_%s" x in
+  let of_sexp x = sprintf "%s_of_sexp" x in
+  let to_sexp x = sprintf "sexp_of_%s" x in
+  let output_sexp_struct =
+   <:str_item<
+     value $lid:to_sexp name$ x = Sexplib.Sexp.Atom ($lid:printer name$ x) ;
+     value $lid:of_sexp name$ x =
+       match x with [
+          Sexplib.Sexp.List _ ->
+           raise (Sexplib.Pre_sexp.Of_sexp_error (Failure "expected Atom, got List", x))
+        | Sexplib.Sexp.Atom v ->
+           match $lid:parse name$ v with [
+             None -> raise (Sexplib.Pre_sexp.Of_sexp_error (Failure "unable to parse enum string", x))
+           | Some r -> r
+           ]
+       ] ;
+   >> in
   <:str_item<
     type $lid:name$ = [ $decls$ ] ;
     value $lid:getter name$ x = match x with [ $getters$ ] ;
     value $lid:setter name$ x = match x with [ $setters$ ] ;
     value $lid:printer name$ x = match x with [ $printers$ ] ;
     value $lid:parse name$ x = match x with [ $parsers$ | _ -> None ] ;
+    $if sexp then output_sexp_struct else <:str_item<>>$
   >>
 
-let output_enum_sig _loc name fields width =
+let output_enum_sig _loc name fields width ~sexp =
   let oty = match ty_of_string width with
     |None -> loc_err _loc ("enum: unknown width specifier " ^ width)
     |Some (UInt8|UInt16) -> <:ctyp<int>>
@@ -299,18 +316,26 @@ let output_enum_sig _loc name fields width =
   in
   let decls = tyOr_of_list (List.map (fun (f,_) ->
     <:ctyp< $uid:f$ >>) fields) in
-  let getter x = sprintf "int_to_%s" x in
-  let setter x = sprintf "%s_to_int" x in
+  let getter x  = sprintf "int_to_%s" x in
+  let setter x  = sprintf "%s_to_int" x in
   let printer x = sprintf "%s_to_string" x in
-  let parse x = sprintf "string_to_%s" x in
+  let parse x   = sprintf "string_to_%s" x in
+  let of_sexp x = sprintf "%s_of_sexp" x in
+  let to_sexp x = sprintf "sexp_of_%s" x in
   let ctyo = <:ctyp< option $lid:name$ >> in
   let cty = <:ctyp< $lid:name$ >> in
+  let output_sexp_sig =
+   <:sig_item<
+     value $lid:to_sexp name$ : $cty$ -> Sexplib.Sexp.t ;
+     value $lid:of_sexp name$ : Sexplib.Sexp.t -> $cty$ ;
+   >> in
   <:sig_item<
     type $lid:name$ = [ $decls$ ] ;
     value $lid:getter name$ : $oty$ -> $ctyo$ ;
     value $lid:setter name$ : $cty$ -> $oty$ ;
     value $lid:printer name$ : $cty$ -> string ;
     value $lid:parse name$ : string -> option $cty$ ;
+    $if sexp then output_sexp_sig else <:sig_item<>>$
   >>
 
 EXTEND Gram
@@ -350,13 +375,25 @@ EXTEND Gram
     [ "{"; enums = constr_enum_decl; "}" -> enums ]
   ];
 
+  cenum_decorators : [
+    [ "as"; width = LIDENT; "("; decorator = LIDENT; ")" -> (width, Some decorator)
+    | "as"; width = LIDENT -> (width, None)
+    ]
+  ];
+
   sig_item: [
     [ "cstruct"; name = LIDENT; fields = constr_fields;
       "as"; endian = LIDENT ->
         output_struct_sig _loc (create_struct _loc endian name fields)
     ] |
-    [ "cenum"; name = LIDENT; fields = constr_enums;
-      "as"; width = LIDENT ->
+   [ "cenum"; name = LIDENT; fields = constr_enums;
+      info = cenum_decorators ->
+        let width = fst info in
+        let sexp = match snd info with
+          | None -> false
+          | Some "sexp" -> true
+          | Some x -> raise (Failure "unknown cenum decorator: only 'sexp' supported")
+        in
         let n = ref Int64.minus_one in
         let incr_n () = n := Int64.succ !n in
         let fields =
@@ -364,17 +401,23 @@ EXTEND Gram
             | (f, None)   -> incr_n (); (f, !n)
             | (f, Some i) -> n := i; (f, i)
           ) fields in
-        output_enum_sig _loc name fields width
-    ]
+         output_enum_sig _loc name fields width ~sexp
+   ]
   ];
-
+ 
   str_item: [
     [ "cstruct"; name = LIDENT; fields = constr_fields;
       "as"; endian = LIDENT ->
 	output_struct _loc (create_struct _loc endian name fields)
     ] |
     [ "cenum"; name = LIDENT; fields = constr_enums;
-      "as"; width = LIDENT ->
+      info = cenum_decorators ->
+        let width = fst info in
+        let sexp = match snd info with
+          | None -> false
+          | Some "sexp" -> true
+          | Some x -> raise (Failure "unknown cenum decorator: only 'sexp' supported")
+        in
         let n = ref Int64.minus_one in
         let incr_n () = n := Int64.succ !n in
         let fields =
@@ -382,7 +425,7 @@ EXTEND Gram
             | (f, None)   -> incr_n (); (f, !n)
             | (f, Some i) -> n := i; (f, i)
           ) fields in
-        output_enum _loc name fields width
+        output_enum _loc name fields width ~sexp
     ]
   ];
 

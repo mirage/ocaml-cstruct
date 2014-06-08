@@ -18,7 +18,7 @@ cenum foo64 {
   ONE64;
   TWO64;
   THREE64
-} as uint64_t
+} as uint64_t(sexp)
 
 cenum foo32 {
   ONE32;

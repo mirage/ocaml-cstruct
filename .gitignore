@@ -4,3 +4,4 @@ setup.log
 _build/
 dist/
 *.docdir
+*.byte
