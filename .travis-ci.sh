@@ -29,6 +29,7 @@ eval `opam config env`
 make
 ./test.sh
 
+make clean
 opam pin cstruct .
 unset OPAMVERBOSE
 if [ "$OCAML_VERSION" = "4.00.1" ]; then
