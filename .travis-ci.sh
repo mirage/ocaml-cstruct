@@ -31,4 +31,7 @@ make
 
 opam pin cstruct .
 unset OPAMVERBOSE
+if [ "$OCAML_VERSION" = "4.00.1" ]; then
+  opam remove async
+fi
 opam install mirage-www
