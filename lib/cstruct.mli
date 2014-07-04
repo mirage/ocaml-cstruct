@@ -304,28 +304,33 @@ module BE : sig
 
   val get_uint16: t -> int -> uint16
   (** [get_uint16 cstr off] is the 16 bit long big-endian unsigned
-      integer stored in [cstr] at offset [off]. *)
+      integer stored in [cstr] at offset [off].
+      Raises [Invalid_exception] if the buffer is too small. *)
 
   val get_uint32: t -> int -> uint32
   (** [get_uint32 cstr off] is the 32 bit long big-endian unsigned
-      integer stored in [cstr] at offset [off]. *)
+      integer stored in [cstr] at offset [off].
+      Raises [Invalid_exception] if the buffer is too small. *)
 
   val get_uint64: t -> int -> uint64
   (** [get_uint64 cstr off] is the 64 bit long big-endian unsigned
-      integer stored in [cstr] at offset [off]. *)
+      integer stored in [cstr] at offset [off].
+      Raises [Invalid_exception] if the buffer is too small. *)
 
   val set_uint16: t -> int -> uint16 -> unit
   (** [set_uint16 cstr off i] writes the 16 bit long big-endian
-      unsigned integer [i] at offset [off] of [cstr]. *)
+      unsigned integer [i] at offset [off] of [cstr].
+      Raises [Invalid_exception] if the buffer is too small. *)
 
   val set_uint32: t -> int -> uint32 -> unit
   (** [set_uint32 cstr off i] writes the 32 bit long big-endian
-      unsigned integer [i] at offset [off] of [cstr]. *)
+      unsigned integer [i] at offset [off] of [cstr].
+      Raises [Invalid_exception] if the buffer is too small. *)
 
   val set_uint64: t -> int -> uint64 -> unit
   (** [set_uint64 cstr off i] writes the 64 bit long big-endian
-      unsigned integer [i] at offset [off] of [cstr]. *)
-
+      unsigned integer [i] at offset [off] of [cstr].
+      Raises [Invalid_exception] if the buffer is too small. *)
 end
 
 module LE : sig
@@ -336,27 +341,33 @@ module LE : sig
 
   val get_uint16: t -> int -> uint16
   (** [get_uint16 cstr off] is the 16 bit long little-endian unsigned
-      integer stored in [cstr] at offset [off]. *)
+      integer stored in [cstr] at offset [off].
+      Raises [Invalid_exception] if the buffer is too small. *)
 
   val get_uint32: t -> int -> uint32
   (** [get_uint32 cstr off] is the 32 bit long little-endian unsigned
-      integer stored in [cstr] at offset [off]. *)
+      integer stored in [cstr] at offset [off].
+      Raises [Invalid_exception] if the buffer is too small. *)
 
   val get_uint64: t -> int -> uint64
   (** [get_uint64 cstr off] is the 64 bit long little-endian unsigned
-      integer stored in [cstr] at offset [off]. *)
+      integer stored in [cstr] at offset [off].
+      Raises [Invalid_exception] if the buffer is too small. *)
 
   val set_uint16: t -> int -> uint16 -> unit
   (** [set_uint16 cstr off i] writes the 16 bit long little-endian
-      unsigned integer [i] at offset [off] of [cstr]. *)
+      unsigned integer [i] at offset [off] of [cstr].
+      Raises [Invalid_exception] if the buffer is too small. *)
 
   val set_uint32: t -> int -> uint32 -> unit
   (** [set_uint32 cstr off i] writes the 32 bit long little-endian
-      unsigned integer [i] at offset [off] of [cstr]. *)
+      unsigned integer [i] at offset [off] of [cstr].
+      Raises [Invalid_exception] if the buffer is too small. *)
 
   val set_uint64: t -> int -> uint64 -> unit
   (** [set_uint64 cstr off i] writes the 64 bit long little-endian
-      unsigned integer [i] at offset [off] of [cstr]. *)
+      unsigned integer [i] at offset [off] of [cstr].
+      Raises [Invalid_exception] if the buffer is too small. *)
 
 end
 
