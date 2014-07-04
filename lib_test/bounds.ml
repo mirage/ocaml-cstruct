@@ -1,4 +1,5 @@
 (*
+ * Copyright (c) 2014 Anil Madhavapeddy <anil@recoil.org>4 Anil Madhavapeddy <anil@recoil.org>4 Anil Madhavapeddy <anil@recoil.org>4 Anil Madhavapeddy <anil@recoil.org>
  * Copyright (c) 2013 Citrix Systems Inc
  *
  * Permission to use, copy, modify, and distribute this software for any
@@ -195,6 +196,70 @@ let test_blit_len_too_small () =
     failwith "test_blit_len_too_small"
   with Invalid_argument _ -> ()
 
+let test_view_bounds_too_small () =
+  let src = Cstruct.create 4 in
+  let dst = Cstruct.create 4 in
+  let dst_small = Cstruct.sub dst 0 2 in
+  try
+    Cstruct.blit src 0 dst_small 0 3;
+    failwith "test_view_bounds_too_small"
+  with
+    Invalid_argument _ -> ()
+
+let test_view_bounds_too_small_get_be16 () =
+  let x = Cstruct.create 4 in
+  let x' = Cstruct.sub x 0 1 in
+  try
+    let _ = Cstruct.BE.get_uint16 x' 0 in
+    failwith "test_view_bounds_too_small_get_be16"
+  with
+    Invalid_argument _ -> ()
+
+let test_view_bounds_too_small_get_be32 () =
+  let x = Cstruct.create 8 in
+  let x' = Cstruct.sub x 2 5 in
+  try
+    let _ = Cstruct.BE.get_uint32 x' 2 in
+    failwith "test_view_bounds_too_small_get_be32"
+  with
+    Invalid_argument _ -> ()
+
+let test_view_bounds_too_small_get_be64 () =
+  let x = Cstruct.create 9 in
+  let x' = Cstruct.sub x 1 5 in
+  try
+    let _ = Cstruct.BE.get_uint64 x' 0 in
+    failwith "test_view_bounds_too_small_get_be64"
+  with
+    Invalid_argument _ -> ()
+
+let test_view_bounds_too_small_get_le16 () =
+  let x = Cstruct.create 4 in
+  let x' = Cstruct.sub x 0 1 in
+  try
+    let _ = Cstruct.LE.get_uint16 x' 0 in
+    failwith "test_view_bounds_too_small_get_le16"
+  with
+    Invalid_argument _ -> ()
+
+let test_view_bounds_too_small_get_le32 () =
+  let x = Cstruct.create 8 in
+  let x' = Cstruct.sub x 2 5 in
+  try
+    let _ = Cstruct.LE.get_uint32 x' 2 in
+    failwith "test_view_bounds_too_small_get_le32"
+  with
+    Invalid_argument _ -> ()
+
+let test_view_bounds_too_small_get_le64 () =
+  let x = Cstruct.create 9 in
+  let x' = Cstruct.sub x 1 5 in
+  try
+    let _ = Cstruct.LE.get_uint64 x' 0 in
+    failwith "test_view_bounds_too_small_get_le64"
+  with
+    Invalid_argument _ -> ()
+
 let _ =
   let verbose = ref false in
   Arg.parse [
@@ -225,6 +290,13 @@ let _ =
     "test blit len too big" >:: test_blit_len_too_big;
     "test blit len too big2" >:: test_blit_len_too_big2;
     "test blit len too small" >:: test_blit_len_too_small;
+    "test view bounds too small" >:: test_view_bounds_too_small;
+    "test_view_bounds_too_small_get_be16"  >:: test_view_bounds_too_small_get_be16;
+    "test_view_bounds_too_small_get_be32"  >:: test_view_bounds_too_small_get_be32;
+    "test_view_bounds_too_small_get_be64"  >:: test_view_bounds_too_small_get_be64;
+    "test_view_bounds_too_small_get_le16"  >:: test_view_bounds_too_small_get_le16;
+    "test_view_bounds_too_small_get_le32"  >:: test_view_bounds_too_small_get_le32;
+    "test_view_bounds_too_small_get_le64"  >:: test_view_bounds_too_small_get_le64;
   ] in
   run_test_tt ~verbose:!verbose suite
 
