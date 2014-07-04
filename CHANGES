@@ -1,3 +1,6 @@
+1.2.1 (unreleased)
+* Add 'Lwt_cstruct.complete' convenience function
+
 1.2.0 (2014-06-06):
 
 Add a `sexp` optional decorator to `cenum` to output the values as s-expressions.

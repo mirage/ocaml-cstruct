@@ -20,6 +20,18 @@ let read fd t =
 let write fd t =
   Lwt_bytes.write fd t.Cstruct.buffer t.Cstruct.off t.Cstruct.len
 
+let complete op t =
+  let open Lwt in
+  let rec loop t =
+    op t >>= fun n ->
+    let t = Cstruct.shift t n in
+    if Cstruct.len t = 0
+    then return ()
+    else if n = 0
+    then fail End_of_file
+    else loop t in
+  loop t
+
 let sendto fd t flags dst =
   Lwt_bytes.sendto fd t.Cstruct.buffer t.Cstruct.off t.Cstruct.len flags dst
 

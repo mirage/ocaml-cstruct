@@ -19,6 +19,11 @@ val read: Lwt_unix.file_descr -> Cstruct.t -> int Lwt.t
 
 val write: Lwt_unix.file_descr -> Cstruct.t -> int Lwt.t
 
+val complete: (Cstruct.t -> int Lwt.t) -> Cstruct.t -> unit Lwt.t
+(** [complete (read fd) t] fills [t] with data from [fd] or fails with End_of_file
+    [complete (write fd) t] fully-writes [t] to [fd] or fails with End_of_file
+  *)
+
 val sendto: Lwt_unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> Unix.sockaddr -> int Lwt.t
 
 val recvfrom: Lwt_unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> (int * Unix.sockaddr) Lwt.t
