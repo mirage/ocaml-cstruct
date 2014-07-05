@@ -152,4 +152,4 @@ The representation of the Sexp is the string representation of the enum.
 
 Please see the `lib_test/` directory for more in-depth examples.
 
-[![Build Status](https://travis-ci.org/avsm/ocaml-cstruct.png)](https://travis-ci.org/avsm/ocaml-cstruct)
+[![Build Status](https://travis-ci.org/mirage/ocaml-cstruct.png)](https://travis-ci.org/mirage/ocaml-cstruct)
