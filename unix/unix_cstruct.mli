@@ -14,4 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+(** Unix functions that operate on Cstruct buffers. *)
+
 val of_fd : Unix.file_descr -> Cstruct.t
+(** [of_fd fd] memory maps the [fd] and returns a cstruct *)

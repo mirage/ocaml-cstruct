@@ -2,6 +2,7 @@
 * Add bounds checks for `Cstruct.BE/LE` functions that violate a view.
   Previously, only bounds errors on the underlying buffers would raise.
   Bug #25, reported by Mindy Preston in mirage/mirage-tcpip#56.
+* Add 'Lwt_cstruct.complete' convenience function
 
 1.2.0 (2014-06-06):
 
