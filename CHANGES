@@ -1,3 +1,8 @@
+1.3.0 (2014-06-04):
+* Add bounds checks for `Cstruct.BE/LE` functions that violate a view.
+  Previously, only bounds errors on the underlying buffers would raise.
+  Bug #25, reported by Mindy Preston in mirage/mirage-tcpip#56.
+
 1.2.0 (2014-06-06):
 
 Add a `sexp` optional decorator to `cenum` to output the values as s-expressions.

@@ -148,25 +148,57 @@ let get_char t i =
 module BE = struct
   include EndianBigstring.BigEndian
 
-  let set_uint16 t i c = set_int16 t.buffer (t.off+i) c
-  let set_uint32 t i c = set_int32 t.buffer (t.off+i) c
-  let set_uint64 t i c = set_int64 t.buffer (t.off+i) c
+  let set_uint16 t i c =
+    if (i+2) > t.len then raise (Invalid_argument (invalid_bounds i 2));
+    set_int16 t.buffer (t.off+i) c
 
-  let get_uint16 t i = get_uint16 t.buffer (t.off+i)
-  let get_uint32 t i = get_int32 t.buffer (t.off+i)
-  let get_uint64 t i = get_int64 t.buffer (t.off+i)
+  let set_uint32 t i c =
+    if (i+4) > t.len then raise (Invalid_argument (invalid_bounds i 4));
+    set_int32 t.buffer (t.off+i) c
+
+  let set_uint64 t i c =
+    if (i+8) > t.len then raise (Invalid_argument (invalid_bounds i 8));
+    set_int64 t.buffer (t.off+i) c
+
+  let get_uint16 t i = 
+    if (i+2) > t.len then raise (Invalid_argument (invalid_bounds i 2));
+    get_uint16 t.buffer (t.off+i)
+
+  let get_uint32 t i =
+    if (i+4) > t.len then raise (Invalid_argument (invalid_bounds i 4));
+    get_int32 t.buffer (t.off+i)
+
+  let get_uint64 t i =
+    if (i+8) > t.len then raise (Invalid_argument (invalid_bounds i 8));
+    get_int64 t.buffer (t.off+i)
 end
 
 module LE = struct
   include EndianBigstring.LittleEndian
 
-  let set_uint16 t i c = set_int16 t.buffer (t.off+i) c
-  let set_uint32 t i c = set_int32 t.buffer (t.off+i) c
-  let set_uint64 t i c = set_int64 t.buffer (t.off+i) c
+  let set_uint16 t i c =
+    if (i+2) > t.len then raise (Invalid_argument (invalid_bounds i 2));
+    set_int16 t.buffer (t.off+i) c
 
-  let get_uint16 t i = get_uint16 t.buffer (t.off+i)
-  let get_uint32 t i = get_int32 t.buffer (t.off+i)
-  let get_uint64 t i = get_int64 t.buffer (t.off+i)
+  let set_uint32 t i c =
+    if (i+4) > t.len then raise (Invalid_argument (invalid_bounds i 4));
+    set_int32 t.buffer (t.off+i) c
+
+  let set_uint64 t i c =
+    if (i+8) > t.len then raise (Invalid_argument (invalid_bounds i 8));
+    set_int64 t.buffer (t.off+i) c
+
+  let get_uint16 t i = 
+    if (i+2) > t.len then raise (Invalid_argument (invalid_bounds i 2));
+    get_uint16 t.buffer (t.off+i)
+
+  let get_uint32 t i =
+    if (i+4) > t.len then raise (Invalid_argument (invalid_bounds i 4));
+    get_int32 t.buffer (t.off+i)
+
+  let get_uint64 t i =
+    if (i+8) > t.len then raise (Invalid_argument (invalid_bounds i 8));
+    get_int64 t.buffer (t.off+i)
 end
 
 let len t =

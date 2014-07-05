@@ -143,8 +143,8 @@ type byte = char
 (** A single byte type *)
 
 val byte : int -> byte
-(** Convert an integer to a single byte.  A value greater than
-    255 will raise an [Invalid_argument] exception *)
+(** [byte v] convert [v] to a single byte.
+    @raise Invalid_argument if [v] is negative or greater than 255. *)
 
 type uint8 = int
 (** 8-bit unsigned integer.  The representation is currently an
@@ -192,38 +192,36 @@ val check_bounds : t -> int -> bool
 
 val get_char: t -> int -> char
 (** [get_char t off] returns the character contained in the cstruct
-     at offset [off].  It raises an [Invalid_argument] exception
-     if the offset exceeds the bounds of the cstruct. *)
+    at offset [off].
+    @raise Invalid_argument if the offset exceeds cstruct length. *)
 
 val get_uint8: t -> int -> uint8
 (** [get_uint8 t off] returns the byte contained in the cstruct
-     at offset [off].  It raises an [Invalid_argument] exception
-     if the offset exceeds the bounds of the cstruct. *)
+    at offset [off].
+    @raise Invalid_argument if the offset exceeds cstruct length. *)
 
 val set_char: t -> int -> char -> unit
 (** [set_char t off c] sets the byte contained in the cstruct
-     at offset [off] to character [c].
-     It raises an [Invalid_argument] exception if the offset
-     exceeds the bounds of the cstruct. *)
+    at offset [off] to character [c].
+    @raise Invalid_argument if the offset exceeds cstruct length. *)
 
 val set_uint8: t -> int -> uint8 -> unit
 (** [set_uint8 t off c] sets the byte contained in the cstruct
-     at offset [off] to byte [c].
-     It raises an [Invalid_argument] exception if the offset
-     exceeds the bounds of the cstruct. *)
+    at offset [off] to byte [c].
+    @raise Invalid_argument if the offset exceeds cstruct length. *)
 
 val sub: t -> int -> int -> t
-(** [sub cstr off len] is [{ t with off = t.off + off; len }] *)
+(** [sub cstr off len] is [{ t with off = t.off + off; len }]
+    @raise Invalid_argument if the offset exceeds cstruct length. *)
 
 val shift: t -> int -> t
-(** [shift cstr len] is [{ t with off = t.off + off; len = t.len - off
-    }] *)
+(** [shift cstr len] is [{ t with off=t.off+off; len=t.len-off }]
+    @raise Invalid_argument if the offset exceeds cstruct length. *)
 
 val copy: t -> int -> int -> string
 (** [copy cstr off len] is the string representation of the segment of
     [t] starting at [off] of size [len].
-
-    Raise [Invalid_argument] if [off] and [len] do not designate a
+    @raise Invalid_argument if [off] and [len] do not designate a
     valid segment of [t]. *)
 
 val blit: t -> int -> t -> int -> int -> unit
@@ -233,7 +231,7 @@ val blit: t -> int -> t -> int -> int -> unit
     [dst] are the same string, and the source and destination
     intervals overlap.
 
-    Raise [Invalid_argument] if [srcoff] and [len] do not designate a
+    @raise Invalid_argument if [srcoff] and [len] do not designate a
     valid segment of [src], or if [dstoff] and [len] do not designate
     a valid segment of [dst]. *)
 
@@ -242,7 +240,7 @@ val blit_from_string: string -> int -> t -> int -> int -> unit
     characters from string [src], starting at index [srcoff], to
     string [dst], starting at index [dstoff].
 
-    Raise [Invalid_argument] if [srcoff] and [len] do not designate a
+    @raise Invalid_argument if [srcoff] and [len] do not designate a
     valid substring of [src], or if [dstoff] and [len] do not
     designate a valid segment of [dst]. *)
 
@@ -251,7 +249,7 @@ val blit_to_string: t -> int -> string -> int -> int -> unit
     from cstruct [src], starting at index [srcoff], to string [dst],
     starting at index [dstoff].
 
-    Raise [Invalid_argument] if [srcoff] and [len] do not designate a
+    @raise Invalid_argument if [srcoff] and [len] do not designate a
     valid segment of [src], or if [dstoff] and [len] do not designate
     a valid substring of [dst]. *)
 
@@ -261,14 +259,14 @@ val len: t -> int
     buffer, as the [sub] or [set_len] functions can construct a smaller view. *)
 
 val set_len : t -> int -> t
-(** Set the length of the buffer to a new absolute value, and return
-    a fresh cstruct with these settings.  A length that exceeds the size
-    of the underlying buffer will raise an [Invalid_argument] exception. *)
+(** [set_len t len] sets the length of the cstruct [t] to a new absolute
+    value, and returns a fresh cstruct with these settings.
+    @raise Invalid_argument if [len] exceeds the size of the buffer. *)
 
 val add_len : t -> int -> t
 (** [add_len t l] will add [l] bytes to the length of the buffer, and return
-    a fresh cstruct with these settings.  A length that exceeds the size
-    of the underlying buffer will raise an [Invalid_argument] exception. *)
+    a fresh cstruct with these settings.
+    @raise Invalid_argument if [len] exceeds the size of the buffer. *)
 
 val split: ?start:int -> t -> int -> t * t
 (** [split ~start cstr len] is a tuple containing the cstruct
@@ -304,28 +302,33 @@ module BE : sig
 
   val get_uint16: t -> int -> uint16
   (** [get_uint16 cstr off] is the 16 bit long big-endian unsigned
-      integer stored in [cstr] at offset [off]. *)
+      integer stored in [cstr] at offset [off].
+      @raise Invalid_argument if the buffer is too small. *)
 
   val get_uint32: t -> int -> uint32
   (** [get_uint32 cstr off] is the 32 bit long big-endian unsigned
-      integer stored in [cstr] at offset [off]. *)
+      integer stored in [cstr] at offset [off].
+      @raise Invalid_argument if the buffer is too small. *)
 
   val get_uint64: t -> int -> uint64
   (** [get_uint64 cstr off] is the 64 bit long big-endian unsigned
-      integer stored in [cstr] at offset [off]. *)
+      integer stored in [cstr] at offset [off].
+      @raise Invalid_argument if the buffer is too small. *)
 
   val set_uint16: t -> int -> uint16 -> unit
   (** [set_uint16 cstr off i] writes the 16 bit long big-endian
-      unsigned integer [i] at offset [off] of [cstr]. *)
+      unsigned integer [i] at offset [off] of [cstr].
+      @raise Invalid_argument if the buffer is too small. *)
 
   val set_uint32: t -> int -> uint32 -> unit
   (** [set_uint32 cstr off i] writes the 32 bit long big-endian
-      unsigned integer [i] at offset [off] of [cstr]. *)
+      unsigned integer [i] at offset [off] of [cstr].
+      @raise Invalid_argument if the buffer is too small. *)
 
   val set_uint64: t -> int -> uint64 -> unit
   (** [set_uint64 cstr off i] writes the 64 bit long big-endian
-      unsigned integer [i] at offset [off] of [cstr]. *)
-
+      unsigned integer [i] at offset [off] of [cstr].
+      @raise Invalid_argument if the buffer is too small. *)
 end
 
 module LE : sig
@@ -336,27 +339,33 @@ module LE : sig
 
   val get_uint16: t -> int -> uint16
   (** [get_uint16 cstr off] is the 16 bit long little-endian unsigned
-      integer stored in [cstr] at offset [off]. *)
+      integer stored in [cstr] at offset [off].
+      @raise Invalid_argument if the buffer is too small. *)
 
   val get_uint32: t -> int -> uint32
   (** [get_uint32 cstr off] is the 32 bit long little-endian unsigned
-      integer stored in [cstr] at offset [off]. *)
+      integer stored in [cstr] at offset [off].
+      @raise Invalid_argument if the buffer is too small. *)
 
   val get_uint64: t -> int -> uint64
   (** [get_uint64 cstr off] is the 64 bit long little-endian unsigned
-      integer stored in [cstr] at offset [off]. *)
+      integer stored in [cstr] at offset [off].
+      @raise Invalid_argument if the buffer is too small. *)
 
   val set_uint16: t -> int -> uint16 -> unit
   (** [set_uint16 cstr off i] writes the 16 bit long little-endian
-      unsigned integer [i] at offset [off] of [cstr]. *)
+      unsigned integer [i] at offset [off] of [cstr].
+      @raise Invalid_argument if the buffer is too small. *)
 
   val set_uint32: t -> int -> uint32 -> unit
   (** [set_uint32 cstr off i] writes the 32 bit long little-endian
-      unsigned integer [i] at offset [off] of [cstr]. *)
+      unsigned integer [i] at offset [off] of [cstr].
+      @raise Invalid_argument if the buffer is too small. *)
 
   val set_uint64: t -> int -> uint64 -> unit
   (** [set_uint64 cstr off i] writes the 64 bit long little-endian
-      unsigned integer [i] at offset [off] of [cstr]. *)
+      unsigned integer [i] at offset [off] of [cstr].
+      @raise Invalid_argument if the buffer is too small. *)
 
 end
 
