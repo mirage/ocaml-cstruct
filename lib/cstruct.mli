@@ -1,5 +1,5 @@
 (*
- * Copyright (c) 2012-2013 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2012-2014 Anil Madhavapeddy <anil@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -128,7 +128,7 @@ val string_to_bar16 : string -> bar16 option
 
 (** {2 Base types } *)
 
-type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
+type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t with sexp
 (** Type of a buffer. A cstruct is composed of an underlying buffer
     and position/length within this buffer. *)
 
@@ -136,7 +136,7 @@ type t = private {
   buffer: buffer;
   off   : int;
   len   : int;
-}
+} with sexp
 (** Type of a cstruct. *)
 
 type byte = char

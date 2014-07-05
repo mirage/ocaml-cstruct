@@ -86,5 +86,6 @@ let _ =
   assert(Cstruct.BE.get_uint32 be 3 = 0xbeef_l);
   assert(get_foo_b be = 44);
   assert(get_foo_a be = 7);
-  hexdump_foo be
+  hexdump_foo be;
+  print_endline (Sexplib.Sexp.to_string_hum (Cstruct.sexp_of_t be))
 

@@ -1,8 +1,8 @@
 # OASIS_START
-# DO NOT EDIT (digest: 91e2fe12c44bab236587481b82e2b504)
+# DO NOT EDIT (digest: 965c5de00a2446b9f485b4466439073e)
 version = "1.3.0"
 description = "Manipulate external buffers as C-like structs"
-requires = "bigarray ocplib-endian ocplib-endian.bigstring"
+requires = "bigarray ocplib-endian ocplib-endian.bigstring sexplib"
 archive(byte) = "cstruct.cma"
 archive(byte, plugin) = "cstruct.cma"
 archive(native) = "cstruct.cmxa"

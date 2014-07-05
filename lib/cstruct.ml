@@ -15,14 +15,18 @@
  *)
 
 open Printf
+open Sexplib.Std
 
 type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
+
+let buffer_of_sexp b = Sexplib.Conv.bigstring_of_sexp b
+let sexp_of_buffer b = Sexplib.Conv.sexp_of_bigstring b
 
 type t = {
   buffer: buffer;
   off   : int;
   len   : int;
-}
+} with sexp
 
 let of_bigarray ?(off=0) ?len buffer =
   let len =
