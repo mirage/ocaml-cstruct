@@ -40,13 +40,19 @@ let test_positive_shift () =
   let y = Cstruct.shift x 1 in
   assert_equal ~printer:string_of_int 0 (Cstruct.len y)
 
-(* Check we can shift in the -ve direction *)
+(* Check that negative shifts are forbidden. *)
 let test_negative_shift () =
-  let x = Cstruct.create 10 in
-  let y = Cstruct.sub x 5 5 in
-  let z = Cstruct.shift y (-5) in
-  assert_equal ~printer:string_of_int 0 z.Cstruct.off;
-  assert_equal ~printer:string_of_int 10 z.Cstruct.len
+  let x = Cstruct.create 2 in
+  let y = Cstruct.sub x 1 1 in
+  try
+    let z = Cstruct.shift x (-1) in
+    failwith (Printf.sprintf "test_negative_shift/outer: %s" (to_string z))
+  with Invalid_argument _ ->
+    try
+      let z = Cstruct.shift y (-1) in
+      failwith (Printf.sprintf "test_negative_shift/inner: %s" (to_string z))
+    with Invalid_argument _ ->
+      ()
 
 (* Check that an attempt to shift beyond the end of the buffer fails *)
 let test_bad_positive_shift () =
@@ -54,14 +60,6 @@ let test_bad_positive_shift () =
   try
     let y = Cstruct.shift x 11 in
     failwith (Printf.sprintf "test_bad_positive_shift: %s" (to_string y))
-  with Invalid_argument _ -> ()
-
-(* Check that an attempt to shift before the start of the buffer fails *)
-let test_bad_negative_shift () =
-  let x = Cstruct.create 10 in
-  try
-    let y = Cstruct.shift x (-1) in
-    failwith (Printf.sprintf "test_bad_negative_shift: %s" (to_string y))
   with Invalid_argument _ -> ()
 
 (* Check that 'sub' works *)
@@ -73,6 +71,19 @@ let test_sub () =
   let z = Cstruct.sub y 10 60 in
   assert_equal ~printer:string_of_int 20 z.Cstruct.off;
   assert_equal ~printer:string_of_int 60 z.Cstruct.len
+
+let test_negative_sub () =
+  let x = Cstruct.create 2 in
+  let y = Cstruct.sub x 1 1 in
+  try
+    let z = Cstruct.sub x (-1) 0 in
+    failwith (Printf.sprintf "test_negative_sub/outer: %s" (to_string z))
+  with Invalid_argument _ ->
+    try
+      let z = Cstruct.sub y (-1) 0 in
+      failwith (Printf.sprintf "test_negative_sub/inner: %s" (to_string z))
+    with Invalid_argument _ ->
+      ()
 
 (* Check that 'sub' can't set 'len' too big *)
 let test_sub_len_too_big () =
@@ -104,13 +115,6 @@ let test_sub_offset_too_big () =
       failwith (Printf.sprintf "test_sub_offset_too_big: %s" (to_string z))
     with Invalid_argument _ -> ()
   end
-
-let test_sub_offset_too_small () =
-  let x = Cstruct.create 0 in
-  try
-    let y = Cstruct.sub x (-1) 0 in
-    failwith (Printf.sprintf "test_sub_offset_too_small: %s" (to_string y))
-  with Invalid_argument _ -> ()
 
 let test_set_len_too_big () =
   let x = Cstruct.create 0 in
@@ -360,12 +364,11 @@ let _ =
     "test positive shift" >:: test_positive_shift;
     "test negative shift" >:: test_negative_shift;
     "test bad positive shift" >:: test_bad_positive_shift;
-    "test bad negative shift" >:: test_bad_negative_shift;
     "test sub" >:: test_sub;
+    "test negative sub" >:: test_negative_sub;
     "test sub len too big" >:: test_sub_len_too_big;
     "test sub len too small" >:: test_sub_len_too_small;
     "test sub offset too big" >:: test_sub_offset_too_big;
-    "test sub offset too small" >:: test_sub_offset_too_small;
     "test set len too big" >:: test_set_len_too_big;
     "test set len too small" >:: test_set_len_too_small;
     "test add len too big" >:: test_add_len_too_big;
