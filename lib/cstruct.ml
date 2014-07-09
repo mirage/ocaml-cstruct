@@ -138,15 +138,19 @@ let blit_to_string src srcoff dst dstoff len =
   unsafe_blit_bigstring_to_string src.buffer (src.off+srcoff) dst dstoff len
 
 let set_uint8 t i c =
+  if i >= t.len then raise (Invalid_argument (invalid_bounds i 1)) ;
   EndianBigstring.BigEndian.set_int8 t.buffer (t.off+i) c
 
 let set_char t i c =
+  if i >= t.len then raise (Invalid_argument (invalid_bounds i 1)) ;
   EndianBigstring.BigEndian.set_char t.buffer (t.off+i) c
 
 let get_uint8 t i =
+  if i >= t.len then raise (Invalid_argument (invalid_bounds i 1)) ;
   EndianBigstring.BigEndian.get_uint8 t.buffer (t.off+i)
 
 let get_char t i =
+  if i >= t.len then raise (Invalid_argument (invalid_bounds i 1)) ;
   EndianBigstring.BigEndian.get_char t.buffer (t.off+i)
 
 module BE = struct
