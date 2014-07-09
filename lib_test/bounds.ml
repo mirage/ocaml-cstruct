@@ -206,6 +206,24 @@ let test_view_bounds_too_small () =
   with
     Invalid_argument _ -> ()
 
+let test_view_bounds_too_small_get_u8 () =
+  let x = Cstruct.create 2 in
+  let x' = Cstruct.sub x 0 1 in
+  try
+    let _ = Cstruct.get_uint8 x' 1 in
+    failwith "test_view_bounds_too_small_get_u8"
+  with
+    Invalid_argument _ -> ()
+
+let test_view_bounds_too_small_get_char () =
+  let x = Cstruct.create 2 in
+  let x' = Cstruct.sub x 0 1 in
+  try
+    let _ = Cstruct.get_char x' 1 in
+    failwith "test_view_bounds_too_small_get_char"
+  with
+    Invalid_argument _ -> ()
+
 let test_view_bounds_too_small_get_be16 () =
   let x = Cstruct.create 4 in
   let x' = Cstruct.sub x 0 1 in
@@ -291,6 +309,8 @@ let _ =
     "test blit len too big2" >:: test_blit_len_too_big2;
     "test blit len too small" >:: test_blit_len_too_small;
     "test view bounds too small" >:: test_view_bounds_too_small;
+    "test_view_bounds_too_small_get_u8"  >:: test_view_bounds_too_small_get_u8;
+    "test_view_bounds_too_small_get_char"  >:: test_view_bounds_too_small_get_char;
     "test_view_bounds_too_small_get_be16"  >:: test_view_bounds_too_small_get_be16;
     "test_view_bounds_too_small_get_be32"  >:: test_view_bounds_too_small_get_be32;
     "test_view_bounds_too_small_get_be64"  >:: test_view_bounds_too_small_get_be64;
