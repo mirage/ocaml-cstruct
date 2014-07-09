@@ -74,20 +74,20 @@ let debug t =
   );
   str
 
-let sub t off len =
-  let off = t.off + off in
-  if len < 0
-     || off < 0
-     || not (check_bounds t (off+len)) then
+let sub t off0 len =
+  let off = t.off + off0 in
+  if off0 < 0 ||
+     len < 0 ||
+     not (check_bounds t (off+len)) then
     raise (Invalid_argument "Cstruct.sub");
   { t with off; len }
 
 let shift t amount =
   let off = t.off + amount in
   let len = t.len - amount in
-  if len < 0
-    || off < 0
-    || not (check_bounds t (off+len)) then
+  if amount < 0 ||
+     amount > t.len ||
+     not (check_bounds t (off+len)) then
     raise (Invalid_argument "Cstruct.shift");
   { t with off; len }
 
