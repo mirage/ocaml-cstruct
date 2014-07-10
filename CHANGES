@@ -1,4 +1,7 @@
-1.3.0 (2014-06-04):
+1.3.1 (2014-07-10):
+* Also bounds test single-byte operations on views (#31 via @pqwy).
+
+1.3.0 (2014-07-04):
 * Add bounds checks for `Cstruct.BE/LE` functions that violate a view.
   Previously, only bounds errors on the underlying buffers would raise.
   Bug #25, reported by Mindy Preston in mirage/mirage-tcpip#56.
