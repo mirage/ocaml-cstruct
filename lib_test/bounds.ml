@@ -278,6 +278,40 @@ let test_view_bounds_too_small_get_le64 () =
   with
     Invalid_argument _ -> ()
 
+(* Steamroll over a buffer and a contained subview, checking that only the
+ * contents of the subview is visible. *)
+let test_subview_containment_get_char,
+    test_subview_containment_get_8,
+    test_subview_containment_get_be16,
+    test_subview_containment_get_be32,
+    test_subview_containment_get_be64,
+    test_subview_containment_get_le16,
+    test_subview_containment_get_le32,
+    test_subview_containment_get_le64
+  =
+  let open Cstruct in
+  let test get zero () =
+    let x = create 24 in
+    let x' = sub x 8 8 in
+    for i = 0 to len x - 1 do set_uint8 x i 0xff done ;
+    for i = 0 to len x' - 1 do set_uint8 x' i 0x00 done ;
+    for i = -8 to 8 do
+      try
+        let v = get x' i in
+        if v <> zero then
+          failwith "test_subview_containment_get"
+      with Invalid_argument _ -> ()
+    done
+  in
+  test Cstruct.get_char '\000',
+  test Cstruct.get_uint8 0,
+  test Cstruct.BE.get_uint16 0,
+  test Cstruct.BE.get_uint32 0l,
+  test Cstruct.BE.get_uint64 0L,
+  test Cstruct.LE.get_uint16 0,
+  test Cstruct.LE.get_uint32 0l,
+  test Cstruct.LE.get_uint64 0L
+
 let _ =
   let verbose = ref false in
   Arg.parse [
@@ -317,6 +351,14 @@ let _ =
     "test_view_bounds_too_small_get_le16"  >:: test_view_bounds_too_small_get_le16;
     "test_view_bounds_too_small_get_le32"  >:: test_view_bounds_too_small_get_le32;
     "test_view_bounds_too_small_get_le64"  >:: test_view_bounds_too_small_get_le64;
+    "test_subview_containment_get_char" >:: test_subview_containment_get_char;
+    "test_subview_containment_get_8"    >:: test_subview_containment_get_8;
+    "test_subview_containment_get_be16" >:: test_subview_containment_get_be16;
+    "test_subview_containment_get_be32" >:: test_subview_containment_get_be32;
+    "test_subview_containment_get_be64" >:: test_subview_containment_get_be64;
+    "test_subview_containment_get_le16" >:: test_subview_containment_get_le16;
+    "test_subview_containment_get_le32" >:: test_subview_containment_get_le32;
+    "test_subview_containment_get_le64" >:: test_subview_containment_get_le64;
   ] in
   run_test_tt ~verbose:!verbose suite
 
