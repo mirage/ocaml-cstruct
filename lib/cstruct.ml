@@ -29,18 +29,21 @@ type t = {
 } with sexp
 
 let of_bigarray ?(off=0) ?len buffer =
+  let dim = Bigarray.Array1.dim buffer in
   let len =
     match len with
-    |None -> Bigarray.Array1.dim buffer
-    |Some len -> min len (Bigarray.Array1.dim buffer)
-  in { buffer; off; len }
+    | None     -> dim - off
+    | Some len -> len in
+  if off < 0 || len < 0 || off + len > dim then
+    raise (Invalid_argument "Cstruct.of_bigarray");
+  { buffer; off; len }
 
 let to_bigarray buffer =
   Bigarray.Array1.sub buffer.buffer buffer.off buffer.len
 
 let create len =
-  let ba = Bigarray.Array1.create Bigarray.char Bigarray.c_layout len in
-  of_bigarray ba
+  let buffer = Bigarray.(Array1.create char c_layout len) in
+  { buffer ; len ; off = 0 }
 
 let check_bounds t len =
   Bigarray.Array1.dim t.buffer >= len
