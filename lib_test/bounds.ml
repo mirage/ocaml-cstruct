@@ -303,14 +303,49 @@ let test_subview_containment_get_char,
       with Invalid_argument _ -> ()
     done
   in
-  test Cstruct.get_char '\000',
-  test Cstruct.get_uint8 0,
-  test Cstruct.BE.get_uint16 0,
-  test Cstruct.BE.get_uint32 0l,
-  test Cstruct.BE.get_uint64 0L,
-  test Cstruct.LE.get_uint16 0,
-  test Cstruct.LE.get_uint32 0l,
-  test Cstruct.LE.get_uint64 0L
+  test get_char '\000',
+  test get_uint8 0,
+  test BE.get_uint16 0,
+  test BE.get_uint32 0l,
+  test BE.get_uint64 0L,
+  test LE.get_uint16 0,
+  test LE.get_uint32 0l,
+  test LE.get_uint64 0L
+
+(* Steamroll over a buffer and a contained subview, checking that only the
+ * contents of the subview is writable. *)
+let test_subview_containment_set_char,
+    test_subview_containment_set_8,
+    test_subview_containment_set_be16,
+    test_subview_containment_set_be32,
+    test_subview_containment_set_be64,
+    test_subview_containment_set_le16,
+    test_subview_containment_set_le32,
+    test_subview_containment_set_le64
+  =
+  let open Cstruct in
+  let test set ff () =
+    let x = create 24 in
+    let x' = sub x 8 8 in
+    for i = 0 to len x - 1 do set_uint8 x i 0x00 done ;
+    for i = -8 to 8 do
+      try set x' i ff with Invalid_argument _ -> ()
+    done;
+    let acc = ref 0 in
+    for i = 0 to len x - 1 do
+      acc := !acc + get_uint8 x i
+    done ;
+    if !acc <> (len x' * 0xff) then
+      failwith "test_subview_containment_set"
+  in
+  test set_char '\255',
+  test set_uint8 0xff,
+  test BE.set_uint16 0xffff,
+  test BE.set_uint32 0xffffffffl,
+  test BE.set_uint64 0xffffffffffffffffL,
+  test LE.set_uint16 0xffff,
+  test LE.set_uint32 0xffffffffl,
+  test LE.set_uint64 0xffffffffffffffffL
 
 let _ =
   let verbose = ref false in
@@ -359,6 +394,14 @@ let _ =
     "test_subview_containment_get_le16" >:: test_subview_containment_get_le16;
     "test_subview_containment_get_le32" >:: test_subview_containment_get_le32;
     "test_subview_containment_get_le64" >:: test_subview_containment_get_le64;
+    "test_subview_containment_set_char" >:: test_subview_containment_set_char;
+    "test_subview_containment_set_8"    >:: test_subview_containment_set_8;
+    "test_subview_containment_set_be16" >:: test_subview_containment_set_be16;
+    "test_subview_containment_set_be32" >:: test_subview_containment_set_be32;
+    "test_subview_containment_set_be64" >:: test_subview_containment_set_be64;
+    "test_subview_containment_set_le16" >:: test_subview_containment_set_le16;
+    "test_subview_containment_set_le32" >:: test_subview_containment_set_le32;
+    "test_subview_containment_set_le64" >:: test_subview_containment_set_le64;
   ] in
   run_test_tt ~verbose:!verbose suite
 
