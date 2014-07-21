@@ -116,6 +116,52 @@ let test_sub_offset_too_big () =
     with Invalid_argument _ -> ()
   end
 
+let test_of_bigarray_negative_params () =
+  let ba = Bigarray.(Array1.create char c_layout 1) in
+  try
+    let x = Cstruct.of_bigarray ~off:(-1) ba in
+    failwith (Printf.sprintf "test_of_bigarray_negative_params: negative ~off: %s" (to_string x))
+  with Invalid_argument _ ->
+    try
+      let x = Cstruct.of_bigarray ~len:(-1) ba in
+      failwith (Printf.sprintf "test_of_bigarray_negative_params: negative ~len: %s" (to_string x))
+    with Invalid_argument _ ->
+      ()
+
+let test_of_bigarray_large_offset () =
+  let ba = Bigarray.(Array1.create char c_layout 1) in
+  let _ = Cstruct.of_bigarray ~off:1 ~len:0 ba
+  and _ = Cstruct.of_bigarray ~off:1 ba in
+  try
+    let x = Cstruct.of_bigarray ~off:2 ~len:0 ba in
+    failwith (Printf.sprintf "test_of_bigarray_large_offset: %s" (to_string x))
+  with Invalid_argument _ ->
+    try
+      let x = Cstruct.of_bigarray ~off:2 ba in
+      failwith (Printf.sprintf "test_of_bigarray_large_offset: large ~off: %s" (to_string x))
+    with Invalid_argument _ ->
+      ()
+
+let test_of_bigarray_large_length () =
+  let ba = Bigarray.(Array1.create char c_layout 1) in
+  try
+    let x = Cstruct.of_bigarray ~off:0 ~len:2 ba in
+    failwith (Printf.sprintf "test_of_bigarray_large_length: %s" (to_string x))
+  with Invalid_argument _ ->
+    try
+      let x = Cstruct.of_bigarray ~off:1 ~len:1 ba in
+      failwith (Printf.sprintf "test_of_bigarray_large_length: %s" (to_string x))
+    with Invalid_argument _ ->
+      try
+        let x = Cstruct.of_bigarray ~off:2 ~len:0 ba in
+        failwith (Printf.sprintf "test_of_bigarray_large_length: %s" (to_string x))
+      with Invalid_argument _ ->
+        try
+          let x = Cstruct.of_bigarray ~off:2 ba in
+          failwith (Printf.sprintf "test_of_bigarray_large_length: %s" (to_string x))
+        with Invalid_argument _ ->
+          ()
+
 let test_set_len_too_big () =
   let x = Cstruct.create 0 in
   try
@@ -369,6 +415,9 @@ let _ =
     "test sub len too big" >:: test_sub_len_too_big;
     "test sub len too small" >:: test_sub_len_too_small;
     "test sub offset too big" >:: test_sub_offset_too_big;
+    "test of_bigarray negative params" >:: test_of_bigarray_negative_params;
+    "test of_bigarray large offset" >:: test_of_bigarray_large_offset;
+    "test of_bigarray large length" >:: test_of_bigarray_large_length;
     "test set len too big" >:: test_set_len_too_big;
     "test set len too small" >:: test_set_len_too_small;
     "test add len too big" >:: test_add_len_too_big;
