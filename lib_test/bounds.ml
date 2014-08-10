@@ -40,13 +40,19 @@ let test_positive_shift () =
   let y = Cstruct.shift x 1 in
   assert_equal ~printer:string_of_int 0 (Cstruct.len y)
 
-(* Check we can shift in the -ve direction *)
+(* Check that negative shifts are forbidden. *)
 let test_negative_shift () =
-  let x = Cstruct.create 10 in
-  let y = Cstruct.sub x 5 5 in
-  let z = Cstruct.shift y (-5) in
-  assert_equal ~printer:string_of_int 0 z.Cstruct.off;
-  assert_equal ~printer:string_of_int 10 z.Cstruct.len
+  let x = Cstruct.create 2 in
+  let y = Cstruct.sub x 1 1 in
+  try
+    let z = Cstruct.shift x (-1) in
+    failwith (Printf.sprintf "test_negative_shift/outer: %s" (to_string z))
+  with Invalid_argument _ ->
+    try
+      let z = Cstruct.shift y (-1) in
+      failwith (Printf.sprintf "test_negative_shift/inner: %s" (to_string z))
+    with Invalid_argument _ ->
+      ()
 
 (* Check that an attempt to shift beyond the end of the buffer fails *)
 let test_bad_positive_shift () =
@@ -54,14 +60,6 @@ let test_bad_positive_shift () =
   try
     let y = Cstruct.shift x 11 in
     failwith (Printf.sprintf "test_bad_positive_shift: %s" (to_string y))
-  with Invalid_argument _ -> ()
-
-(* Check that an attempt to shift before the start of the buffer fails *)
-let test_bad_negative_shift () =
-  let x = Cstruct.create 10 in
-  try
-    let y = Cstruct.shift x (-1) in
-    failwith (Printf.sprintf "test_bad_negative_shift: %s" (to_string y))
   with Invalid_argument _ -> ()
 
 (* Check that 'sub' works *)
@@ -73,6 +71,19 @@ let test_sub () =
   let z = Cstruct.sub y 10 60 in
   assert_equal ~printer:string_of_int 20 z.Cstruct.off;
   assert_equal ~printer:string_of_int 60 z.Cstruct.len
+
+let test_negative_sub () =
+  let x = Cstruct.create 2 in
+  let y = Cstruct.sub x 1 1 in
+  try
+    let z = Cstruct.sub x (-1) 0 in
+    failwith (Printf.sprintf "test_negative_sub/outer: %s" (to_string z))
+  with Invalid_argument _ ->
+    try
+      let z = Cstruct.sub y (-1) 0 in
+      failwith (Printf.sprintf "test_negative_sub/inner: %s" (to_string z))
+    with Invalid_argument _ ->
+      ()
 
 (* Check that 'sub' can't set 'len' too big *)
 let test_sub_len_too_big () =
@@ -105,12 +116,51 @@ let test_sub_offset_too_big () =
     with Invalid_argument _ -> ()
   end
 
-let test_sub_offset_too_small () =
-  let x = Cstruct.create 0 in
+let test_of_bigarray_negative_params () =
+  let ba = Bigarray.(Array1.create char c_layout 1) in
   try
-    let y = Cstruct.sub x (-1) 0 in
-    failwith (Printf.sprintf "test_sub_offset_too_small: %s" (to_string y))
-  with Invalid_argument _ -> ()
+    let x = Cstruct.of_bigarray ~off:(-1) ba in
+    failwith (Printf.sprintf "test_of_bigarray_negative_params: negative ~off: %s" (to_string x))
+  with Invalid_argument _ ->
+    try
+      let x = Cstruct.of_bigarray ~len:(-1) ba in
+      failwith (Printf.sprintf "test_of_bigarray_negative_params: negative ~len: %s" (to_string x))
+    with Invalid_argument _ ->
+      ()
+
+let test_of_bigarray_large_offset () =
+  let ba = Bigarray.(Array1.create char c_layout 1) in
+  let _ = Cstruct.of_bigarray ~off:1 ~len:0 ba
+  and _ = Cstruct.of_bigarray ~off:1 ba in
+  try
+    let x = Cstruct.of_bigarray ~off:2 ~len:0 ba in
+    failwith (Printf.sprintf "test_of_bigarray_large_offset: %s" (to_string x))
+  with Invalid_argument _ ->
+    try
+      let x = Cstruct.of_bigarray ~off:2 ba in
+      failwith (Printf.sprintf "test_of_bigarray_large_offset: large ~off: %s" (to_string x))
+    with Invalid_argument _ ->
+      ()
+
+let test_of_bigarray_large_length () =
+  let ba = Bigarray.(Array1.create char c_layout 1) in
+  try
+    let x = Cstruct.of_bigarray ~off:0 ~len:2 ba in
+    failwith (Printf.sprintf "test_of_bigarray_large_length: %s" (to_string x))
+  with Invalid_argument _ ->
+    try
+      let x = Cstruct.of_bigarray ~off:1 ~len:1 ba in
+      failwith (Printf.sprintf "test_of_bigarray_large_length: %s" (to_string x))
+    with Invalid_argument _ ->
+      try
+        let x = Cstruct.of_bigarray ~off:2 ~len:0 ba in
+        failwith (Printf.sprintf "test_of_bigarray_large_length: %s" (to_string x))
+      with Invalid_argument _ ->
+        try
+          let x = Cstruct.of_bigarray ~off:2 ba in
+          failwith (Printf.sprintf "test_of_bigarray_large_length: %s" (to_string x))
+        with Invalid_argument _ ->
+          ()
 
 let test_set_len_too_big () =
   let x = Cstruct.create 0 in
@@ -278,6 +328,75 @@ let test_view_bounds_too_small_get_le64 () =
   with
     Invalid_argument _ -> ()
 
+(* Steamroll over a buffer and a contained subview, checking that only the
+ * contents of the subview is visible. *)
+let test_subview_containment_get_char,
+    test_subview_containment_get_8,
+    test_subview_containment_get_be16,
+    test_subview_containment_get_be32,
+    test_subview_containment_get_be64,
+    test_subview_containment_get_le16,
+    test_subview_containment_get_le32,
+    test_subview_containment_get_le64
+  =
+  let open Cstruct in
+  let test get zero () =
+    let x = create 24 in
+    let x' = sub x 8 8 in
+    for i = 0 to len x - 1 do set_uint8 x i 0xff done ;
+    for i = 0 to len x' - 1 do set_uint8 x' i 0x00 done ;
+    for i = -8 to 8 do
+      try
+        let v = get x' i in
+        if v <> zero then
+          failwith "test_subview_containment_get"
+      with Invalid_argument _ -> ()
+    done
+  in
+  test get_char '\000',
+  test get_uint8 0,
+  test BE.get_uint16 0,
+  test BE.get_uint32 0l,
+  test BE.get_uint64 0L,
+  test LE.get_uint16 0,
+  test LE.get_uint32 0l,
+  test LE.get_uint64 0L
+
+(* Steamroll over a buffer and a contained subview, checking that only the
+ * contents of the subview is writable. *)
+let test_subview_containment_set_char,
+    test_subview_containment_set_8,
+    test_subview_containment_set_be16,
+    test_subview_containment_set_be32,
+    test_subview_containment_set_be64,
+    test_subview_containment_set_le16,
+    test_subview_containment_set_le32,
+    test_subview_containment_set_le64
+  =
+  let open Cstruct in
+  let test set ff () =
+    let x = create 24 in
+    let x' = sub x 8 8 in
+    for i = 0 to len x - 1 do set_uint8 x i 0x00 done ;
+    for i = -8 to 8 do
+      try set x' i ff with Invalid_argument _ -> ()
+    done;
+    let acc = ref 0 in
+    for i = 0 to len x - 1 do
+      acc := !acc + get_uint8 x i
+    done ;
+    if !acc <> (len x' * 0xff) then
+      failwith "test_subview_containment_set"
+  in
+  test set_char '\255',
+  test set_uint8 0xff,
+  test BE.set_uint16 0xffff,
+  test BE.set_uint32 0xffffffffl,
+  test BE.set_uint64 0xffffffffffffffffL,
+  test LE.set_uint16 0xffff,
+  test LE.set_uint32 0xffffffffl,
+  test LE.set_uint64 0xffffffffffffffffL
+
 let _ =
   let verbose = ref false in
   Arg.parse [
@@ -291,12 +410,14 @@ let _ =
     "test positive shift" >:: test_positive_shift;
     "test negative shift" >:: test_negative_shift;
     "test bad positive shift" >:: test_bad_positive_shift;
-    "test bad negative shift" >:: test_bad_negative_shift;
     "test sub" >:: test_sub;
+    "test negative sub" >:: test_negative_sub;
     "test sub len too big" >:: test_sub_len_too_big;
     "test sub len too small" >:: test_sub_len_too_small;
     "test sub offset too big" >:: test_sub_offset_too_big;
-    "test sub offset too small" >:: test_sub_offset_too_small;
+    "test of_bigarray negative params" >:: test_of_bigarray_negative_params;
+    "test of_bigarray large offset" >:: test_of_bigarray_large_offset;
+    "test of_bigarray large length" >:: test_of_bigarray_large_length;
     "test set len too big" >:: test_set_len_too_big;
     "test set len too small" >:: test_set_len_too_small;
     "test add len too big" >:: test_add_len_too_big;
@@ -317,6 +438,22 @@ let _ =
     "test_view_bounds_too_small_get_le16"  >:: test_view_bounds_too_small_get_le16;
     "test_view_bounds_too_small_get_le32"  >:: test_view_bounds_too_small_get_le32;
     "test_view_bounds_too_small_get_le64"  >:: test_view_bounds_too_small_get_le64;
+    "test_subview_containment_get_char" >:: test_subview_containment_get_char;
+    "test_subview_containment_get_8"    >:: test_subview_containment_get_8;
+    "test_subview_containment_get_be16" >:: test_subview_containment_get_be16;
+    "test_subview_containment_get_be32" >:: test_subview_containment_get_be32;
+    "test_subview_containment_get_be64" >:: test_subview_containment_get_be64;
+    "test_subview_containment_get_le16" >:: test_subview_containment_get_le16;
+    "test_subview_containment_get_le32" >:: test_subview_containment_get_le32;
+    "test_subview_containment_get_le64" >:: test_subview_containment_get_le64;
+    "test_subview_containment_set_char" >:: test_subview_containment_set_char;
+    "test_subview_containment_set_8"    >:: test_subview_containment_set_8;
+    "test_subview_containment_set_be16" >:: test_subview_containment_set_be16;
+    "test_subview_containment_set_be32" >:: test_subview_containment_set_be32;
+    "test_subview_containment_set_be64" >:: test_subview_containment_set_be64;
+    "test_subview_containment_set_le16" >:: test_subview_containment_set_le16;
+    "test_subview_containment_set_le32" >:: test_subview_containment_set_le32;
+    "test_subview_containment_set_le64" >:: test_subview_containment_set_le64;
   ] in
   run_test_tt ~verbose:!verbose suite
 

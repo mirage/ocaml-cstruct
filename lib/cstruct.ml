@@ -29,18 +29,21 @@ type t = {
 } with sexp
 
 let of_bigarray ?(off=0) ?len buffer =
+  let dim = Bigarray.Array1.dim buffer in
   let len =
     match len with
-    |None -> Bigarray.Array1.dim buffer
-    |Some len -> min len (Bigarray.Array1.dim buffer)
-  in { buffer; off; len }
+    | None     -> dim - off
+    | Some len -> len in
+  if off < 0 || len < 0 || off + len > dim then
+    raise (Invalid_argument "Cstruct.of_bigarray");
+  { buffer; off; len }
 
 let to_bigarray buffer =
   Bigarray.Array1.sub buffer.buffer buffer.off buffer.len
 
 let create len =
-  let ba = Bigarray.Array1.create Bigarray.char Bigarray.c_layout len in
-  of_bigarray ba
+  let buffer = Bigarray.(Array1.create char c_layout len) in
+  { buffer ; len ; off = 0 }
 
 let check_bounds t len =
   Bigarray.Array1.dim t.buffer >= len
@@ -74,20 +77,20 @@ let debug t =
   );
   str
 
-let sub t off len =
-  let off = t.off + off in
-  if len < 0
-     || off < 0
-     || not (check_bounds t (off+len)) then
+let sub t off0 len =
+  let off = t.off + off0 in
+  if off0 < 0 ||
+     len < 0 ||
+     not (check_bounds t (off+len)) then
     raise (Invalid_argument "Cstruct.sub");
   { t with off; len }
 
 let shift t amount =
   let off = t.off + amount in
   let len = t.len - amount in
-  if len < 0
-    || off < 0
-    || not (check_bounds t (off+len)) then
+  if amount < 0 ||
+     amount > t.len ||
+     not (check_bounds t (off+len)) then
     raise (Invalid_argument "Cstruct.shift");
   { t with off; len }
 
@@ -138,46 +141,46 @@ let blit_to_string src srcoff dst dstoff len =
   unsafe_blit_bigstring_to_string src.buffer (src.off+srcoff) dst dstoff len
 
 let set_uint8 t i c =
-  if i >= t.len then raise (Invalid_argument (invalid_bounds i 1)) ;
+  if i >= t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 1)) ;
   EndianBigstring.BigEndian.set_int8 t.buffer (t.off+i) c
 
 let set_char t i c =
-  if i >= t.len then raise (Invalid_argument (invalid_bounds i 1)) ;
+  if i >= t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 1)) ;
   EndianBigstring.BigEndian.set_char t.buffer (t.off+i) c
 
 let get_uint8 t i =
-  if i >= t.len then raise (Invalid_argument (invalid_bounds i 1)) ;
+  if i >= t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 1)) ;
   EndianBigstring.BigEndian.get_uint8 t.buffer (t.off+i)
 
 let get_char t i =
-  if i >= t.len then raise (Invalid_argument (invalid_bounds i 1)) ;
+  if i >= t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 1)) ;
   EndianBigstring.BigEndian.get_char t.buffer (t.off+i)
 
 module BE = struct
   include EndianBigstring.BigEndian
 
   let set_uint16 t i c =
-    if (i+2) > t.len then raise (Invalid_argument (invalid_bounds i 2));
+    if (i+2) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 2));
     set_int16 t.buffer (t.off+i) c
 
   let set_uint32 t i c =
-    if (i+4) > t.len then raise (Invalid_argument (invalid_bounds i 4));
+    if (i+4) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 4));
     set_int32 t.buffer (t.off+i) c
 
   let set_uint64 t i c =
-    if (i+8) > t.len then raise (Invalid_argument (invalid_bounds i 8));
+    if (i+8) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 8));
     set_int64 t.buffer (t.off+i) c
 
   let get_uint16 t i = 
-    if (i+2) > t.len then raise (Invalid_argument (invalid_bounds i 2));
+    if (i+2) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 2));
     get_uint16 t.buffer (t.off+i)
 
   let get_uint32 t i =
-    if (i+4) > t.len then raise (Invalid_argument (invalid_bounds i 4));
+    if (i+4) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 4));
     get_int32 t.buffer (t.off+i)
 
   let get_uint64 t i =
-    if (i+8) > t.len then raise (Invalid_argument (invalid_bounds i 8));
+    if (i+8) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 8));
     get_int64 t.buffer (t.off+i)
 end
 
@@ -185,27 +188,27 @@ module LE = struct
   include EndianBigstring.LittleEndian
 
   let set_uint16 t i c =
-    if (i+2) > t.len then raise (Invalid_argument (invalid_bounds i 2));
+    if (i+2) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 2));
     set_int16 t.buffer (t.off+i) c
 
   let set_uint32 t i c =
-    if (i+4) > t.len then raise (Invalid_argument (invalid_bounds i 4));
+    if (i+4) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 4));
     set_int32 t.buffer (t.off+i) c
 
   let set_uint64 t i c =
-    if (i+8) > t.len then raise (Invalid_argument (invalid_bounds i 8));
+    if (i+8) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 8));
     set_int64 t.buffer (t.off+i) c
 
   let get_uint16 t i = 
-    if (i+2) > t.len then raise (Invalid_argument (invalid_bounds i 2));
+    if (i+2) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 2));
     get_uint16 t.buffer (t.off+i)
 
   let get_uint32 t i =
-    if (i+4) > t.len then raise (Invalid_argument (invalid_bounds i 4));
+    if (i+4) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 4));
     get_int32 t.buffer (t.off+i)
 
   let get_uint64 t i =
-    if (i+8) > t.len then raise (Invalid_argument (invalid_bounds i 8));
+    if (i+8) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 8));
     get_int64 t.buffer (t.off+i)
 end
 
