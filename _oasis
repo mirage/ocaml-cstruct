@@ -19,6 +19,10 @@ Flag unix
   Description: build the UNIX library
   Default: false
 
+Flag camlp4
+  Description: build the camlp4 syntax extension
+  Default: true
+
 Library cstruct
   Path:       lib/
   Modules:    Cstruct
@@ -52,6 +56,7 @@ Library unix_cstruct
   Modules: Unix_cstruct
 
 Library "cstruct-syntax"
+  Build$: flag(camlp4)
   FindlibName: syntax
   FindlibParent: cstruct
   BuildTools: ocamlbuild
