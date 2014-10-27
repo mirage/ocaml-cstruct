@@ -71,8 +71,9 @@ Executable test_bounds
   MainIs:       bounds.ml
 
 Test test_bounds
-  Command:      ./bounds.byte
-  Run:          true
+  Command:          $test_bounds
+  Run:              true
+  WorkingDirectory: _build/lib/
 
 Document api
   Title:              Documentation and API reference
