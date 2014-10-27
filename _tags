@@ -1,10 +1,11 @@
 true: inline(10)
 true: debug
 # OASIS_START
-# DO NOT EDIT (digest: 23fcb4c5868df0e96ba61f6b1ca9719b)
+# DO NOT EDIT (digest: b5a7be3333794aeb5a83a3c81b1efd5e)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
+true: annot, bin_annot
 <**/.svn>: -traverse
 <**/.svn>: not_hygienic
 ".bzr": -traverse
@@ -17,14 +18,14 @@ true: debug
 "_darcs": not_hygienic
 # Library cstruct
 "lib/cstruct.cmxs": use_cstruct
-<lib/*.ml{,i}>: oasis_library_cstruct_ccopt
+<lib/*.ml{,i,y}>: oasis_library_cstruct_ccopt
 "lib/cstruct_stubs.c": oasis_library_cstruct_ccopt
 <lib/cstruct.{cma,cmxa}>: use_libcstruct_stubs
-<lib/*.ml{,i}>: pkg_bigarray
-<lib/*.ml{,i}>: pkg_ocplib-endian
-<lib/*.ml{,i}>: pkg_ocplib-endian.bigstring
-<lib/*.ml{,i}>: pkg_sexplib
-<lib/*.ml{,i}>: pkg_sexplib.syntax
+<lib/*.ml{,i,y}>: pkg_bigarray
+<lib/*.ml{,i,y}>: pkg_ocplib-endian
+<lib/*.ml{,i,y}>: pkg_ocplib-endian.bigstring
+<lib/*.ml{,i,y}>: pkg_sexplib
+<lib/*.ml{,i,y}>: pkg_sexplib.syntax
 "lib/cstruct_stubs.c": pkg_bigarray
 "lib/cstruct_stubs.c": pkg_ocplib-endian
 "lib/cstruct_stubs.c": pkg_ocplib-endian.bigstring
@@ -32,38 +33,38 @@ true: debug
 "lib/cstruct_stubs.c": pkg_sexplib.syntax
 # Library async_cstruct
 "async/async_cstruct.cmxs": use_async_cstruct
-<async/*.ml{,i}>: pkg_async
-<async/*.ml{,i}>: pkg_bigarray
-<async/*.ml{,i}>: pkg_ocplib-endian
-<async/*.ml{,i}>: pkg_ocplib-endian.bigstring
-<async/*.ml{,i}>: pkg_sexplib
-<async/*.ml{,i}>: pkg_sexplib.syntax
-<async/*.ml{,i}>: pkg_threads
-<async/*.ml{,i}>: use_cstruct
+<async/*.ml{,i,y}>: pkg_async
+<async/*.ml{,i,y}>: pkg_bigarray
+<async/*.ml{,i,y}>: pkg_ocplib-endian
+<async/*.ml{,i,y}>: pkg_ocplib-endian.bigstring
+<async/*.ml{,i,y}>: pkg_sexplib
+<async/*.ml{,i,y}>: pkg_sexplib.syntax
+<async/*.ml{,i,y}>: pkg_threads
+<async/*.ml{,i,y}>: use_cstruct
 # Library lwt_cstruct
 "lwt/lwt_cstruct.cmxs": use_lwt_cstruct
-<lwt/*.ml{,i}>: pkg_bigarray
-<lwt/*.ml{,i}>: pkg_lwt.unix
-<lwt/*.ml{,i}>: pkg_ocplib-endian
-<lwt/*.ml{,i}>: pkg_ocplib-endian.bigstring
-<lwt/*.ml{,i}>: pkg_sexplib
-<lwt/*.ml{,i}>: pkg_sexplib.syntax
-<lwt/*.ml{,i}>: use_cstruct
+<lwt/*.ml{,i,y}>: pkg_bigarray
+<lwt/*.ml{,i,y}>: pkg_lwt.unix
+<lwt/*.ml{,i,y}>: pkg_ocplib-endian
+<lwt/*.ml{,i,y}>: pkg_ocplib-endian.bigstring
+<lwt/*.ml{,i,y}>: pkg_sexplib
+<lwt/*.ml{,i,y}>: pkg_sexplib.syntax
+<lwt/*.ml{,i,y}>: use_cstruct
 # Library unix_cstruct
 "unix/unix_cstruct.cmxs": use_unix_cstruct
-<unix/*.ml{,i}>: pkg_bigarray
-<unix/*.ml{,i}>: pkg_ocplib-endian
-<unix/*.ml{,i}>: pkg_ocplib-endian.bigstring
-<unix/*.ml{,i}>: pkg_sexplib
-<unix/*.ml{,i}>: pkg_sexplib.syntax
-<unix/*.ml{,i}>: pkg_unix
-<unix/*.ml{,i}>: use_cstruct
+<unix/*.ml{,i,y}>: pkg_bigarray
+<unix/*.ml{,i,y}>: pkg_ocplib-endian
+<unix/*.ml{,i,y}>: pkg_ocplib-endian.bigstring
+<unix/*.ml{,i,y}>: pkg_sexplib
+<unix/*.ml{,i,y}>: pkg_sexplib.syntax
+<unix/*.ml{,i,y}>: pkg_unix
+<unix/*.ml{,i,y}>: use_cstruct
 # Library cstruct-syntax
 "syntax/cstruct-syntax.cmxs": use_cstruct-syntax
-<syntax/*.ml{,i}>: pkg_bigarray
-<syntax/*.ml{,i}>: pkg_camlp4.extend
-<syntax/*.ml{,i}>: pkg_camlp4.lib
-<syntax/*.ml{,i}>: pkg_camlp4.quotations.r
+<syntax/*.ml{,i,y}>: pkg_bigarray
+<syntax/*.ml{,i,y}>: pkg_camlp4.extend
+<syntax/*.ml{,i,y}>: pkg_camlp4.lib
+<syntax/*.ml{,i,y}>: pkg_camlp4.quotations.r
 # Executable test_bounds
 "lib_test/bounds.byte": pkg_bigarray
 "lib_test/bounds.byte": pkg_oUnit
@@ -73,14 +74,14 @@ true: debug
 "lib_test/bounds.byte": pkg_sexplib.syntax
 "lib_test/bounds.byte": pkg_unix
 "lib_test/bounds.byte": use_cstruct
-<lib_test/*.ml{,i}>: pkg_bigarray
-<lib_test/*.ml{,i}>: pkg_oUnit
-<lib_test/*.ml{,i}>: pkg_ocplib-endian
-<lib_test/*.ml{,i}>: pkg_ocplib-endian.bigstring
-<lib_test/*.ml{,i}>: pkg_sexplib
-<lib_test/*.ml{,i}>: pkg_sexplib.syntax
-<lib_test/*.ml{,i}>: pkg_unix
-<lib_test/*.ml{,i}>: use_cstruct
+<lib_test/*.ml{,i,y}>: pkg_bigarray
+<lib_test/*.ml{,i,y}>: pkg_oUnit
+<lib_test/*.ml{,i,y}>: pkg_ocplib-endian
+<lib_test/*.ml{,i,y}>: pkg_ocplib-endian.bigstring
+<lib_test/*.ml{,i,y}>: pkg_sexplib
+<lib_test/*.ml{,i,y}>: pkg_sexplib.syntax
+<lib_test/*.ml{,i,y}>: pkg_unix
+<lib_test/*.ml{,i,y}>: use_cstruct
 # OASIS_STOP
 <syntax/*.ml>: syntax_camlp4o, pkg_camlp4
 <lib_test/*.ml{i}>: syntax_camlp4o, pkg_camlp4, pkg_cstruct.syntax

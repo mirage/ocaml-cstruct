@@ -7,6 +7,12 @@ ifeq ($(MIRAGE_OS),xen)
 UNIX= --disable-unix
 endif
 
+ifeq ($(TESTS),1)
+TEST = --enable-tests
+else
+TEST = --disable-tests
+endif
+
 NAME=cstruct
 J=4
 
@@ -14,7 +20,7 @@ setup.ml: _oasis
 	oasis setup
 
 setup.data: setup.ml
-	ocaml setup.ml -configure $(LWT) $(UNIX) $(ASYNC) --enable-tests
+	ocaml setup.ml -configure $(LWT) $(UNIX) $(ASYNC) $(TEST)
 
 build: setup.data setup.ml
 	ocaml setup.ml -build -j $(J)
