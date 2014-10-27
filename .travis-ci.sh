@@ -18,7 +18,7 @@ opam install --deps-only cstruct
 
 eval `opam config env`
 
-./configure --enable-lwt --enable-asynx
+./configure --enable-lwt --enable-async
 make
 ./test.sh
 
