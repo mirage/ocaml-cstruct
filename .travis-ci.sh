@@ -1,5 +1,3 @@
-OPAM_DEPENDS="ocplib-endian lwt async sexplib"
-
 case "$OCAML_VERSION" in
 3.12) ppa=avsm/ocaml312+opam12 ;;
 4.00) ppa=avsm/ocaml40+opam12  ;;
@@ -13,29 +11,24 @@ sudo apt-get update -qq
 sudo apt-get install -qq ocaml ocaml-native-compilers camlp4-extra opam time
 
 export OPAMYES=1
-echo OCaml version
-ocaml -version
-echo OPAM versions
-opam --version
-opam --git-version
-
 opam init
-opam install ${OPAM_DEPENDS}
+opam pin add cstruct . -n
+opam install async lwt
+opam install --deps-only cstruct
 
-export OPAMVERBOSE=1
-unset TESTS
 eval `opam config env`
+
+./configure --enable-lwt --enable-asynx
 make
 ./test.sh
 
 make clean
-opam pin add cstruct .
-opam install --deps-only -t cstruct
-export TESTS=1
+./configure --enable-lwt --enable-async --enable-tests
 make test
 
 unset OPAMVERBOSE
 if [ "$OCAML_VERSION" = "4.01" ]; then
   opam remove async
 fi
+
 opam install mirage-www

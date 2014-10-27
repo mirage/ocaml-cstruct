@@ -4,7 +4,7 @@ Version:     1.4.0
 Synopsis:    Manipulate external buffers as C-like structs
 Authors:     Anil Madhavapeddy, Richard Mortier, Thomas Gazagnaire, Pierre Chambart, David Kaloper
 License:     ISC
-Plugins:     META (0.3)
+Plugins:     META (0.3), DevFiles (0.3)
 BuildTools:  ocamlbuild
 
 Flag lwt
@@ -17,7 +17,7 @@ Flag async
 
 Flag unix
   Description: build the UNIX library
-  Default:     false
+  Default:     true
 
 Library cstruct
   Path:          lib/
@@ -67,7 +67,7 @@ Executable test_bounds
   Build$:       flag(tests)
   Install:      false
   Path:         lib_test
-  BuildDepends: cstruct,unix,oUnit
+  BuildDepends: cstruct, unix, oUnit
   MainIs:       bounds.ml
 
 Test test_bounds

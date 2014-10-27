@@ -1,44 +1,41 @@
-all: build
+# OASIS_START
+# DO NOT EDIT (digest: a3c674b4239234cbbe53afe090018954)
 
-LWT ?= $(shell if ocamlfind query lwt.unix >/dev/null 2>&1; then echo --enable-lwt; else echo --disable-lwt; fi)
-ASYNC ?= $(shell if ocamlfind query async >/dev/null 2>&1; then echo --enable-async; else echo --disable-async; fi)
-UNIX = --enable-unix
-ifeq ($(MIRAGE_OS),xen)
-UNIX= --disable-unix
-endif
+SETUP = ocaml setup.ml
 
-ifeq ($(TESTS),1)
-TEST = --enable-tests
-else
-TEST = --disable-tests
-endif
+build: setup.data
+	$(SETUP) -build $(BUILDFLAGS)
 
-NAME=cstruct
-J=4
+doc: setup.data build
+	$(SETUP) -doc $(DOCFLAGS)
 
-setup.ml: _oasis
-	oasis setup
+test: setup.data build
+	$(SETUP) -test $(TESTFLAGS)
 
-setup.data: setup.ml
-	ocaml setup.ml -configure $(LWT) $(UNIX) $(ASYNC) $(TEST)
+all:
+	$(SETUP) -all $(ALLFLAGS)
 
-build: setup.data setup.ml
-	ocaml setup.ml -build -j $(J)
+install: setup.data
+	$(SETUP) -install $(INSTALLFLAGS)
 
-doc: setup.data setup.ml
-	ocaml setup.ml -doc -j $(J)
+uninstall: setup.data
+	$(SETUP) -uninstall $(UNINSTALLFLAGS)
 
-install: setup.data setup.ml
-	ocaml setup.ml -install
-
-test: setup.ml build
-	./test.sh
-	ocaml setup.ml -test
-
-reinstall: setup.ml
-	ocamlfind remove $(NAME) || true
-	ocaml setup.ml -reinstall
+reinstall: setup.data
+	$(SETUP) -reinstall $(REINSTALLFLAGS)
 
 clean:
-	ocamlbuild -clean
-	rm -f setup.data setup.log
+	$(SETUP) -clean $(CLEANFLAGS)
+
+distclean:
+	$(SETUP) -distclean $(DISTCLEANFLAGS)
+
+setup.data:
+	$(SETUP) -configure $(CONFIGUREFLAGS)
+
+configure:
+	$(SETUP) -configure $(CONFIGUREFLAGS)
+
+.PHONY: build doc test all install uninstall reinstall clean distclean configure
+
+# OASIS_STOP
