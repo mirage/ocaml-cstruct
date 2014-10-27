@@ -24,6 +24,8 @@ make
 
 make clean
 ./configure --enable-lwt --enable-async --enable-tests
+# workaround bug in _oasis: `dllcstruct_stubs.so: cannot open shared object file`
+make install
 make test
 
 unset OPAMVERBOSE
