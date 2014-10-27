@@ -10,7 +10,15 @@ tags: [
   "org:xapi-project"
 ]
 
-build:   [make]
+build: [
+  ["./configure"
+      "--prefix" prefix
+      "--%{lwt:enable}%-lwt"
+      "--%{async:enable}%-async"
+      "--%{base-unix:enable}%-unix"
+      "--%{ounit:enable}%-tests"]
+  [make]
+]
 install: [make "install"]
 remove:  ["ocamlfind" "remove" "cstruct"]
 depends: [
