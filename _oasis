@@ -64,7 +64,7 @@ Library "cstruct-syntax"
   XMETARequires:    camlp4
 
 Executable test_bounds
-  Build$:       flag(tests)
+  Build$:       flag(tests) && flag(unix)
   Install:      false
   Path:         lib_test
   BuildDepends: cstruct, unix, oUnit
