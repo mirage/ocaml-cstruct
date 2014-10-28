@@ -4,79 +4,81 @@ Version:     1.4.0
 Synopsis:    Manipulate external buffers as C-like structs
 Authors:     Anil Madhavapeddy, Richard Mortier, Thomas Gazagnaire, Pierre Chambart, David Kaloper
 License:     ISC
-Plugins:     META (0.3)
+Plugins:     META (0.3), DevFiles (0.3)
 BuildTools:  ocamlbuild
 
 Flag lwt
   Description: build the Lwt library
-  Default: false
+  Default:     false
 
 Flag async
   Description: build the Async_unix library
-  Default: false
+  Default:     false
 
 Flag unix
   Description: build the UNIX library
-  Default: false
+  Default:     true
 
 Library cstruct
-  Path:       lib/
-  Modules:    Cstruct
-  BuildDepends: bigarray, ocplib-endian, ocplib-endian.bigstring, sexplib, sexplib.syntax
+  Path:          lib/
+  Modules:       Cstruct
+  BuildDepends:  bigarray, ocplib-endian, ocplib-endian.bigstring, sexplib, sexplib.syntax
   XMETARequires: bigarray, ocplib-endian, ocplib-endian.bigstring, sexplib
-  CSources: cstruct_stubs.c
-  CCOpt:    -O3 -Wall
+  CSources:      cstruct_stubs.c
+  CCOpt:         -O3 -Wall
 
 Library async_cstruct
-  Build$:     flag(async)
-  Path:       async/
-  BuildDepends: cstruct,async,threads
-  Findlibname: async
+  Build$:        flag(async)
+  Path:          async/
+  BuildDepends:  cstruct,async,threads
+  Findlibname:   async
   Findlibparent: cstruct
-  Modules: Async_cstruct
+  Modules:       Async_cstruct
 
 Library lwt_cstruct
-  Build$:     flag(lwt)
-  Path:       lwt/
-  BuildDepends: cstruct,lwt.unix
-  Findlibname: lwt
+  Build$:        flag(lwt)
+  Path:          lwt/
+  BuildDepends:  cstruct,lwt.unix
+  Findlibname:   lwt
   Findlibparent: cstruct
-  Modules: Lwt_cstruct
+  Modules:       Lwt_cstruct
 
 Library unix_cstruct
-  Build$:             flag(unix)
-  Path:       unix/
-  BuildDepends: cstruct,unix
-  Findlibname: unix
+  Build$:        flag(unix)
+  Path:          unix/
+  BuildDepends:  cstruct,unix
+  Findlibname:   unix
   Findlibparent: cstruct
-  Modules: Unix_cstruct
+  Modules:       Unix_cstruct
 
 Library "cstruct-syntax"
-  FindlibName: syntax
-  FindlibParent: cstruct
-  BuildTools: ocamlbuild
-  Path: syntax
-  BuildDepends: camlp4.lib, camlp4.quotations.r, camlp4.extend, bigarray
-  Modules: Pa_cstruct
-  XMETAEnable: true
-  XMETAType: syntax
+  FindlibName:      syntax
+  FindlibParent:    cstruct
+  BuildTools:       ocamlbuild
+  Path:             syntax
+  BuildDepends:     camlp4.lib, camlp4.quotations.r, camlp4.extend, bigarray
+  Modules:          Pa_cstruct
+  XMETAEnable:      true
+  XMETAType:        syntax
   XMETADescription: Syntax extension for Cstruct
-  XMETARequires: camlp4
+  XMETARequires:    camlp4
 
 Executable test_bounds
+  Build$:       flag(tests) && flag(unix)
   Install:      false
   Path:         lib_test
-  BuildDepends: cstruct,unix,oUnit
+  BuildDepends: cstruct, unix, oUnit
   MainIs:       bounds.ml
 
 Test test_bounds
-  Command:      ./bounds.byte
-  Run:          true
+  Command:          $test_bounds
+  Run:              true
+  WorkingDirectory: _build/lib/
 
 Document api
-  Title: Documentation and API reference
-  Type: ocamlbuild (0.3)
-  BuildTools+: ocamldoc
-  XOcamlbuildPath: doc
+  Title:              Documentation and API reference
+  Type:               ocamlbuild (0.3)
+  BuildTools+:        ocamldoc
+  XOcamlbuildPath:    doc
   XOcamlbuildModules: Cstruct, Lwt_cstruct, Unix_cstruct
-  Install: false
+  Install:            false
