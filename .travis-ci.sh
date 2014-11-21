@@ -31,5 +31,3 @@ unset OPAMVERBOSE
 if [ "$OCAML_VERSION" = "4.01" ]; then
   opam remove async
 fi
-
-opam install mirage-www
