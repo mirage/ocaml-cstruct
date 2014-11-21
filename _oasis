@@ -19,6 +19,10 @@ Flag unix
   Description: build the UNIX library
   Default:     true
 
+Flag camlp4
+  Description: build the camlp4 syntax extension
+  Default: true
+
 Library cstruct
   Path:          lib/
   Modules:       Cstruct
@@ -52,16 +56,17 @@ Library unix_cstruct
   Modules:       Unix_cstruct
 
 Library "cstruct-syntax"
-  FindlibName:      syntax
-  FindlibParent:    cstruct
-  BuildTools:       ocamlbuild
-  Path:             syntax
-  BuildDepends:     camlp4.lib, camlp4.quotations.r, camlp4.extend, bigarray
-  Modules:          Pa_cstruct
-  XMETAEnable:      true
-  XMETAType:        syntax
+  Build$:        flag(camlp4)
+  FindlibName:   syntax
+  FindlibParent: cstruct
+  BuildTools:    ocamlbuild
+  Path:          syntax
+  BuildDepends:  camlp4.lib, camlp4.quotations.r, camlp4.extend, bigarray
+  Modules:       Pa_cstruct
+  XMETAEnable:   true
+  XMETAType:     syntax
   XMETADescription: Syntax extension for Cstruct
-  XMETARequires:    camlp4
+  XMETARequires: camlp4
 
 Executable test_bounds
   Build$:       flag(tests) && flag(unix)
