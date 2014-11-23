@@ -5,3 +5,12 @@ _build/
 dist/
 *.docdir
 *.byte
+*.annot
+*.cmo
+*.cma
+*.cmi
+*.a
+*.o
+*.cmx
+*.cmxs
+*.cmxa
