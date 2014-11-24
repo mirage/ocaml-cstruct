@@ -1,0 +1,21 @@
+PKG lwt
+PKG lwt.unix
+PKG async
+PKG oUnit
+PKG core
+PKG ocplib-endian
+PKG ocplib-endian.bigstring
+PKG sexplib
+PKG sexplib.syntax
+
+S async
+S lib
+S lib_test
+S lwt
+S unix
+
+B _build/lib
+B _build/lib_test
+B _build/lwt
+B _build/async
+B _build/unix
