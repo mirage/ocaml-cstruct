@@ -1,6 +1,8 @@
-1.5.0 (2014-09-02):
-* Make `camlp4` an optional build-time dependency.
+1.5.0 (2014-11-24):
+* Make `camlp4` an optional build-time dependency (#35).
 * Remove `ounit` as a dependency in the `opam` file.
+* Improve `opam` description file for OPAM 1.2 workflow (#36).
+* Refresh Merlin IDE description (#37).
 
 1.4.0 (2014-08-10):
 Comprehensive addition of bounds checking to all cstruct operations
