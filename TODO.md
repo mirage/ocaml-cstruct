@@ -1,7 +1,8 @@
-Blocking a 1.0 release:
+Nice-to-have for a 2.0 release:
+
+* Bounds checking elimination at attach-time (possibly interface-breaking)
 
 * Document the signatures for ocamldoc
-* Bounds checking elimination at attach-time (possibly interface-breaking)
 
 Nice to have:
 
