@@ -1,7 +1,7 @@
 true: inline(10)
 true: debug
 # OASIS_START
-# DO NOT EDIT (digest: b5a7be3333794aeb5a83a3c81b1efd5e)
+# DO NOT EDIT (digest: 2294297877c0e9e59d96916950a13297)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -22,11 +22,13 @@ true: annot, bin_annot
 "lib/cstruct_stubs.c": oasis_library_cstruct_ccopt
 <lib/cstruct.{cma,cmxa}>: use_libcstruct_stubs
 <lib/*.ml{,i,y}>: pkg_bigarray
+<lib/*.ml{,i,y}>: pkg_bytes
 <lib/*.ml{,i,y}>: pkg_ocplib-endian
 <lib/*.ml{,i,y}>: pkg_ocplib-endian.bigstring
 <lib/*.ml{,i,y}>: pkg_sexplib
 <lib/*.ml{,i,y}>: pkg_sexplib.syntax
 "lib/cstruct_stubs.c": pkg_bigarray
+"lib/cstruct_stubs.c": pkg_bytes
 "lib/cstruct_stubs.c": pkg_ocplib-endian
 "lib/cstruct_stubs.c": pkg_ocplib-endian.bigstring
 "lib/cstruct_stubs.c": pkg_sexplib
@@ -35,6 +37,7 @@ true: annot, bin_annot
 "async/async_cstruct.cmxs": use_async_cstruct
 <async/*.ml{,i,y}>: pkg_async
 <async/*.ml{,i,y}>: pkg_bigarray
+<async/*.ml{,i,y}>: pkg_bytes
 <async/*.ml{,i,y}>: pkg_ocplib-endian
 <async/*.ml{,i,y}>: pkg_ocplib-endian.bigstring
 <async/*.ml{,i,y}>: pkg_sexplib
@@ -44,6 +47,7 @@ true: annot, bin_annot
 # Library lwt_cstruct
 "lwt/lwt_cstruct.cmxs": use_lwt_cstruct
 <lwt/*.ml{,i,y}>: pkg_bigarray
+<lwt/*.ml{,i,y}>: pkg_bytes
 <lwt/*.ml{,i,y}>: pkg_lwt.unix
 <lwt/*.ml{,i,y}>: pkg_ocplib-endian
 <lwt/*.ml{,i,y}>: pkg_ocplib-endian.bigstring
@@ -53,6 +57,7 @@ true: annot, bin_annot
 # Library unix_cstruct
 "unix/unix_cstruct.cmxs": use_unix_cstruct
 <unix/*.ml{,i,y}>: pkg_bigarray
+<unix/*.ml{,i,y}>: pkg_bytes
 <unix/*.ml{,i,y}>: pkg_ocplib-endian
 <unix/*.ml{,i,y}>: pkg_ocplib-endian.bigstring
 <unix/*.ml{,i,y}>: pkg_sexplib
@@ -67,6 +72,7 @@ true: annot, bin_annot
 <syntax/*.ml{,i,y}>: pkg_camlp4.quotations.r
 # Executable test_bounds
 "lib_test/bounds.byte": pkg_bigarray
+"lib_test/bounds.byte": pkg_bytes
 "lib_test/bounds.byte": pkg_oUnit
 "lib_test/bounds.byte": pkg_ocplib-endian
 "lib_test/bounds.byte": pkg_ocplib-endian.bigstring
@@ -75,6 +81,7 @@ true: annot, bin_annot
 "lib_test/bounds.byte": pkg_unix
 "lib_test/bounds.byte": use_cstruct
 <lib_test/*.ml{,i,y}>: pkg_bigarray
+<lib_test/*.ml{,i,y}>: pkg_bytes
 <lib_test/*.ml{,i,y}>: pkg_oUnit
 <lib_test/*.ml{,i,y}>: pkg_ocplib-endian
 <lib_test/*.ml{,i,y}>: pkg_ocplib-endian.bigstring
