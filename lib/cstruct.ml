@@ -117,13 +117,13 @@ external unsafe_blit_bigstring_to_bigstring : buffer -> int -> buffer -> int -> 
 
 external unsafe_blit_string_to_bigstring : string -> int -> buffer -> int -> int -> unit = "caml_blit_string_to_bigstring" "noalloc"
 
-external unsafe_blit_bigstring_to_string : buffer -> int -> string -> int -> int -> unit = "caml_blit_bigstring_to_string" "noalloc"
+external unsafe_blit_bigstring_to_bytes : buffer -> int -> Bytes.t -> int -> int -> unit = "caml_blit_bigstring_to_bytes" "noalloc"
 
 let copy src srcoff len =
   if len < 0 || srcoff < 0 || src.len - srcoff < len then raise (Invalid_argument (invalid_bounds srcoff len));
-  let s = String.create len in
-  unsafe_blit_bigstring_to_string src.buffer (src.off+srcoff) s 0 len;
-  s
+  let s = Bytes.create len in
+  unsafe_blit_bigstring_to_bytes src.buffer (src.off+srcoff) s 0 len;
+  Bytes.unsafe_to_string s
 
 let blit src srcoff dst dstoff len =
   if len < 0 || srcoff < 0 || src.len - srcoff < len then raise (Invalid_argument (invalid_bounds srcoff len));
@@ -135,10 +135,13 @@ let blit_from_string src srcoff dst dstoff len =
   if dst.len - dstoff < len then raise (Invalid_argument (invalid_bounds dstoff len));
   unsafe_blit_string_to_bigstring src srcoff dst.buffer (dst.off+dstoff) len
 
-let blit_to_string src srcoff dst dstoff len =
+let blit_from_bytes src srcoff dst dstoff len =
+  blit_from_string (Bytes.unsafe_to_string src) srcoff dst dstoff len
+
+let blit_to_bytes src srcoff dst dstoff len =
   if len < 0 || srcoff < 0 || dstoff < 0 || src.len - srcoff < len then raise (Invalid_argument (invalid_bounds srcoff len));
-  if String.length dst - dstoff < len then raise (Invalid_argument (invalid_bounds dstoff len));
-  unsafe_blit_bigstring_to_string src.buffer (src.off+srcoff) dst dstoff len
+  if Bytes.length dst - dstoff < len then raise (Invalid_argument (invalid_bounds dstoff len));
+  unsafe_blit_bigstring_to_bytes src.buffer (src.off+srcoff) dst dstoff len
 
 let set_uint8 t i c =
   if i >= t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 1)) ;
@@ -222,20 +225,20 @@ let lenv = function
 
 let copyv ts =
   let sz = lenv ts in
-  let dst = String.create sz in
+  let dst = Bytes.create sz in
   let _ = List.fold_left
     (fun off src ->
       let x = len src in
-      unsafe_blit_bigstring_to_string src.buffer src.off dst off x;
+      unsafe_blit_bigstring_to_bytes src.buffer src.off dst off x;
       off + x
     ) 0 ts in
-  dst
+  Bytes.unsafe_to_string dst
 
 let to_string t =
   let sz = len t in
-  let s = String.create sz in
-  unsafe_blit_bigstring_to_string t.buffer t.off s 0 sz;
-  s
+  let s = Bytes.create sz in
+  unsafe_blit_bigstring_to_bytes t.buffer t.off s 0 sz;
+  Bytes.unsafe_to_string s
 
 let of_string ?allocator buf =
   let buflen = String.length buf in
