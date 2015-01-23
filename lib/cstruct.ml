@@ -231,6 +231,23 @@ let copyv ts =
     ) 0 ts in
   dst
 
+let blitv src dst =
+  let rec aux dst n = function
+    | [] -> n, []
+    | hd::tl ->
+        let avail = len dst in
+        let first = len hd in
+        if first <= avail then (
+          blit hd 0 dst 0 first;
+          aux (shift dst first) (n + first) tl
+        ) else (
+          blit hd 0 dst 0 avail;
+          let rest_hd = shift hd first in
+          (n + avail, rest_hd :: tl)
+        ) in
+  aux dst 0 src
+
+
 let to_string t =
   let sz = len t in
   let s = String.create sz in
