@@ -378,6 +378,11 @@ val copyv: t list -> string
 (** [copyv cstrs] is the string representation of the concatenation of
     all cstructs in [cstrs]. *)
 
+val buffer: t list -> t -> int * t list
+(** [buffer src dst] copies from [src] to [dst] until [src] is exhausted or [dst] is full.
+ * Returns the number of bytes copied and the remaining data from [src], if any.
+ * This is useful if you want buffer data into fixed-sized chunks. *)
+
 (** {2 Iterations} *)
 
 type 'a iter = unit -> 'a option
