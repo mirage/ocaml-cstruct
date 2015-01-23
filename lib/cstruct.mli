@@ -378,6 +378,13 @@ val copyv: t list -> string
 (** [copyv cstrs] is the string representation of the concatenation of
     all cstructs in [cstrs]. *)
 
+val blitv: t list -> t -> int * t list
+(** [blitv src dst] will copy the list of [src] buffers into [dst] and
+    return a tuple of the total number of bytes written and a list of
+    any uncopied buffers.  [blitv] will never raise an exception, since
+    it returns any uncopied bytes if the [dst] buffer is not big enough
+    to fit the full list of [src] buffers. *)
+
 (** {2 Iterations} *)
 
 type 'a iter = unit -> 'a option
