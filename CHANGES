@@ -1,5 +1,5 @@
 1.6.0 (trunk):
-* Add `blitv` to copy over a list of buffers (from Thomas Leonard).
+* Add `fillv` to copy over a list of buffers (from Thomas Leonard).
 
 1.5.0 (2014-11-24):
 * Make `camlp4` an optional build-time dependency (#35).

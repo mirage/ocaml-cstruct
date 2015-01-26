@@ -231,7 +231,7 @@ let copyv ts =
     ) 0 ts in
   dst
 
-let blitv src dst =
+let fillv ~src ~dst =
   let rec aux dst n = function
     | [] -> n, []
     | hd::tl ->

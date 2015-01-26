@@ -378,12 +378,10 @@ val copyv: t list -> string
 (** [copyv cstrs] is the string representation of the concatenation of
     all cstructs in [cstrs]. *)
 
-val blitv: t list -> t -> int * t list
-(** [blitv src dst] will copy the list of [src] buffers into [dst] and
-    return a tuple of the total number of bytes written and a list of
-    any uncopied buffers.  [blitv] will never raise an exception, since
-    it returns any uncopied bytes if the [dst] buffer is not big enough
-    to fit the full list of [src] buffers. *)
+val fillv: src:t list -> dst:t -> int * t list
+(** [fillv ~src ~dst] copies from [src] to [dst] until [src] is exhausted or [dst] is full.
+ * Returns the number of bytes copied and the remaining data from [src], if any.
+ * This is useful if you want buffer data into fixed-sized chunks. *)
 
 (** {2 Iterations} *)
 
