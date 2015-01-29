@@ -19,14 +19,11 @@ open Sexplib.Std
 
 type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
 
-let buffer_of_sexp b = Sexplib.Conv.bigstring_of_sexp b
-let sexp_of_buffer b = Sexplib.Conv.sexp_of_bigstring b
-
 type t = {
   buffer: buffer;
   off   : int;
   len   : int;
-} with sexp
+}
 
 let of_bigarray ?(off=0) ?len buffer =
   let dim = Bigarray.Array1.dim buffer in
@@ -312,3 +309,9 @@ let iter lenfn pfn buf =
 let rec fold f next acc = match next () with
   | None -> acc
   | Some v -> fold f next (f acc v)
+
+let buffer_of_sexp b = Sexplib.Conv.bigstring_of_sexp b
+let sexp_of_buffer b = Sexplib.Conv.sexp_of_bigstring b
+
+let t_of_sexp s = of_bigarray (buffer_of_sexp s)
+let sexp_of_t t = sexp_of_buffer (to_bigarray t)
