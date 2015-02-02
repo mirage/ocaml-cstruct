@@ -310,8 +310,22 @@ let rec fold f next acc = match next () with
   | None -> acc
   | Some v -> fold f next (f acc v)
 
-let buffer_of_sexp b = Sexplib.Conv.bigstring_of_sexp b
-let sexp_of_buffer b = Sexplib.Conv.sexp_of_bigstring b
 
-let t_of_sexp s = of_bigarray (buffer_of_sexp s)
-let sexp_of_t t = sexp_of_buffer (to_bigarray t)
+open Sexplib
+
+let buffer_of_sexp b = Conv.bigstring_of_sexp b
+let sexp_of_buffer b = Conv.sexp_of_bigstring b
+
+let t_of_sexp = function
+  | Sexp.Atom str ->
+      let n = String.length str in
+      let t = create n in
+      blit_from_string str 0 t 0 n ;
+      t
+  | sexp -> Conv.of_sexp_error "Cstruct.t_of_sexp: atom needed" sexp
+
+let sexp_of_t t =
+  let n   = len t in
+  let str = String.create n in
+  blit_to_string t 0 str 0 n ;
+  Sexp.Atom str
