@@ -188,8 +188,7 @@ val equal : t -> t -> bool
     bytes. *)
 
 val compare : t -> t -> int
-(** [compare t1 t2] is [-1] if [t1] precedes [t2] by lexicographical order, [1]
-    if [t2] precedes [t1], and [0] otherwise. *)
+(** [compare t1 t2] gives an unspecified total ordering over {!t}. *)
 
 (** {2 Getters and Setters } *)
 

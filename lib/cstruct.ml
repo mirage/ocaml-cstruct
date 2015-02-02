@@ -145,12 +145,14 @@ let blit_to_string src srcoff dst dstoff len =
 let compare t1 t2 =
   let l1 = t1.len
   and l2 = t2.len in
-  match unsafe_compare_bigstring t1.buffer t1.off t2.buffer t2.off (min l1 l2) with
-  | 0 -> compare l1 l2
-  | r -> if r < 0 then -1 else 1
+  match compare l1 l2 with
+  | 0 ->
+    ( match unsafe_compare_bigstring t1.buffer t1.off t2.buffer t2.off l1 with
+      | 0 -> 0
+      | r -> if r < 0 then -1 else 1 )
+  | r -> r
 
-let equal t1 t2 =
-  t1.len = t2.len && compare t1 t2 = 0
+let equal t1 t2 = compare t1 t2 = 0
 
 let set_uint8 t i c =
   if i >= t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 1)) ;
