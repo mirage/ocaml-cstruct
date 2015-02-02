@@ -51,3 +51,12 @@ caml_blit_bigstring_to_bigstring(value val_buf1, value val_ofs1, value val_buf2,
          Long_val(val_len));
   return Val_unit;
 }
+
+CAMLprim value
+caml_compare_bigstring(value val_buf1, value val_ofs1, value val_buf2, value val_ofs2, value val_len)
+{
+  int res = memcmp((char*)Caml_ba_data_val(val_buf1) + Long_val(val_ofs1),
+                   (char*)Caml_ba_data_val(val_buf2) + Long_val(val_ofs2),
+                   Long_val(val_len));
+  return Val_int(res);
+}
