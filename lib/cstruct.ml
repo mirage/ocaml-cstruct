@@ -149,7 +149,8 @@ let compare t1 t2 =
   | 0 -> compare l1 l2
   | r -> if r < 0 then -1 else 1
 
-let equal t1 t2 = compare t1 t2 = 0
+let equal t1 t2 =
+  t1.len = t2.len && compare t1 t2 = 0
 
 let set_uint8 t i c =
   if i >= t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 1)) ;
