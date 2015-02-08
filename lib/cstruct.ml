@@ -285,8 +285,14 @@ let hexdump_to_buffer buf t =
   Buffer.add_char buf '\n'
 
 let split ?(start=0) t off =
-  let header = sub t start off in
-  let body = sub t (start+off) (len t - off - start) in
+  let header =
+    try sub t start off
+    with Invalid_argument _ -> raise (Invalid_argument "Cstruct.split[header]")
+  in
+  let body =
+    try sub t (start+off) (len t - off - start)
+    with Invalid_argument _ -> raise (Invalid_argument "Cstruct.split[body]")
+  in
   header, body
 
 type 'a iter = unit -> 'a option
@@ -303,7 +309,10 @@ let iter lenfn pfn buf =
           body := None;
           None
         |Some plen ->
-          let p,rest = split buf plen in
+          let p,rest =
+            try split buf plen
+            with Invalid_argument _ -> raise (Invalid_argument "Cstruct.iter")
+          in
           body := Some rest;
           Some (pfn p)
       end
