@@ -182,7 +182,7 @@ module BE = struct
     if (i+8) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 8));
     set_int64 t.buffer (t.off+i) c
 
-  let get_uint16 t i = 
+  let get_uint16 t i =
     if (i+2) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 2));
     get_uint16 t.buffer (t.off+i)
 
@@ -210,7 +210,7 @@ module LE = struct
     if (i+8) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 8));
     set_int64 t.buffer (t.off+i) c
 
-  let get_uint16 t i = 
+  let get_uint16 t i =
     if (i+2) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 2));
     get_uint16 t.buffer (t.off+i)
 
@@ -268,15 +268,15 @@ let to_string t =
 let of_string ?allocator buf =
   let buflen = String.length buf in
   match allocator with
-  |None -> 
+  |None ->
     let c = create buflen in
     blit_from_string buf 0 c 0 buflen;
     c
-  |Some fn -> 
+  |Some fn ->
     let c = fn buflen in
     blit_from_string buf 0 c 0 buflen;
     set_len c buflen
-    
+
 let hexdump t =
   let c = ref 0 in
   for i = 0 to len t - 1 do
