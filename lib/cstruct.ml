@@ -25,15 +25,52 @@ type t = {
   len   : int;
 }
 
+let pp_t ppf t =
+  Format.fprintf ppf "[%d,%d](%d)" t.off t.len (Bigarray.Array1.dim t.buffer)
+let string_t ppf str =
+  Format.fprintf ppf "[%d]" (String.length str)
+
+let err fmt =
+  let b = Buffer.create 20 in                         (* for thread safety. *)
+  let ppf = Format.formatter_of_buffer b in
+  let k ppf = Format.pp_print_flush ppf (); invalid_arg (Buffer.contents b) in
+  Format.kfprintf k ppf fmt
+
+let err_of_bigarray = err "Cstruct.of_bigarray off=%d len=%d"
+let err_sub = err "Cstruct.sub: %a off=%d len=%d" pp_t
+let err_shift = err "Cstruct.shift %a %d" pp_t
+let err_set_len = err "Cstruct.set_len %a %d" pp_t
+let err_add_len = err "Cstruct.add_len %a %d" pp_t
+let err_copy = err "Cstruct.copy %a off=%d len=%d" pp_t
+let err_blit_src src dst =
+  err "Cstruct.blit src=%a dst=%a src-off=%d len=%d" pp_t src pp_t dst
+let err_blit_dst src dst =
+  err "Cstruct.blit src=%a dst=%a dst-off=%d len=%d" pp_t src pp_t dst
+let err_blit_from_string_src src dst =
+  err "Cstruct.blit_from_string src=%a dst=%a src-off=%d len=%d"
+    string_t src pp_t dst
+let err_blit_from_string_dst src dst =
+  err "Cstruct.blit_from_string src=%a dst=%a dst-off=%d len=%d"
+    string_t src pp_t dst
+let err_blit_to_string_src src dst =
+  err "Cstruct.blit_to_string src=%a dst=%a src-off=%d len=%d"
+    pp_t src string_t dst
+let err_blit_to_string_dst src dst=
+  err "Cstruct.blit_to_string src=%a dst=%a dst-off=%d len=%d"
+    pp_t src string_t dst
+let err_invalid_bounds f =
+  err "invalid bounds in Cstruct.%s %a off=%d len=%d" f pp_t
+let err_split = err "Cstruct.split %a start=%d off=%d" pp_t
+let err_iter = err "Cstruct.iter %a i=%d i-len=%d" pp_t
+
 let of_bigarray ?(off=0) ?len buffer =
   let dim = Bigarray.Array1.dim buffer in
   let len =
     match len with
     | None     -> dim - off
     | Some len -> len in
-  if off < 0 || len < 0 || off + len > dim then
-    raise (Invalid_argument "Cstruct.of_bigarray");
-  { buffer; off; len }
+  if off < 0 || len < 0 || off + len > dim then err_of_bigarray off len
+  else { buffer; off; len }
 
 let to_bigarray buffer =
   Bigarray.Array1.sub buffer.buffer buffer.off buffer.len
@@ -67,48 +104,33 @@ type uint64 = int64
 
 let debug t =
   let max_len = Bigarray.Array1.dim t.buffer in
-  let str = Printf.sprintf "t=[%d,%d](%d)" t.off t.len max_len in
   if t.off+t.len > max_len || t.len < 0 || t.off < 0 then (
-    Printf.printf "ERROR: t.off+t.len=%d %s\n%!" (t.off+t.len) str;
+    Format.printf "ERROR: t.off+t.len=%d %a\n%!" (t.off+t.len) pp_t t;
     assert false;
-  );
-  str
+  ) else
+    Format.asprintf "%a" pp_t t
 
 let sub t off0 len =
   let off = t.off + off0 in
-  if off0 < 0 ||
-     len < 0 ||
-     not (check_bounds t (off+len)) then
-    raise (Invalid_argument "Cstruct.sub");
-  { t with off; len }
+  if off0 < 0 || len < 0 || not (check_bounds t (off+len)) then err_sub t off0 len
+  else { t with off; len }
 
 let shift t amount =
   let off = t.off + amount in
   let len = t.len - amount in
-  if amount < 0 ||
-     amount > t.len ||
-     not (check_bounds t (off+len)) then
-    raise (Invalid_argument "Cstruct.shift");
-  { t with off; len }
+  if amount < 0 || amount > t.len || not (check_bounds t (off+len)) then
+    err_shift t amount
+  else { t with off; len }
 
 let set_len t len =
-  if len < 0 || not (check_bounds t (t.off+len)) then
-    raise (Invalid_argument "Cstruct.set_len");
-  { t with len }
+  if len < 0 || not (check_bounds t (t.off+len)) then err_set_len t len
+  else { t with len }
 
 let add_len t len =
   let len = t.len + len in
-  if len < 0 || not (check_bounds t (t.off+len)) then
-    raise (Invalid_argument "Cstruct.add_len");
-  { t with len }
+  if len < 0 || not (check_bounds t (t.off+len)) then err_add_len t len
+  else { t with len }
 
-let invalid_arg fmt =
-  let b = Buffer.create 20 in (* for thread safety. *)
-  let ppf = Format.formatter_of_buffer b in
-  let k ppf = Format.pp_print_flush ppf (); invalid_arg (Buffer.contents b) in
-  Format.kfprintf k ppf fmt
-
-let invalid_bounds j l = invalid_arg "invalid bounds (index %d, length %d)" j l
 
 external unsafe_blit_bigstring_to_bigstring : buffer -> int -> buffer -> int -> int -> unit = "caml_blit_bigstring_to_bigstring" "noalloc"
 
@@ -119,25 +141,37 @@ external unsafe_blit_bigstring_to_string : buffer -> int -> string -> int -> int
 external unsafe_compare_bigstring : buffer -> int -> buffer -> int -> int -> int = "caml_compare_bigstring" "noalloc"
 
 let copy src srcoff len =
-  if len < 0 || srcoff < 0 || src.len - srcoff < len then raise (Invalid_argument (invalid_bounds srcoff len));
-  let s = String.create len in
-  unsafe_blit_bigstring_to_string src.buffer (src.off+srcoff) s 0 len;
-  s
+  if len < 0 || srcoff < 0 || src.len - srcoff < len then
+    err_copy src srcoff len
+  else
+    let s = String.create len in
+    unsafe_blit_bigstring_to_string src.buffer (src.off+srcoff) s 0 len;
+    s
 
 let blit src srcoff dst dstoff len =
-  if len < 0 || srcoff < 0 || src.len - srcoff < len then raise (Invalid_argument (invalid_bounds srcoff len));
-  if dst.len - dstoff < len then raise (Invalid_argument (invalid_bounds dstoff len));
-  unsafe_blit_bigstring_to_bigstring src.buffer (src.off+srcoff) dst.buffer (dst.off+dstoff) len
+  if len < 0 || srcoff < 0 || src.len - srcoff < len then
+    err_blit_src src dst srcoff len
+  else if dst.len - dstoff < len then
+    err_blit_dst src dst dstoff len
+  else
+    unsafe_blit_bigstring_to_bigstring src.buffer (src.off+srcoff) dst.buffer
+      (dst.off+dstoff) len
 
 let blit_from_string src srcoff dst dstoff len =
-  if len < 0 || srcoff < 0 || dstoff < 0 || String.length src - srcoff < len then raise (Invalid_argument (invalid_bounds srcoff len));
-  if dst.len - dstoff < len then raise (Invalid_argument (invalid_bounds dstoff len));
-  unsafe_blit_string_to_bigstring src srcoff dst.buffer (dst.off+dstoff) len
+  if len < 0 || srcoff < 0 || dstoff < 0 || String.length src - srcoff < len then
+    err_blit_from_string_src src dst srcoff len
+  else if dst.len - dstoff < len then
+    err_blit_from_string_dst src dst dstoff len
+  else
+    unsafe_blit_string_to_bigstring src srcoff dst.buffer (dst.off+dstoff) len
 
 let blit_to_string src srcoff dst dstoff len =
-  if len < 0 || srcoff < 0 || dstoff < 0 || src.len - srcoff < len then raise (Invalid_argument (invalid_bounds srcoff len));
-  if String.length dst - dstoff < len then raise (Invalid_argument (invalid_bounds dstoff len));
-  unsafe_blit_bigstring_to_string src.buffer (src.off+srcoff) dst dstoff len
+  if len < 0 || srcoff < 0 || dstoff < 0 || src.len - srcoff < len then
+    err_blit_to_string_src src dst srcoff len
+  else if String.length dst - dstoff < len then
+    err_blit_to_string_dst src dst dstoff len
+  else
+    unsafe_blit_bigstring_to_string src.buffer (src.off+srcoff) dst dstoff len
 
 let compare t1 t2 =
   let l1 = t1.len
@@ -152,75 +186,75 @@ let compare t1 t2 =
 let equal t1 t2 = compare t1 t2 = 0
 
 let set_uint8 t i c =
-  if i >= t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 1)) ;
-  EndianBigstring.BigEndian.set_int8 t.buffer (t.off+i) c
+  if i >= t.len || i < 0 then err_invalid_bounds "set_uint8" t i 1
+  else EndianBigstring.BigEndian.set_int8 t.buffer (t.off+i) c
 
 let set_char t i c =
-  if i >= t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 1)) ;
-  EndianBigstring.BigEndian.set_char t.buffer (t.off+i) c
+  if i >= t.len || i < 0 then err_invalid_bounds "set_char" t i 1
+  else EndianBigstring.BigEndian.set_char t.buffer (t.off+i) c
 
 let get_uint8 t i =
-  if i >= t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 1)) ;
-  EndianBigstring.BigEndian.get_uint8 t.buffer (t.off+i)
+  if i >= t.len || i < 0 then err_invalid_bounds "get_uint8" t i 1
+  else EndianBigstring.BigEndian.get_uint8 t.buffer (t.off+i)
 
 let get_char t i =
-  if i >= t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 1)) ;
-  EndianBigstring.BigEndian.get_char t.buffer (t.off+i)
+  if i >= t.len || i < 0 then err_invalid_bounds "get_char" t i 1
+  else EndianBigstring.BigEndian.get_char t.buffer (t.off+i)
 
 module BE = struct
   include EndianBigstring.BigEndian
 
   let set_uint16 t i c =
-    if (i+2) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 2));
-    set_int16 t.buffer (t.off+i) c
+    if (i+2) > t.len || i < 0 then err_invalid_bounds "BE.set_uint16" t i 2
+    else set_int16 t.buffer (t.off+i) c
 
   let set_uint32 t i c =
-    if (i+4) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 4));
-    set_int32 t.buffer (t.off+i) c
+    if (i+4) > t.len || i < 0 then err_invalid_bounds "BE.set_uint32" t i 4
+    else set_int32 t.buffer (t.off+i) c
 
   let set_uint64 t i c =
-    if (i+8) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 8));
-    set_int64 t.buffer (t.off+i) c
+    if (i+8) > t.len || i < 0 then err_invalid_bounds "BE.set_uint64" t i 8
+    else set_int64 t.buffer (t.off+i) c
 
   let get_uint16 t i =
-    if (i+2) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 2));
-    get_uint16 t.buffer (t.off+i)
+    if (i+2) > t.len || i < 0 then err_invalid_bounds "BE.get_uint16" t i 2
+    else get_uint16 t.buffer (t.off+i)
 
   let get_uint32 t i =
-    if (i+4) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 4));
-    get_int32 t.buffer (t.off+i)
+    if (i+4) > t.len || i < 0 then err_invalid_bounds "BE.get_uint32" t i 4
+    else get_int32 t.buffer (t.off+i)
 
   let get_uint64 t i =
-    if (i+8) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 8));
-    get_int64 t.buffer (t.off+i)
+    if (i+8) > t.len || i < 0 then err_invalid_bounds "BE.uint64" t i 8
+    else get_int64 t.buffer (t.off+i)
 end
 
 module LE = struct
   include EndianBigstring.LittleEndian
 
   let set_uint16 t i c =
-    if (i+2) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 2));
-    set_int16 t.buffer (t.off+i) c
+    if (i+2) > t.len || i < 0 then err_invalid_bounds "LE.set_uint16" t i 2
+    else set_int16 t.buffer (t.off+i) c
 
   let set_uint32 t i c =
-    if (i+4) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 4));
-    set_int32 t.buffer (t.off+i) c
+    if (i+4) > t.len || i < 0 then err_invalid_bounds "LE.set_uint32" t i 4
+    else set_int32 t.buffer (t.off+i) c
 
   let set_uint64 t i c =
-    if (i+8) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 8));
-    set_int64 t.buffer (t.off+i) c
+    if (i+8) > t.len || i < 0 then err_invalid_bounds "LE.set_uint64" t i 8
+    else set_int64 t.buffer (t.off+i) c
 
   let get_uint16 t i =
-    if (i+2) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 2));
-    get_uint16 t.buffer (t.off+i)
+    if (i+2) > t.len || i < 0 then err_invalid_bounds "LE.set_uint16" t i 2
+    else get_uint16 t.buffer (t.off+i)
 
   let get_uint32 t i =
-    if (i+4) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 4));
-    get_int32 t.buffer (t.off+i)
+    if (i+4) > t.len || i < 0 then err_invalid_bounds "LE.get_uint32" t i 4
+    else get_int32 t.buffer (t.off+i)
 
   let get_uint64 t i =
-    if (i+8) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 8));
-    get_int64 t.buffer (t.off+i)
+    if (i+8) > t.len || i < 0 then err_invalid_bounds "LE.get_uint64" t i 8
+    else get_int64 t.buffer (t.off+i)
 end
 
 let len t =
@@ -296,13 +330,16 @@ let hexdump_to_buffer buf t =
   Buffer.add_char buf '\n'
 
 let split ?(start=0) t off =
-  let header = sub t start off in
-  let body = sub t (start+off) (len t - off - start) in
-  header, body
+  try
+    let header =sub t start off in
+    let body = sub t (start+off) (len t - off - start) in
+    header, body
+  with Invalid_argument _ -> err_split t start off
 
 type 'a iter = unit -> 'a option
-let iter lenfn pfn buf =
-  let body = ref (Some buf) in
+let iter lenfn pfn t =
+  let body = ref (Some t) in
+  let i = ref 0 in
   fun () ->
     match !body with
       |Some buf when len buf = 0 ->
@@ -314,7 +351,10 @@ let iter lenfn pfn buf =
           body := None;
           None
         |Some plen ->
-          let p,rest = split buf plen in
+          incr i;
+          let p,rest =
+            try split buf plen with Invalid_argument _ -> err_iter buf !i plen
+          in
           body := Some rest;
           Some (pfn p)
       end
