@@ -69,7 +69,7 @@ let debug t =
   let max_len = Bigarray.Array1.dim t.buffer in
   let str = Printf.sprintf "t=[%d,%d](%d)" t.off t.len max_len in
   if t.off+t.len > max_len || t.len < 0 || t.off < 0 then (
-    Printf.printf "ERROR: t.off+t.len=%d %s\n" (t.off+t.len) str;
+    Printf.printf "ERROR: t.off+t.len=%d %s\n%!" (t.off+t.len) str;
     assert false;
   );
   str
