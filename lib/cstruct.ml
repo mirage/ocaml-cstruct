@@ -118,6 +118,8 @@ external unsafe_blit_bigstring_to_string : buffer -> int -> string -> int -> int
 
 external unsafe_compare_bigstring : buffer -> int -> buffer -> int -> int -> int = "caml_compare_bigstring" "noalloc"
 
+external unsafe_fill_bigstring : buffer -> int -> int -> int -> unit = "caml_fill_bigstring" "noalloc"
+
 let copy src srcoff len =
   if len < 0 || srcoff < 0 || src.len - srcoff < len then raise (Invalid_argument (invalid_bounds srcoff len));
   let s = String.create len in
@@ -150,6 +152,8 @@ let compare t1 t2 =
   | r -> r
 
 let equal t1 t2 = compare t1 t2 = 0
+
+let set t x = unsafe_fill_bigstring t.buffer t.off t.len x
 
 let set_uint8 t i c =
   if i >= t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 1)) ;
