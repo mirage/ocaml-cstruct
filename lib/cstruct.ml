@@ -69,7 +69,7 @@ let debug t =
   let max_len = Bigarray.Array1.dim t.buffer in
   let str = Printf.sprintf "t=[%d,%d](%d)" t.off t.len max_len in
   if t.off+t.len > max_len || t.len < 0 || t.off < 0 then (
-    Printf.printf "ERROR: t.off+t.len=%d %s\n" (t.off+t.len) str;
+    Printf.printf "ERROR: t.off+t.len=%d %s\n%!" (t.off+t.len) str;
     assert false;
   );
   str
@@ -182,7 +182,7 @@ module BE = struct
     if (i+8) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 8));
     set_int64 t.buffer (t.off+i) c
 
-  let get_uint16 t i = 
+  let get_uint16 t i =
     if (i+2) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 2));
     get_uint16 t.buffer (t.off+i)
 
@@ -210,7 +210,7 @@ module LE = struct
     if (i+8) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 8));
     set_int64 t.buffer (t.off+i) c
 
-  let get_uint16 t i = 
+  let get_uint16 t i =
     if (i+2) > t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 2));
     get_uint16 t.buffer (t.off+i)
 
@@ -268,15 +268,15 @@ let to_string t =
 let of_string ?allocator buf =
   let buflen = String.length buf in
   match allocator with
-  |None -> 
+  |None ->
     let c = create buflen in
     blit_from_string buf 0 c 0 buflen;
     c
-  |Some fn -> 
+  |Some fn ->
     let c = fn buflen in
     blit_from_string buf 0 c 0 buflen;
     set_len c buflen
-    
+
 let hexdump t =
   let c = ref 0 in
   for i = 0 to len t - 1 do
@@ -296,8 +296,14 @@ let hexdump_to_buffer buf t =
   Buffer.add_char buf '\n'
 
 let split ?(start=0) t off =
-  let header = sub t start off in
-  let body = sub t (start+off) (len t - off - start) in
+  let header =
+    try sub t start off
+    with Invalid_argument _ -> raise (Invalid_argument "Cstruct.split[header]")
+  in
+  let body =
+    try sub t (start+off) (len t - off - start)
+    with Invalid_argument _ -> raise (Invalid_argument "Cstruct.split[body]")
+  in
   header, body
 
 type 'a iter = unit -> 'a option
@@ -314,7 +320,10 @@ let iter lenfn pfn buf =
           body := None;
           None
         |Some plen ->
-          let p,rest = split buf plen in
+          let p,rest =
+            try split buf plen
+            with Invalid_argument _ -> raise (Invalid_argument "Cstruct.iter")
+          in
           body := Some rest;
           Some (pfn p)
       end
