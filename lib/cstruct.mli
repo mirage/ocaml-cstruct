@@ -181,6 +181,15 @@ val of_string: ?allocator:(int -> t) -> string -> t
     with the underlying buffer allocated by [alloc]. If [allocator] is not
     provided, [create] is used. *)
 
+(** {2 Comparison } *)
+
+val equal : t -> t -> bool
+(** [equal t1 t2] is [true] iff [t1] and [t2] correspond to the same sequence of
+    bytes. *)
+
+val compare : t -> t -> int
+(** [compare t1 t2] gives an unspecified total ordering over {!t}. *)
+
 (** {2 Getters and Setters } *)
 
 val byte_to_int : byte -> int
