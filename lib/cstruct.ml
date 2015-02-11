@@ -153,7 +153,7 @@ let compare t1 t2 =
 
 let equal t1 t2 = compare t1 t2 = 0
 
-let set t x = unsafe_fill_bigstring t.buffer t.off t.len x
+let memset t x = unsafe_fill_bigstring t.buffer t.off t.len x
 
 let set_uint8 t i c =
   if i >= t.len || i < 0 then raise (Invalid_argument (invalid_bounds i 1)) ;
