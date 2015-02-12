@@ -80,6 +80,18 @@ Test test_bounds
   Run:              true
   WorkingDirectory: _build/lib/
 
+Executable misc_tests
+  Build$:       flag(tests)
+  Install:      false
+  Path:         lib_test
+  BuildDepends: cstruct, oUnit
+  MainIs:       tests.ml
+
+Test misc_tests
+  Command:          $misc_tests
+  Run:              true
+  WorkingDirectory: _build/lib/
+
 Document api
   Title:              Documentation and API reference
   Type:               ocamlbuild (0.3)

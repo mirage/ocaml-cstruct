@@ -1,7 +1,7 @@
 true: inline(10)
 true: debug
 # OASIS_START
-# DO NOT EDIT (digest: b5a7be3333794aeb5a83a3c81b1efd5e)
+# DO NOT EDIT (digest: fd1bc3107feebb152374f9de3cbecade)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -74,13 +74,21 @@ true: annot, bin_annot
 "lib_test/bounds.byte": pkg_sexplib.syntax
 "lib_test/bounds.byte": pkg_unix
 "lib_test/bounds.byte": use_cstruct
+<lib_test/*.ml{,i,y}>: pkg_unix
+# Executable misc_tests
+"lib_test/tests.byte": pkg_bigarray
+"lib_test/tests.byte": pkg_oUnit
+"lib_test/tests.byte": pkg_ocplib-endian
+"lib_test/tests.byte": pkg_ocplib-endian.bigstring
+"lib_test/tests.byte": pkg_sexplib
+"lib_test/tests.byte": pkg_sexplib.syntax
+"lib_test/tests.byte": use_cstruct
 <lib_test/*.ml{,i,y}>: pkg_bigarray
 <lib_test/*.ml{,i,y}>: pkg_oUnit
 <lib_test/*.ml{,i,y}>: pkg_ocplib-endian
 <lib_test/*.ml{,i,y}>: pkg_ocplib-endian.bigstring
 <lib_test/*.ml{,i,y}>: pkg_sexplib
 <lib_test/*.ml{,i,y}>: pkg_sexplib.syntax
-<lib_test/*.ml{,i,y}>: pkg_unix
 <lib_test/*.ml{,i,y}>: use_cstruct
 # OASIS_STOP
 <syntax/*.ml>: syntax_camlp4o, pkg_camlp4
