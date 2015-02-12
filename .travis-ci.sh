@@ -25,7 +25,7 @@ make
 make clean
 ./configure --enable-lwt --enable-async --enable-tests
 make
-make test
+./test.sh
 
 unset OPAMVERBOSE
 if [ "$OCAML_VERSION" = "4.01" ]; then
