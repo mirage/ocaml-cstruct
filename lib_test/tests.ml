@@ -37,13 +37,14 @@ let sexp_reader () =
     assert_cs_equal cs (of_string_as_sexp str)
 
 let sexp_invertibility ~n () =
-  let create_random n =
+  let create_random () =
+    let n  = Random.int 128 in
     let cs = Cstruct.create n in
     for i = 0 to n - 1 do Cstruct.set_uint8 cs i (Random.int 256) done;
     cs
   in
   for i = 1 to n do
-    let cs1 = create_random 128 in
+    let cs1 = create_random () in
     let s1  = to_string_as_sexp cs1 in
     let cs2 = of_string_as_sexp s1  in
     let s2  = to_string_as_sexp cs2 in
@@ -57,7 +58,7 @@ let _ =
       "sexp" >::: [
         "sexp_of_t" >:: sexp_writer
       ; "t_of_sexp" >:: sexp_reader
-      ; "sexp invertibility" >:: sexp_invertibility ~n:1000
+      ; "sexp invertibility" >:: sexp_invertibility ~n:5000
       ]
     ]
   in
