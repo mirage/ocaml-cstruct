@@ -262,6 +262,9 @@ val blit_to_string: t -> int -> string -> int -> int -> unit
     valid segment of [src], or if [dstoff] and [len] do not designate
     a valid substring of [dst]. *)
 
+val memset: t -> int -> unit
+(** [memset t x] sets all the bytes of [t] to [x land 0xff]. *)
+
 val len: t -> int
 (** Returns the length of the current cstruct view.  Note that this
     length is potentially smaller than the actual size of the underlying

@@ -60,3 +60,12 @@ caml_compare_bigstring(value val_buf1, value val_ofs1, value val_buf2, value val
                    Long_val(val_len));
   return Val_int(res);
 }
+
+CAMLprim value
+caml_fill_bigstring(value val_buf, value val_ofs, value val_len, value val_byte)
+{
+  memset((char*)Caml_ba_data_val(val_buf) + Long_val(val_ofs),
+         Int_val(val_byte),
+         Long_val(val_len));
+  return Val_unit;
+}

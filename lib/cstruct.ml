@@ -19,6 +19,17 @@ open Sexplib.Std
 
 type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
 
+(* Note:
+ *
+ * We try to maintain the property that no constructed [t] can ever point out of
+ * its underlying buffer. This property is guarded by all of the constructing
+ * functions and the fact that the type is private, and used by various
+ * functions that would otherwise be completely unsafe.
+ *
+ * All well-intended souls are kindly invited to cross-check that the code
+ * indeed maintains this invariant.
+ *)
+
 type t = {
   buffer: buffer;
   off   : int;
@@ -140,6 +151,8 @@ external unsafe_blit_bigstring_to_string : buffer -> int -> string -> int -> int
 
 external unsafe_compare_bigstring : buffer -> int -> buffer -> int -> int -> int = "caml_compare_bigstring" "noalloc"
 
+external unsafe_fill_bigstring : buffer -> int -> int -> int -> unit = "caml_fill_bigstring" "noalloc"
+
 let copy src srcoff len =
   if len < 0 || srcoff < 0 || src.len - srcoff < len then
     err_copy src srcoff len
@@ -184,6 +197,9 @@ let compare t1 t2 =
   | r -> r
 
 let equal t1 t2 = compare t1 t2 = 0
+
+(* Note that this is only safe as long as all [t]s are coherent. *)
+let memset t x = unsafe_fill_bigstring t.buffer t.off t.len x
 
 let set_uint8 t i c =
   if i >= t.len || i < 0 then err_invalid_bounds "set_uint8" t i 1
