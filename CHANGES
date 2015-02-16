@@ -1,4 +1,7 @@
-1.6.0 (trunk):
+1.6.0 (2015-02-11):
+* More useful `Invalid_argument` parameters (#48).
+* Fix `to_sexp` to expose only the current view (#44 from David Kaloper).
+* Add `compare` and `equal` (#23, #24 and #45 from David Kaloper).
 * Add `fillv` to copy over a list of buffers (from Thomas Leonard).
 
 1.5.0 (2014-11-24):
@@ -107,7 +110,7 @@ The representation of the Sexp is the string representation of the enum.
 
 0.5.0 (2012-09-20):
 * Add a signature generator for cstruct and cenum to permit their use in `.mli` files.
-* Use the more reliable revised syntax camlp4 quotation expander, to avoid 
+* Use the more reliable revised syntax camlp4 quotation expander, to avoid
   broken AST output from antiquotations.
 * Switch the `xen/` version over to using OASIS also.
 
