@@ -72,7 +72,7 @@ let err_blit_to_string_dst src dst=
 let err_invalid_bounds f =
   err "invalid bounds in Cstruct.%s %a off=%d len=%d" f pp_t
 let err_split = err "Cstruct.split %a start=%d off=%d" pp_t
-let err_iter = err "Cstruct.iter %a i=%d i-len=%d" pp_t
+let err_iter = err "Cstruct.iter %a i=%d len=%d" pp_t
 
 let of_bigarray ?(off=0) ?len buffer =
   let dim = Bigarray.Array1.dim buffer in
