@@ -2,8 +2,8 @@ language: c
 install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/master/.travis-opam.sh
 script: bash -ex .travis-opam.sh
 env:
-  - OCAML_VERSION=latest
-  - OCAML_VERSION=4.02 DEPOPTS="lwt" POST_INSTALL_HOOK="./test.sh && opam install mirage"
-  - OCAML_VERSION=4.02 DEPOPTS="async" POST_INSTALL_HOOK="./test.sh"
-  - OCAML_VERSION=4.01 DEPOPTS="async lwt" POST_INSTALL_HOOK="opam install mirage"
-  - OCAML_VERSION=4.01 DEPOPTS="camlp4" POST_INSTALL_HOOK="./test.sh"
+  - PACKAGE="cstruct" OCAML_VERSION=latest
+  - PACKAGE="cstruct" OCAML_VERSION=4.02 DEPOPTS="lwt" POST_INSTALL_HOOK="./test.sh && opam install mirage"
+  - PACKAGE="cstruct" OCAML_VERSION=4.02 DEPOPTS="async" POST_INSTALL_HOOK="./test.sh"
+  - PACKAGE="cstruct" OCAML_VERSION=4.01 DEPOPTS="async lwt" POST_INSTALL_HOOK="opam install mirage"
+  - PACKAGE="cstruct" OCAML_VERSION=4.01 DEPOPTS="camlp4" POST_INSTALL_HOOK="./test.sh"
