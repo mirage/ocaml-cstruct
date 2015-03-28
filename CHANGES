@@ -4,6 +4,7 @@
 * Fix `to_sexp` to expose only the current view (#44 from David Kaloper).
 * Add `compare` and `equal` (#23, #24 and #45 from David Kaloper).
 * Add `fillv` to copy over a list of buffers (from Thomas Leonard).
+* Shift to centralised Travis scripts.
 
 1.5.0 (2014-11-24):
 * Make `camlp4` an optional build-time dependency (#35).
