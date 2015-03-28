@@ -5,6 +5,7 @@ _build/
 dist/
 *.docdir
 *.byte
+*.native
 *.annot
 *.cmo
 *.cma

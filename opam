@@ -24,6 +24,7 @@ remove:  ["ocamlfind" "remove" "cstruct"]
 depends: [
   "ocamlfind" {build}
   "ounit" {test}
+  "type_conv" {build}
   "ocplib-endian"
   "sexplib"
 ]

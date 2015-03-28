@@ -1,10 +1,10 @@
-OASISFormat: 0.3
+OASISFormat: 0.4
 Name:        cstruct
 Version:     1.6.0
 Synopsis:    Manipulate external buffers as C-like structs
 Authors:     Anil Madhavapeddy, Richard Mortier, Thomas Gazagnaire, Pierre Chambart, David Kaloper
 License:     ISC
-Plugins:     META (0.3), DevFiles (0.3)
+Plugins:     META (0.4), DevFiles (0.4)
 BuildTools:  ocamlbuild
 
 Flag lwt
@@ -72,11 +72,27 @@ Executable test_bounds
   Build$:       flag(tests) && flag(unix)
   Install:      false
   Path:         lib_test
-  BuildDepends: cstruct, unix, oUnit
+  Custom:       true
+  CompiledObject: best
+  BuildDepends: cstruct, unix, oUnit, cstruct.unix
   MainIs:       bounds.ml
 
 Test test_bounds
   Command:          $test_bounds
+  Run:              true
+  WorkingDirectory: _build/lib/
+
+Executable misc_tests
+  Build$:       flag(tests)
+  Install:      false
+  Path:         lib_test
+  Custom:       true
+  CompiledObject: best
+  BuildDepends: cstruct, oUnit
+  MainIs:       tests.ml
+
+Test misc_tests
+  Command:          $misc_tests
   Run:              true
   WorkingDirectory: _build/lib/
 
