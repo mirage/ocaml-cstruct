@@ -21,6 +21,17 @@ build: [
       "--%{ounit:enable}%-tests"]
   [make]
 ]
+build-test: [
+  ["./configure"
+      "--prefix" prefix
+      "--%{lwt:enable}%-lwt"
+      "--%{camlp4:enable}%-camlp4"
+      "--%{async:enable}%-async"
+      "--%{base-unix:enable}%-unix"
+      "--%{ounit:enable}%-tests"]
+  [make]
+  ["./test.sh"]
+]
 install: [make "install"]
 remove:  ["ocamlfind" "remove" "cstruct"]
 depends: [
