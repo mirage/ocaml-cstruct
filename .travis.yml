@@ -7,3 +7,4 @@ env:
   - OCAML_VERSION=4.02 DEPOPTS="async" POST_INSTALL_HOOK="./test.sh"
   - OCAML_VERSION=4.01 DEPOPTS="async lwt" POST_INSTALL_HOOK="opam install mirage"
   - OCAML_VERSION=4.01 DEPOPTS="camlp4" POST_INSTALL_HOOK="./test.sh"
+  - OCAML_VERSION=4.00 DEPOPTS="lwt camlp4" POST_INSTALL_HOOK="./test.sh"
