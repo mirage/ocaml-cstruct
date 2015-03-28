@@ -47,3 +47,7 @@ depopts: [
   "lwt"
 ]
 available: [ocaml-version >= "4.01.0"]
+depexts: [
+  [ ["debian"] ["time"] ]
+  [ ["ubuntu"] ["time"] ]
+]
