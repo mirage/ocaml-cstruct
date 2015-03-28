@@ -72,7 +72,9 @@ Executable test_bounds
   Build$:       flag(tests) && flag(unix)
   Install:      false
   Path:         lib_test
-  BuildDepends: cstruct, unix, oUnit
+  Custom:       true
+  CompiledObject: best
+  BuildDepends: cstruct, unix, oUnit, cstruct.unix
   MainIs:       bounds.ml
 
 Test test_bounds
