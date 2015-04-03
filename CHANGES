@@ -1,4 +1,4 @@
-1.6.0 (2014-03-28):
+1.6.0 (2014-04-03):
 * Add `memset` to set all the bytes of a cstruct value efficiently (#49)
 * More useful `Invalid_argument` parameters (#48).
 * Fix `to_sexp` to expose only the current view (#44 from David Kaloper).
