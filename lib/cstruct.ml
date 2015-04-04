@@ -380,6 +380,24 @@ let rec fold f next acc = match next () with
   | None -> acc
   | Some v -> fold f next (f acc v)
 
+let append cs1 cs2 =
+  let l1 = len cs1 and l2 = len cs2 in
+  let cs = create (l1 + l2) in
+  blit cs1 0 cs 0  l1 ;
+  blit cs2 0 cs l1 l2 ;
+  cs
+
+let concat = function
+  | []   -> create 0
+  | [cs] -> cs
+  | css  ->
+      let result = create (lenv css) in
+      let aux off cs =
+        let n = len cs in
+        blit cs 0 result off n ;
+        off + n in
+      ignore @@ List.fold_left aux 0 css ;
+      result
 
 open Sexplib
 
