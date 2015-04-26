@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: a38e04d1a7edac911e37a43a42cb0d54)
+# DO NOT EDIT (digest: ca6ef292f4c1e8ebe07a417309d0686f)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -65,11 +65,9 @@ true: annot, bin_annot
 <syntax/*.ml{,i,y}>: pkg_camlp4.quotations.r
 # Executable ppx_cstruct
 <ppx/ppx_cstruct.{native,byte}>: pkg_bigarray
-<ppx/ppx_cstruct.{native,byte}>: pkg_compiler-libs.common
-<ppx/ppx_cstruct.{native,byte}>: pkg_ppx_tools
+<ppx/ppx_cstruct.{native,byte}>: pkg_ppx_tools.metaquot
 <ppx/*.ml{,i,y}>: pkg_bigarray
-<ppx/*.ml{,i,y}>: pkg_compiler-libs.common
-<ppx/*.ml{,i,y}>: pkg_ppx_tools
+<ppx/*.ml{,i,y}>: pkg_ppx_tools.metaquot
 <ppx/ppx_cstruct.{native,byte}>: custom
 # Executable test_bounds
 <lib_test/bounds.{native,byte}>: pkg_bigarray

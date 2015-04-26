@@ -80,7 +80,7 @@ Executable ppx_cstruct
   Path:         ppx
   Custom:       true
   CompiledObject: best
-  BuildDepends: ppx_tools, compiler-libs.common, bigarray
+  BuildDepends: ppx_tools.metaquot, bigarray
   MainIs:       ppx_cstruct.ml
 
 Executable test_bounds

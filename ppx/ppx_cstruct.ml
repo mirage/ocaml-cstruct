@@ -16,9 +16,11 @@
 
 open Printf
 
+open Asttypes
 open Parsetree
 open Ast_helper
-open Ast_convenience
+module Loc = Location
+module Ast = Ast_convenience
 
 type mode = Big_endian | Little_endian | Host_endian
 
@@ -77,266 +79,296 @@ let to_string t =
   sprintf "cstruct[%d] %s { %s }" t.len t.name
     (String.concat "; " (List.map field_to_string t.fields))
 
-let loc_err loc err = Location.raise_errorf ~loc "cstruct: %s" (Printexc.to_string err)
+let loc_err loc fmt = Location.raise_errorf ~loc ("ppx_cstruct error: " ^^ fmt)
 
-(* let parse_field _loc field field_type sz = *)
-(*   match ty_of_string field_type with *)
-(*   |None -> loc_err _loc (sprintf "Unknown type %s" field_type) *)
-(*   |Some ty -> begin *)
-(*     let ty = match ty,sz with *)
-(*       |_,None -> Prim ty *)
-(*       |prim,Some sz -> Buffer (prim, int_of_string sz) *)
-(*     in *)
-(*     let off = -1 in *)
-(*     { field; ty; off } *)
-(*   end *)
+let parse_field loc field field_type sz =
+  match ty_of_string field_type with
+  |None -> loc_err loc "Unknown type %s" field_type
+  |Some ty -> begin
+    let ty = match ty,sz with
+      |_,None -> Prim ty
+      |prim,Some sz -> Buffer (prim, int_of_string sz)
+    in
+    let off = -1 in
+    { field; ty; off }
+  end
 
-(* let create_struct _loc endian name fields = *)
-(*   let endian = match endian with *)
-(*     |"little_endian" -> Little_endian *)
-(*     |"big_endian" -> Big_endian *)
-(*     |"host_endian" -> Host_endian *)
-(*     |_ -> Loc.raise _loc (Failure (sprintf "unknown endian %s, should be little_endian, big_endian or host_endian" endian)) *)
-(*   in *)
-(*   let len, fields = *)
-(*     List.fold_left (fun (off,acc) field -> *)
-(*       let field = {field with off=off} in *)
-(*       let off = width_of_field field + off in *)
-(*       let acc = acc @ [field] in *)
-(*       (off, acc) *)
-(*     ) (0,[]) fields *)
-(*   in *)
-(*   { fields; name; len; endian } *)
+let create_struct loc endian name fields =
+  let endian = match endian with
+    |"little_endian" -> Little_endian
+    |"big_endian" -> Big_endian
+    |"host_endian" -> Host_endian
+    |_ -> loc_err loc "unknown endian %s, should be little_endian, big_endian or host_endian" endian
+  in
+  let len, fields =
+    List.fold_left (fun (off,acc) field ->
+      let field = {field with off=off} in
+      let off = width_of_field field + off in
+      let acc = acc @ [field] in
+      (off, acc)
+    ) (0,[]) fields
+  in
+  { fields; name; len; endian }
 
-(* let mode_mod _loc = *)
-(*   function *)
-(*   |Big_endian -> <:expr< Cstruct.BE >> *)
-(*   |Little_endian -> <:expr< Cstruct.LE >> *)
-(*   |Host_endian -> <:expr< Cstruct.HE >> *)
+let mode_mod = function
+  |Big_endian -> [%expr Cstruct.BE]
+  |Little_endian -> [%expr Cstruct.LE]
+  |Host_endian -> [%expr Cstruct.HE]
 
-(* let getter_name s f = sprintf "get_%s_%s" s.name f.field *)
-(* let setter_name s f = sprintf "set_%s_%s" s.name f.field *)
-(* let op_name op s f = sprintf "%s_%s_%s" op s.name f.field *)
+let mode_mod _loc x =
+  mode_mod x [@metaloc _loc]
 
-(* let output_get _loc s f = *)
-(*   let m = mode_mod _loc s.endian in *)
-(*   let num x = <:expr< $int:string_of_int x$ >> in *)
-(*   match f.ty with *)
-(*   |Buffer (_, _) -> *)
-(*     let len = width_of_field f in *)
-(*     <:str_item< *)
-(*       value $lid:op_name "get" s f$ src = Cstruct.sub src $num f.off$ $num len$ ; *)
-(*       value $lid:op_name "copy" s f$ src = Cstruct.copy src $num f.off$ $num len$ *)
-(*     >> *)
-(*   |Prim prim -> *)
-(*     <:str_item< *)
-(*       value $lid:getter_name s f$ v = *)
-(*       $match prim with *)
-(*        |UInt8 -> <:expr< Cstruct.get_uint8 v $num f.off$ >> *)
-(*        |UInt16 -> <:expr< $m$.get_uint16 v $num f.off$ >> *)
-(*        |UInt32 -> <:expr< $m$.get_uint32 v $num f.off$ >> *)
-(*        |UInt64 -> <:expr< $m$.get_uint64 v $num f.off$ >> *)
-(*       $ *)
-(*     >> *)
+let getter_name s f = sprintf "get_%s_%s" s.name f.field
+let setter_name s f = sprintf "set_%s_%s" s.name f.field
+let op_name op s f = sprintf "%s_%s_%s" op s.name f.field
 
-(* let type_of_int_field _loc = function *)
-(*   |UInt8 -> <:ctyp<Cstruct.uint8>> *)
-(*   |UInt16 -> <:ctyp<Cstruct.uint16>> *)
-(*   |UInt32 -> <:ctyp<Cstruct.uint32>> *)
-(*   |UInt64 -> <:ctyp<Cstruct.uint64>> *)
+let output_get _loc s f =
+  let m = mode_mod _loc s.endian in
+  let num x = Ast.int x in
+  match f.ty with
+  |Buffer (_, _) ->
+    let len = width_of_field f in
+    [
+      [%stri
+        let [%p Ast.pvar (op_name "get" s f)] =
+          fun src -> Cstruct.sub src [%e num f.off] [%e num len]];
+      [%stri
+        let [%p Ast.pvar (op_name "copy" s f)] =
+          fun src -> Cstruct.sub src [%e num f.off] [%e num len]]
+    ]
+  |Prim prim ->
+    [
+      [%stri
+        let [%p Ast.pvar (getter_name s f)] = fun v ->
+          [%e match prim with
+              |UInt8 -> [%expr Cstruct.get_uint8 v [%e num f.off]]
+              |UInt16 -> [%expr [%e m].get_uint16 v [%e num f.off]]
+              |UInt32 -> [%expr [%e m].get_uint32 v [%e num f.off]]
+              |UInt64 -> [%expr [%e m].get_uint64 v [%e num f.off]]]]
+    ]
 
-(* let output_get_sig _loc s f = *)
-(*   match f.ty with *)
-(*   |Buffer (_,_) -> *)
-(*     <:sig_item< *)
-(*       value $lid:op_name "get" s f$ : Cstruct.t -> Cstruct.t ; *)
-(*       value $lid:op_name "copy" s f$ : Cstruct.t -> string >> *)
-(*   |Prim prim -> *)
-(*     let retf = type_of_int_field _loc prim in *)
-(*     <:sig_item< value $lid:getter_name s f$ : Cstruct.t -> $retf$ ; >> *)
+let output_get loc s f =
+  (output_get loc s f) [@metaloc loc]
 
-(* let output_set _loc s f = *)
-(*   let m = mode_mod _loc s.endian in *)
-(*   let num x = <:expr< $int:string_of_int x$ >> in *)
-(*   match f.ty with *)
-(*   |Buffer (_,_) -> *)
-(*     let len = width_of_field f in *)
-(*     <:str_item< *)
-(*       value $lid:setter_name s f$ src srcoff dst = Cstruct.blit_from_string src srcoff dst $num f.off$ $num len$ ; *)
-(*       value $lid:op_name "blit" s f$ src srcoff dst = Cstruct.blit src srcoff dst $num f.off$ $num len$ *)
-(*     >> *)
-(*   |Prim prim -> *)
-(*     <:str_item< *)
-(*       value $lid:setter_name s f$ v x = $match prim with *)
-(*        |UInt8 -> <:expr< Cstruct.set_uint8 v $num f.off$ x >> *)
-(*        |UInt16 -> <:expr< $m$.set_uint16 v $num f.off$ x >> *)
-(*        |UInt32 -> <:expr< $m$.set_uint32 v $num f.off$ x >> *)
-(*        |UInt64 -> <:expr< $m$.set_uint64 v $num f.off$ x >> *)
-(*       $ *)
-(*     >> *)
+let type_of_int_field = function
+  |UInt8 -> [%type: Cstruct.uint8]
+  |UInt16 -> [%type: Cstruct.uint16]
+  |UInt32 -> [%type: Cstruct.uint32]
+  |UInt64 -> [%type: Cstruct.uint64]
 
-(* let output_set_sig _loc s f = *)
-(*   match f.ty with *)
-(*   |Buffer (_,_) -> *)
-(*     <:sig_item< *)
-(*       value $lid:setter_name s f$ : string -> int -> Cstruct.t -> unit ; *)
-(*       value $lid:op_name "blit" s f$ : Cstruct.t -> int -> Cstruct.t -> unit >> *)
-(*   |Prim prim -> *)
-(*     let retf = type_of_int_field _loc prim in *)
-(*     <:sig_item< value $lid:setter_name s f$ : Cstruct.t -> $retf$ -> unit >> *)
+let type_of_int_field loc x =
+  type_of_int_field x [@metaloc loc]
 
-(* let output_sizeof _loc s = *)
-(*   <:str_item< *)
-(*     value $lid:"sizeof_"^s.name$ = $int:string_of_int s.len$ *)
-(*   >> *)
+let output_get_sig _loc s f =
+  match f.ty with
+  |Buffer (_,_) ->
+    [
+      Sig.value (Val.mk (Loc.mknoloc (op_name "get" s f)) [%type: Cstruct.t -> Cstruct.t]);
+      Sig.value (Val.mk (Loc.mknoloc (op_name "copy" s f)) [%type: Cstruct.t -> string])
+    ]
+  |Prim prim ->
+    let retf = type_of_int_field _loc prim in
+    [
+      Sig.value (Val.mk (Loc.mknoloc (getter_name s f)) [%type: Cstruct.t -> [%t retf]])
+    ]
 
-(* let output_sizeof_sig _loc s = *)
-(*   <:sig_item< *)
-(*     value $lid:"sizeof_"^s.name$ : int *)
-(*   >> *)
+let output_get_sig _loc s f =
+  output_get_sig _loc s f [@metaloc _loc]
 
-(* let output_hexdump _loc s = *)
-(*   let hexdump = *)
-(*     List.fold_left (fun a f -> *)
-(*       <:expr< *)
-(*         $a$; Buffer.add_string _buf $str:"  "^f.field^" = "$; *)
-(*         $match f.ty with *)
-(*          |Prim (UInt8|UInt16) -> *)
-(*            <:expr< Printf.bprintf _buf "0x%x\n" ($lid:getter_name s f$ v) >> *)
-(*          |Prim UInt32 -> *)
-(*            <:expr< Printf.bprintf _buf "0x%lx\n" ($lid:getter_name s f$ v) >> *)
-(*          |Prim UInt64 -> *)
-(*            <:expr< Printf.bprintf _buf "0x%Lx\n" ($lid:getter_name s f$ v) >> *)
-(*          |Buffer (_,_) -> *)
-(*            <:expr< Printf.bprintf _buf "<buffer %s>" *)
-(*                      $str: field_to_string f$; *)
-(*                      Cstruct.hexdump_to_buffer _buf ($lid:getter_name s f$ v) >> *)
-(*         $ >> *)
-(*     ) <:expr< >> s.fields *)
-(*   in *)
-(*   <:str_item< *)
-(*     value $lid:"hexdump_"^s.name^"_to_buffer"$ _buf v = do { $hexdump$ }; *)
-(*     value $lid:"hexdump_"^s.name$ v = *)
-(*       let _buf = Buffer.create 128 in *)
-(*       do { *)
-(*         Buffer.add_string _buf $str:s.name ^ " = {\n"$; *)
-(*         $lid:"hexdump_"^s.name^"_to_buffer"$ _buf v; *)
-(*         print_endline (Buffer.contents _buf); *)
-(*         print_endline "}" *)
-(*       } >> *)
+let output_set _loc s f =
+  let m = mode_mod _loc s.endian in
+  let num x = Ast.int x in
+  match f.ty with
+  |Buffer (_,_) ->
+    let len = width_of_field f in
+    [
+      [%stri
+        let [%p Ast.pvar (setter_name s f)] = fun src srcoff dst ->
+          Cstruct.blit_from_string src srcoff dst [%e num f.off] [%e num len]];
+      [%stri
+        let [%p Ast.pvar (op_name "blit" s f)] = fun src srcoff dst ->
+          Cstruct.blit src srcoff dst [%e num f.off] [%e num len]]
+    ]
+  |Prim prim ->
+    [
+      [%stri
+        let [%p Ast.pvar (setter_name s f)] = fun v x ->
+          [%e match prim with
+              |UInt8 -> [%expr Cstruct.set_uint8 v [%e num f.off] x]
+              |UInt16 -> [%expr [%e m].set_uint16 v [%e num f.off] x]
+              |UInt32 -> [%expr [%e m].set_uint32 v [%e num f.off] x]
+              |UInt64 -> [%expr [%e m].set_uint64 v [%e num f.off] x]]]
+    ]
 
-(* let output_hexdump_sig _loc s = *)
-(*   <:sig_item< *)
-(*     value $lid:"hexdump_"^s.name^"_to_buffer"$ : Buffer.t -> Cstruct.t -> unit; *)
-(*     value $lid:"hexdump_"^s.name$ : Cstruct.t -> unit; *)
-(*   >> *)
+let output_set _loc s f =
+  output_set _loc s f [@metaloc _loc]
 
-(* let output_struct _loc s = *)
-(*   (\* Generate functions of the form {get/set}_<struct>_<field> *\) *)
-(*   let expr = List.fold_left (fun a f -> *)
-(*     <:str_item< *)
-(*       $a$ ; *)
-(*       $output_get _loc s f$ ; *)
-(*       $output_set _loc s f$ *)
-(*     >> *)
-(*   ) <:str_item< $output_sizeof _loc s$ >> s.fields *)
-(*   in <:str_item< $expr$; $output_hexdump _loc s$ >> *)
+let output_set_sig _loc s f =
+  match f.ty with
+  |Buffer (_,_) ->
+    [
+      Sig.value (Val.mk (Loc.mkloc (setter_name s f) _loc)
+                   [%type: string -> int -> Cstruct.t -> unit]);
+      Sig.value (Val.mk (Loc.mkloc (op_name "blit" s f) _loc)
+                   [%type: Cstruct.t -> int -> Cstruct.t -> unit])
+    ] [@metaloc _loc]
+  |Prim prim ->
+    let retf = type_of_int_field _loc prim in
+    [
+      Sig.value (Val.mk (Loc.mkloc (setter_name s f) _loc) [%type: Cstruct.t -> [%t retf] -> unit])
+    ] [@metaloc _loc]
 
-(* let output_struct_sig _loc s = *)
-(*   (\* Generate signaturs of the form {get/set}_<struct>_<field> *\) *)
-(*   let expr = List.fold_left (fun a f -> *)
-(*     <:sig_item< *)
-(*       $a$ ; *)
-(*       $output_get_sig _loc s f$ ; *)
-(*       $output_set_sig _loc s f$ ; *)
-(*     >> *)
-(*   ) <:sig_item< $output_sizeof_sig _loc s$ >> s.fields *)
-(*   in <:sig_item< $expr$; $output_hexdump_sig _loc s$ >> *)
+let output_sizeof _loc s =
+  [%stri
+    let [%p Ast.pvar ("sizeof_"^s.name)] = [%e Ast.int s.len]] [@metaloc _loc]
 
-(* let output_enum _loc name fields width ~sexp = *)
-(*   let intfn,pattfn = match ty_of_string width with *)
-(*     |None -> loc_err _loc ("enum: unknown width specifier " ^ width) *)
-(*     |Some (UInt8 | UInt16) -> *)
-(*       (fun i -> <:expr< $int:Int64.to_string i$ >>), *)
-(*       (fun i -> <:patt< $int:Int64.to_string i$ >>) *)
-(*     |Some UInt32 -> *)
-(*       (fun i -> <:expr< $int32:Printf.sprintf "0x%Lx" i$ >>), *)
-(*       (fun i -> <:patt< $int32:Printf.sprintf "0x%Lx" i$ >>) *)
-(*     |Some UInt64 -> *)
-(*       (fun i -> <:expr< $int64:Printf.sprintf "0x%Lx" i$ >>), *)
-(*       (fun i -> <:patt< $int64:Printf.sprintf "0x%Lx" i$ >>) *)
-(*   in *)
-(*   let decls = tyOr_of_list (List.map (fun (f,_) -> *)
-(*     <:ctyp< $uid:f$ >>) fields) in *)
-(*   let getters = mcOr_of_list ((List.map (fun (f,i) -> *)
-(*     <:match_case< $pattfn i$ -> Some $uid:f$ >> *)
-(*   ) fields) @ [ <:match_case< _ -> None >> ]) in *)
-(*   let setters = mcOr_of_list (List.map (fun (f,i) -> *)
-(*     <:match_case< $uid:f$ -> $intfn i$ >> *)
-(*   ) fields) in *)
-(*   let printers = mcOr_of_list (List.map (fun (f,_) -> *)
-(*     <:match_case< $uid:f$ -> $str:f$ >>) fields) in *)
-(*   let parsers = mcOr_of_list (List.map (fun (f,_) -> *)
-(*     <:match_case< $str:f$ -> Some $uid:f$ >>) fields) in *)
-(*   let getter x = sprintf "int_to_%s" x in *)
-(*   let setter x = sprintf "%s_to_int" x in *)
-(*   let printer x = sprintf "%s_to_string" x in *)
-(*   let parse x = sprintf "string_to_%s" x in *)
-(*   let of_sexp x = sprintf "%s_of_sexp" x in *)
-(*   let to_sexp x = sprintf "sexp_of_%s" x in *)
-(*   let output_sexp_struct = *)
-(*    <:str_item< *)
-(*      value $lid:to_sexp name$ x = Sexplib.Sexp.Atom ($lid:printer name$ x) ; *)
-(*      value $lid:of_sexp name$ x = *)
-(*        match x with [ *)
-(*           Sexplib.Sexp.List _ -> *)
-(*            raise (Sexplib.Pre_sexp.Of_sexp_error (Failure "expected Atom, got List", x)) *)
-(*         | Sexplib.Sexp.Atom v -> *)
-(*            match $lid:parse name$ v with [ *)
-(*              None -> raise (Sexplib.Pre_sexp.Of_sexp_error (Failure "unable to parse enum string", x)) *)
-(*            | Some r -> r *)
-(*            ] *)
-(*        ] ; *)
-(*    >> in *)
-(*   <:str_item< *)
-(*     type $lid:name$ = [ $decls$ ] ; *)
-(*     value $lid:getter name$ x = match x with [ $getters$ ] ; *)
-(*     value $lid:setter name$ x = match x with [ $setters$ ] ; *)
-(*     value $lid:printer name$ x = match x with [ $printers$ ] ; *)
-(*     value $lid:parse name$ x = match x with [ $parsers$ | _ -> None ] ; *)
-(*     $if sexp then output_sexp_struct else <:str_item<>>$ *)
-(*   >> *)
+let output_sizeof_sig _loc s =
+  Sig.value (Val.mk (Loc.mknoloc ("sizeof_"^s.name)) [%type: int]) [@metaloc _loc]
 
-(* let output_enum_sig _loc name fields width ~sexp = *)
-(*   let oty = match ty_of_string width with *)
-(*     |None -> loc_err _loc ("enum: unknown width specifier " ^ width) *)
-(*     |Some (UInt8|UInt16) -> <:ctyp<int>> *)
-(*     |Some UInt32 -> <:ctyp<int32>> *)
-(*     |Some UInt64 -> <:ctyp<int64>> *)
-(*   in *)
-(*   let decls = tyOr_of_list (List.map (fun (f,_) -> *)
-(*     <:ctyp< $uid:f$ >>) fields) in *)
-(*   let getter x  = sprintf "int_to_%s" x in *)
-(*   let setter x  = sprintf "%s_to_int" x in *)
-(*   let printer x = sprintf "%s_to_string" x in *)
-(*   let parse x   = sprintf "string_to_%s" x in *)
-(*   let of_sexp x = sprintf "%s_of_sexp" x in *)
-(*   let to_sexp x = sprintf "sexp_of_%s" x in *)
-(*   let ctyo = <:ctyp< option $lid:name$ >> in *)
-(*   let cty = <:ctyp< $lid:name$ >> in *)
-(*   let output_sexp_sig = *)
-(*    <:sig_item< *)
-(*      value $lid:to_sexp name$ : $cty$ -> Sexplib.Sexp.t ; *)
-(*      value $lid:of_sexp name$ : Sexplib.Sexp.t -> $cty$ ; *)
-(*    >> in *)
-(*   <:sig_item< *)
-(*     type $lid:name$ = [ $decls$ ] ; *)
-(*     value $lid:getter name$ : $oty$ -> $ctyo$ ; *)
-(*     value $lid:setter name$ : $cty$ -> $oty$ ; *)
-(*     value $lid:printer name$ : $cty$ -> string ; *)
-(*     value $lid:parse name$ : string -> option $cty$ ; *)
-(*     $if sexp then output_sexp_sig else <:sig_item<>>$ *)
-(*   >> *)
+let output_hexdump _loc s =
+  let hexdump =
+    List.fold_left (fun a f ->
+        [%expr
+          [%e a]; Buffer.add_string _buf [%e Ast.str ("  "^f.field^" = ")];
+          [%e match f.ty with
+              |Prim (UInt8|UInt16) ->
+                [%expr Printf.bprintf _buf "0x%x\n" ([%e Ast.evar (getter_name s f)] v)]
+              |Prim UInt32 ->
+                [%expr Printf.bprintf _buf "0x%lx\n" ([%e Ast.evar (getter_name s f)] v)]
+              |Prim UInt64 ->
+                [%expr Printf.bprintf _buf "0x%Lx\n" ([%e Ast.evar (getter_name s f)] v)]
+              |Buffer (_,_) ->
+                [%expr Printf.bprintf _buf "<buffer %s>"
+                         [%e Ast.str (field_to_string f)]
+                         Cstruct.hexdump_to_buffer _buf ([%e Ast.evar (getter_name s f)] v)]
+          ]]
+      ) (Ast.unit ()) s.fields
+  in
+  [
+    [%stri
+      let [%p Ast.pvar ("hexdump_"^s.name^"_to_buffer")] = fun _buf v ->
+        [%e hexdump]];
+    [%stri
+      let [%p Ast.pvar ("hexdump_"^s.name)] = fun v ->
+        let _buf = Buffer.create 128 in
+        Buffer.add_string _buf [%e Ast.str (s.name ^ " = {\n")];
+        [%e Ast.evar ("hexdump_"^s.name^"_to_buffer")] _buf v;
+        print_endline (Buffer.contents _buf);
+        print_endline "}"
+    ]
+  ] [@metaloc _loc]
+
+let output_hexdump_sig _loc s =
+  [
+    Sig.value
+      (Val.mk (Loc.mkloc ("hexdump_"^s.name^"_to_buffer") _loc)
+         [%type: Buffer.t -> Cstruct.t -> unit]);
+    Sig.value
+      (Val.mk (Loc.mkloc ("hexdump_"^s.name) _loc) [%type: Cstruct.t -> unit])
+  ] [@metaloc _loc]
+
+let output_struct _loc s =
+  (* Generate functions of the form {get/set}_<struct>_<field> *)
+  let expr = List.fold_left (fun a f ->
+      a @ output_get _loc s f @ output_set _loc s f
+    ) [output_sizeof _loc s] s.fields
+  in expr @ output_hexdump _loc s
+
+let output_struct_sig _loc s =
+  (* Generate signaturs of the form {get/set}_<struct>_<field> *)
+  let expr = List.fold_left (fun a f ->
+      a @ output_get_sig _loc s f @ output_set_sig _loc s f
+    ) [output_sizeof_sig _loc s] s.fields
+  in expr @ output_hexdump_sig _loc s
+
+let output_enum _loc name fields width ~sexp =
+  let intfn,pattfn = match ty_of_string width with
+    |None -> loc_err _loc "enum: unknown width specifier %s" width
+    |Some (UInt8 | UInt16) ->
+      (fun i -> Exp.constant (Const_int (Int64.to_int i))),
+      (fun i -> Pat.constant (Const_int (Int64.to_int i)))
+    |Some UInt32 ->
+      (fun i -> Exp.constant (Const_int32 (Int64.to_int32 i))),
+      (fun i -> Pat.constant (Const_int32 (Int64.to_int32 i)))
+    |Some UInt64 ->
+      (fun i -> Exp.constant (Const_int64 i)),
+      (fun i -> Pat.constant (Const_int64 i))
+  in
+  let decls = List.map (fun (f,_) -> Type.constructor f) fields in
+  let getters = (List.map (fun ({txt = f},i) ->
+      {pc_lhs = pattfn i; pc_guard = None; pc_rhs = Ast.constr "Some" [Ast.constr f []]}
+    ) fields) @ [{pc_lhs = Pat.any (); pc_guard = None; pc_rhs = Ast.constr "None" []}] in
+  let setters = List.map (fun ({txt = f},i) ->
+      {pc_lhs = Ast.pconstr f []; pc_guard = None; pc_rhs = intfn i}
+    ) fields in
+  let printers = List.map (fun ({txt = f},_) ->
+      {pc_lhs = Ast.pconstr f []; pc_guard = None; pc_rhs = Ast.str f}) fields in
+  let parsers = List.map (fun ({txt = f},_) ->
+      {pc_lhs = Ast.pstr f; pc_guard = None; pc_rhs = Ast.constr f []}) fields in
+  let getter x = sprintf "int_to_%s" x in
+  let setter x = sprintf "%s_to_int" x in
+  let printer x = sprintf "%s_to_string" x in
+  let parse x = sprintf "string_to_%s" x in
+  let of_sexp x = sprintf "%s_of_sexp" x in
+  let to_sexp x = sprintf "sexp_of_%s" x in
+  let output_sexp_struct =
+    [
+      [%stri
+        let [%p Ast.pvar (to_sexp name)] = fun x ->
+          Sexplib.Sexp.Atom ([%e Ast.evar (printer name)] x)];
+      [%stri
+        let [%p Ast.pvar (of_sexp name)] = fun x ->
+          match x with
+          | Sexplib.Sexp.List _ ->
+            raise (Sexplib.Pre_sexp.Of_sexp_error (Failure "expected Atom, got List", x))
+          | Sexplib.Sexp.Atom v ->
+            match [%e Ast.evar (parse name)] v with
+            | None ->
+              raise (Sexplib.Pre_sexp.Of_sexp_error (Failure "unable to parse enum string", x))
+            | Some r -> r
+          ]
+      ] in
+  Str.type_ [Type.mk ~kind:(Ptype_variant decls) (Loc.mkloc name _loc)] ::
+  [%stri
+    let [%p Ast.pvar (getter name)] = fun x -> [%e Exp.match_ [%expr x] getters]] ::
+  [%stri
+    let [%p Ast.pvar (setter name)] = fun x -> [%e Exp.match_ [%expr x] setters]] ::
+  [%stri
+    let [%p Ast.pvar (printer name)] = fun x -> [%e Exp.match_ [%expr x] printers]] ::
+  [%stri
+    let [%p Ast.pvar (parse name)] = fun x ->
+      [%e Exp.match_ [%expr x]
+            (parsers @ [{pc_lhs = Pat.any (); pc_guard = None; pc_rhs = Ast.constr "None" []}])]] ::
+  if sexp then output_sexp_struct else []
+
+let output_enum_sig _loc name fields width ~sexp =
+  let oty = match ty_of_string width with
+    |None -> loc_err _loc "enum: unknown width specifier %s" width
+    |Some (UInt8|UInt16) -> [%type: int]
+    |Some UInt32 -> [%type: int32]
+    |Some UInt64 -> [%type: int64]
+  in
+  let decls = List.map (fun (f,_) -> Type.constructor f) fields in
+  let getter x  = sprintf "int_to_%s" x in
+  let setter x  = sprintf "%s_to_int" x in
+  let printer x = sprintf "%s_to_string" x in
+  let parse x   = sprintf "string_to_%s" x in
+  let of_sexp x = sprintf "%s_of_sexp" x in
+  let to_sexp x = sprintf "sexp_of_%s" x in
+  let ctyo = [%type: [%t Ast.tconstr name []] option] in
+  let cty = Ast.tconstr name [] in
+  let output_sexp_sig =
+    [
+      Sig.value (Val.mk (Loc.mkloc (to_sexp name) _loc) [%type: [%t cty] -> Sexplib.Sexp.t]);
+      Sig.value (Val.mk (Loc.mkloc (of_sexp name) _loc) [%type: Sexplib.Sexp.t -> [%t cty]])
+    ]
+  in
+  Sig.type_ [Type.mk ~kind:(Ptype_variant decls) (Loc.mkloc name _loc)] ::
+  Sig.value (Val.mk (Loc.mkloc (getter name) _loc) [%type: [%t oty] -> [%t ctyo]]) ::
+  Sig.value (Val.mk (Loc.mkloc (setter name) _loc) [%type: [%t cty] -> [%t oty]]) ::
+  Sig.value (Val.mk (Loc.mkloc (printer name) _loc) [%type: [%t cty] -> string]) ::
+  Sig.value (Val.mk (Loc.mkloc (parse name) _loc) [%type: string -> [%t cty] option]) ::
+  if sexp then output_sexp_sig else []
 
 (* EXTEND Gram *)
 (*   GLOBAL: str_item sig_item; *)
