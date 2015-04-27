@@ -350,7 +350,7 @@ let output_enum_sig _loc name fields width ~sexp =
     |Some UInt32 -> [%type: int32]
     |Some UInt64 -> [%type: int64]
   in
-  let decls = List.map (fun (f,_) -> Type.constructor f) fields in
+  let decls = List.map (fun (f,_) -> Type.constructor (Loc.mkloc f _loc)) fields in
   let getter x  = sprintf "int_to_%s" x in
   let setter x  = sprintf "%s_to_int" x in
   let printer x = sprintf "%s_to_string" x in
@@ -465,6 +465,26 @@ let output_enum_sig _loc name fields width ~sexp =
 
 (* END *)
 
+let constr_enum = function
+  | {pcd_name = f; pcd_args = []; pcd_loc = loc; pcd_attributes = attrs} ->
+    let id = match attrs with
+      | [{txt = "id"}, PStr
+           [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_constant cst; pexp_loc = loc}, _)}]] ->
+        let cst = match cst with
+          | Const_int i -> Int64.of_int i
+          | Const_int32 i -> Int64.of_int32 i
+          | Const_int64 i -> i
+          | _ ->
+            loc_err loc "invalid id"
+        in
+        Some cst
+      | _ ->
+        None
+    in
+    (f.txt, id)
+  | {pcd_loc = loc} ->
+    loc_err loc "invalid cenum variant"
+
 let constr_field {pld_name = fname; pld_type = fty; pld_loc = loc} =
   let sz = match fty.ptyp_attributes with
     | [{txt = "l"}, PStr
@@ -495,6 +515,38 @@ let signature_item' mapper = function
       | _ -> loc_err loc "too many attributes"
     in
     output_struct_sig loc (create_struct loc endian name.txt fields)
+  | {psig_desc =
+       Psig_extension (({txt = "cenum"}, PStr [{pstr_desc = Pstr_type [decl]}]), _);
+     psig_loc = loc} ->
+    let {ptype_name = name; ptype_kind = kind; ptype_attributes = attrs} = decl in
+    let fields = match kind with
+      | Ptype_variant fields -> fields
+      | _ ->
+        loc_err loc "expected variant type"
+    in
+    let width, sexp =
+      match attrs with
+      | ({txt = width}, PStr []) :: ({txt = "sexp"}, PStr []) :: [] ->
+        width, true
+      | ({txt = width}, PStr []) :: [] ->
+        width, false
+      | _ ->
+        loc_err loc "invalid cenum attributes"
+    in
+    (* let sexp = match snd info with *)
+    (*   | None -> false *)
+    (*   | Some "sexp" -> true *)
+    (*   | Some x -> raise (Failure "unknown cenum decorator: only 'sexp' supported") *)
+    (* in *)
+    let n = ref Int64.minus_one in
+    let incr_n () = n := Int64.succ !n in
+    let fields = List.map constr_enum fields in
+    let fields =
+      List.map (function
+          | (f, None)   -> incr_n (); (f, !n)
+          | (f, Some i) -> n := i; (f, i)
+        ) fields in
+    output_enum_sig loc name.txt fields width ~sexp
   | other ->
     [default_mapper.signature_item mapper other]
 
