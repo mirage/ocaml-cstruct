@@ -136,7 +136,7 @@ let output_get _loc s f =
           fun src -> Cstruct.sub src [%e num f.off] [%e num len]];
       [%stri
         let [%p Ast.pvar (op_name "copy" s f)] =
-          fun src -> Cstruct.sub src [%e num f.off] [%e num len]]
+          fun src -> Cstruct.copy src [%e num f.off] [%e num len]]
     ]
   |Prim prim ->
     [
