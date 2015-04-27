@@ -14,6 +14,7 @@ build: [
       "--prefix" prefix
       "--%{lwt:enable}%-lwt"
       "--%{camlp4:enable}%-camlp4"
+      "--%{ppx_tools:enable}%-ppx"
       "--%{async:enable}%-async"
       "--%{base-unix:enable}%-unix"]
   [make]
@@ -23,6 +24,7 @@ build-test: [
       "--prefix" prefix
       "--%{lwt:enable}%-lwt"
       "--%{camlp4:enable}%-camlp4"
+      "--%{ppx_tools:enable}%-ppx"
       "--%{async:enable}%-async"
       "--%{base-unix:enable}%-unix"
       "--enable-tests"]
@@ -46,6 +48,7 @@ depends: [
 ]
 depopts: [
   "camlp4"
+  "ppx_tools"
   "async"
   "lwt"
 ]
