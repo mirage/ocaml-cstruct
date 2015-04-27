@@ -110,7 +110,7 @@ let create_struct loc endian name fields =
       (off, acc)
     ) (0,[]) fields
   in
-  { fields; name; len; endian }
+  { fields; name = name.txt; len; endian }
 
 let mode_mod = function
   |Big_endian -> [%expr Cstruct.BE]
@@ -372,99 +372,6 @@ let output_enum_sig _loc name fields width ~sexp =
   Sig.value (Val.mk (Loc.mkloc (parse name) _loc) [%type: string -> [%t cty] option]) ::
   if sexp then output_sexp_sig else []
 
-(* EXTEND Gram *)
-(*   GLOBAL: str_item sig_item; *)
-
-(*   constr_field: [ *)
-(*     [ fty = LIDENT; fname = LIDENT; sz = OPT [ "["; sz = INT; "]" -> sz ] -> *)
-(*         parse_field _loc fname fty sz *)
-(*     ] *)
-(*   ]; *)
-
-(*   constr_field_decl: [ *)
-(*     [ field = constr_field -> [field] *)
-(*     | field = constr_field; ";"; rest = constr_field_decl -> field::rest *)
-(*     | field = constr_field; ";" -> [field] ] *)
-(*   ]; *)
-
-(*   constr_fields: [ *)
-(*     [ "{"; fields = constr_field_decl; "}" -> fields ] *)
-(*   ]; *)
-
-(*   constr_enum: [ *)
-(*     [ f = UIDENT -> (f, None) *)
-(*     | f = UIDENT; "="; i = INT64     -> (f, Some (Int64.of_string i))  *)
-(*     | f = UIDENT; "="; i = INT32     -> (f, Some (Int64.of_string i)) *)
-(*     | f = UIDENT; "="; i = NATIVEINT -> (f, Some (Int64.of_string i)) *)
-(*     | f = UIDENT; "="; i = INT       -> (f, Some (Int64.of_string i)) ] *)
-(*   ]; *)
-
-(*   constr_enum_decl: [ *)
-(*     [ enum = constr_enum -> [enum] *)
-(*     | enum = constr_enum; ";"; rest = constr_enum_decl -> enum::rest *)
-(*     | enum = constr_enum; ";" -> [enum] ] *)
-(*   ]; *)
-
-(*   constr_enums: [ *)
-(*     [ "{"; enums = constr_enum_decl; "}" -> enums ] *)
-(*   ]; *)
-
-(*   cenum_decorators : [ *)
-(*     [ "as"; width = LIDENT; "("; decorator = LIDENT; ")" -> (width, Some decorator) *)
-(*     | "as"; width = LIDENT -> (width, None) *)
-(*     ] *)
-(*   ]; *)
-
-(*   sig_item: [ *)
-(*     [ "cstruct"; name = LIDENT; fields = constr_fields; *)
-(*       "as"; endian = LIDENT -> *)
-(*         output_struct_sig _loc (create_struct _loc endian name fields) *)
-(*     ] | *)
-(*    [ "cenum"; name = LIDENT; fields = constr_enums; *)
-(*       info = cenum_decorators -> *)
-(*         let width = fst info in *)
-(*         let sexp = match snd info with *)
-(*           | None -> false *)
-(*           | Some "sexp" -> true *)
-(*           | Some x -> raise (Failure "unknown cenum decorator: only 'sexp' supported") *)
-(*         in *)
-(*         let n = ref Int64.minus_one in *)
-(*         let incr_n () = n := Int64.succ !n in *)
-(*         let fields = *)
-(*           List.map (function *)
-(*             | (f, None)   -> incr_n (); (f, !n) *)
-(*             | (f, Some i) -> n := i; (f, i) *)
-(*           ) fields in *)
-(*          output_enum_sig _loc name fields width ~sexp *)
-(*    ] *)
-(*   ]; *)
-
-(*   str_item: [ *)
-(*     [ "cstruct"; name = LIDENT; fields = constr_fields; *)
-(*       "as"; endian = LIDENT -> *)
-(* 	output_struct _loc (create_struct _loc endian name fields) *)
-(*     ] | *)
-(*     [ "cenum"; name = LIDENT; fields = constr_enums; *)
-(*       info = cenum_decorators -> *)
-(*         let width = fst info in *)
-(*         let sexp = match snd info with *)
-(*           | None -> false *)
-(*           | Some "sexp" -> true *)
-(*           | Some x -> raise (Failure "unknown cenum decorator: only 'sexp' supported") *)
-(*         in *)
-(*         let n = ref Int64.minus_one in *)
-(*         let incr_n () = n := Int64.succ !n in *)
-(*         let fields = *)
-(*           List.map (function *)
-(*             | (f, None)   -> incr_n (); (f, !n) *)
-(*             | (f, Some i) -> n := i; (f, i) *)
-(*           ) fields in *)
-(*         output_enum _loc name fields width ~sexp *)
-(*     ] *)
-(*   ]; *)
-
-(* END *)
-
 let constr_enum = function
   | {pcd_name = f; pcd_args = []; pcd_loc = loc; pcd_attributes = attrs} ->
     let id = match attrs with
@@ -500,47 +407,56 @@ let constr_field {pld_name = fname; pld_type = fty; pld_loc = loc} =
   in
   parse_field loc fname.txt fty sz
 
+let cstruct decl =
+  let {ptype_name = name; ptype_kind = kind;
+       ptype_attributes = attrs; ptype_loc = loc} = decl in
+  let fields = match kind with
+    | Ptype_record fields -> List.map constr_field fields
+    | _ -> loc_err loc "record type declaration expected"
+  in
+  let endian = match attrs with
+    | [{txt = endian}, PStr []] -> endian
+    | [_, _] -> loc_err loc "no attribute payload expected"
+    | _ -> loc_err loc "too many attributes"
+  in
+  create_struct loc endian name fields
+
+let cenum decl =
+  let {ptype_name = name; ptype_kind = kind;
+       ptype_attributes = attrs; ptype_loc = loc} = decl in
+  let fields = match kind with
+    | Ptype_variant fields -> fields
+    | _ ->
+      loc_err loc "expected variant type"
+  in
+  let width, sexp =
+    match attrs with
+    | ({txt = width}, PStr []) :: ({txt = "sexp"}, PStr []) :: [] ->
+      width, true
+    | ({txt = width}, PStr []) :: [] ->
+      width, false
+    | _ ->
+      loc_err loc "invalid cenum attributes"
+  in
+  let n = ref Int64.minus_one in
+  let incr_n () = n := Int64.succ !n in
+  let fields = List.map constr_enum fields in
+  let fields =
+    List.map (function
+        | (f, None)   -> incr_n (); (f, !n)
+        | (f, Some i) -> n := i; (f, i)
+      ) fields in
+  name, fields, width, sexp
+
 let signature_item' mapper = function
   | {psig_desc =
        Psig_extension (({txt = "cstruct"}, PStr [{pstr_desc = Pstr_type [decl]}]), _);
      psig_loc = loc} ->
-    let {ptype_name = name; ptype_kind = kind; ptype_attributes = attrs} = decl in
-    let fields = match kind with
-      | Ptype_record fields -> List.map constr_field fields
-      | _ -> loc_err loc "record type declaration expected"
-    in
-    let endian = match attrs with
-      | [{txt = endian}, PStr []] -> endian
-      | [_, _] -> loc_err loc "no attribute payload expected"
-      | _ -> loc_err loc "too many attributes"
-    in
-    output_struct_sig loc (create_struct loc endian name.txt fields)
+    output_struct_sig loc (cstruct decl)
   | {psig_desc =
        Psig_extension (({txt = "cenum"}, PStr [{pstr_desc = Pstr_type [decl]}]), _);
      psig_loc = loc} ->
-    let {ptype_name = name; ptype_kind = kind; ptype_attributes = attrs} = decl in
-    let fields = match kind with
-      | Ptype_variant fields -> fields
-      | _ ->
-        loc_err loc "expected variant type"
-    in
-    let width, sexp =
-      match attrs with
-      | ({txt = width}, PStr []) :: ({txt = "sexp"}, PStr []) :: [] ->
-        width, true
-      | ({txt = width}, PStr []) :: [] ->
-        width, false
-      | _ ->
-        loc_err loc "invalid cenum attributes"
-    in
-    let n = ref Int64.minus_one in
-    let incr_n () = n := Int64.succ !n in
-    let fields = List.map constr_enum fields in
-    let fields =
-      List.map (function
-          | (f, None)   -> incr_n (); (f, !n)
-          | (f, Some i) -> n := i; (f, i)
-        ) fields in
+    let name, fields, width, sexp = cenum decl in
     output_enum_sig loc name fields width ~sexp
   | other ->
     [default_mapper.signature_item mapper other]
@@ -552,43 +468,11 @@ let structure_item' mapper = function
   | {pstr_desc =
        Pstr_extension (({txt = "cstruct"}, PStr [{pstr_desc = Pstr_type [decl]}]), _);
      pstr_loc = loc} ->
-    let {ptype_name = name; ptype_kind = kind; ptype_attributes = attrs} = decl in
-    let fields = match kind with
-      | Ptype_record fields -> List.map constr_field fields
-      | _ -> loc_err loc "record type declaration expected"
-    in
-    let endian = match attrs with
-      | [{txt = endian}, PStr []] -> endian
-      | [_, _] -> loc_err loc "no attribute payload expected"
-      | _ -> loc_err loc "too many attributes"
-    in
-    output_struct loc (create_struct loc endian name.txt fields)
+    output_struct loc (cstruct decl)
   | {pstr_desc =
        Pstr_extension (({txt = "cenum"}, PStr [{pstr_desc = Pstr_type [decl]}]), _);
      pstr_loc = loc} ->
-    let {ptype_name = name; ptype_kind = kind; ptype_attributes = attrs} = decl in
-    let fields = match kind with
-      | Ptype_variant fields -> fields
-      | _ ->
-        loc_err loc "expected variant type"
-    in
-    let width, sexp =
-      match attrs with
-      | ({txt = width}, PStr []) :: ({txt = "sexp"}, PStr []) :: [] ->
-        width, true
-      | ({txt = width}, PStr []) :: [] ->
-        width, false
-      | _ ->
-        loc_err loc "invalid cenum attributes"
-    in
-    let n = ref Int64.minus_one in
-    let incr_n () = n := Int64.succ !n in
-    let fields = List.map constr_enum fields in
-    let fields =
-      List.map (function
-          | (f, None)   -> incr_n (); (f, !n)
-          | (f, Some i) -> n := i; (f, i)
-        ) fields in
+    let name, fields, width, sexp = cenum decl in
     output_enum loc name fields width ~sexp
   | other ->
     [default_mapper.structure_item mapper other]
