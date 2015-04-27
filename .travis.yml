@@ -7,3 +7,4 @@ env:
   - PACKAGE="cstruct" OCAML_VERSION=4.02 DEPOPTS="async"
   - PACKAGE="cstruct" OCAML_VERSION=4.01 DEPOPTS="async lwt" POST_INSTALL_HOOK="opam install mirage"
   - PACKAGE="cstruct" OCAML_VERSION=4.01 DEPOPTS="camlp4"
+  - PACKAGE="cstruct" OCAML_VERSION=4.02 DEPOPTS="ppx_tools"
