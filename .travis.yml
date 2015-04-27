@@ -10,3 +10,4 @@ env:
     - OCAML_VERSION=4.02 DEPOPTS="async"
     - OCAML_VERSION=4.01 DEPOPTS="async lwt" REVDEPS=mirage
     - OCAML_VERSION=4.01 DEPOPTS="camlp4"
+    - OCAML_VERSION=4.02 DEPOPTS="ppx_tools"
