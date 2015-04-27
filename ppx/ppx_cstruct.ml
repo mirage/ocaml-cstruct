@@ -16,9 +16,11 @@
 
 open Printf
 
+open Longident
 open Asttypes
 open Parsetree
 open Ast_helper
+open Ast_mapper
 module Loc = Location
 module Ast = Ast_convenience
 
@@ -87,7 +89,7 @@ let parse_field loc field field_type sz =
   |Some ty -> begin
     let ty = match ty,sz with
       |_,None -> Prim ty
-      |prim,Some sz -> Buffer (prim, int_of_string sz)
+      |prim,Some sz -> Buffer (prim, sz)
     in
     let off = -1 in
     { field; ty; off }
@@ -462,3 +464,65 @@ let output_enum_sig _loc name fields width ~sexp =
 (*   ]; *)
 
 (* END *)
+
+let constr_field {pld_name = fname; pld_type = fty; pld_loc = loc} =
+  let sz = match fty.ptyp_attributes with
+    | [{txt = "l"}, PStr
+         [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_constant (Const_int sz)}, _)}]] ->
+      Some sz
+    | _ ->
+      None
+  in
+  let fty = match fty.ptyp_desc with
+    | Ptyp_constr ({txt = Lident fty}, []) -> fty
+    | _ ->
+      loc_err fty.ptyp_loc "type identifier expected"
+  in
+  parse_field loc fname.txt fty sz
+
+let signature_item' mapper = function
+  | {psig_desc =
+       Psig_extension (({txt = "cstruct"}, PStr [{pstr_desc = Pstr_type [decl]}]), _);
+     psig_loc = loc} ->
+    let {ptype_name = name; ptype_kind = kind; ptype_attributes = attrs} = decl in
+    let fields = match kind with
+      | Ptype_record fields -> List.map constr_field fields
+      | _ -> loc_err loc "record type declaration expected"
+    in
+    let endian = match attrs with
+      | [{txt = endian}, PStr []] -> endian
+      | [_, _] -> loc_err loc "no attribute payload expected"
+      | _ -> loc_err loc "too many attributes"
+    in
+    output_struct_sig loc (create_struct loc endian name.txt fields)
+  | other ->
+    [default_mapper.signature_item mapper other]
+
+let signature mapper s =
+  List.concat (List.map (signature_item' mapper) s)
+
+let structure_item mapper = function
+  (* | {pstr_desc = *)
+  (*      Pstr_value *)
+  (*        (_, [{pvb_pat = {ppat_desc = Ppat_var {txt = name}}; *)
+  (*              pvb_expr = *)
+  (*                {pexp_desc = *)
+  (*                   Pexp_extension ({txt = "bitstring"}, PPat (fpatt, None))}}]); *)
+  (*    pstr_loc = loc} -> *)
+  (*     add_named_pattern loc name (patt_fields fpatt); *)
+  (*     Str.mk (Pstr_eval (Ast.unit (), [])) *)
+  (* | {pstr_desc = *)
+  (*      Pstr_extension *)
+  (*        (({txt = "bitstring"}, PStr *)
+  (*            [{pstr_desc = *)
+  (*                Pstr_eval *)
+  (*                  ({pexp_desc = Pexp_constant (Const_string (filename, None))}, _)}]), _); *)
+  (*    pstr_loc = loc} -> *)
+  (*     load_patterns_from_file loc filename; *)
+  (*     Str.mk (Pstr_eval (Ast.unit (), [])) *)
+  | other ->
+      default_mapper.structure_item mapper other
+
+let () =
+  Ast_mapper.register "ppx_cstruct"
+    (fun argv -> {default_mapper with structure_item; signature})
