@@ -394,7 +394,7 @@ let constr_enum = function
 
 let constr_field {pld_name = fname; pld_type = fty; pld_loc = loc} =
   let sz = match fty.ptyp_attributes with
-    | [{txt = "l"}, PStr
+    | [{txt = "len"}, PStr
          [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_constant (Const_int sz)}, _)}]] ->
       Some sz
     | _ ->
