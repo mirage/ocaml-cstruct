@@ -32,8 +32,14 @@ build-test: [
   [make]
   ["./test.sh"]
 ]
-install: [make "install"]
-remove:  ["ocamlfind" "remove" "cstruct"]
+install: [
+  [make "install"]
+  [make "js-install"]
+]
+remove:  [
+  [make "js-uninstall"]
+  ["ocamlfind" "remove" "cstruct"]
+]
 depends: [
   "ocamlfind" {build}
   "ounit" {test}
