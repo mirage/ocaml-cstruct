@@ -406,3 +406,10 @@ val iter: (t -> int option) -> (t -> 'a) -> t -> 'a iter
 
 val fold: ('b -> 'a -> 'b) -> 'a iter -> 'b -> 'b
 (** [fold f iter acc] is [(f iterN accN ... (f iter acc)...)]. *)
+
+val append: t -> t -> t
+(** [append t1 t2] is the concatenation [t1 || t2]. *)
+
+val concat: t list -> t
+(** [concat ts] is the concatenation of all the [ts]. It is not guaranteed that
+ * the result is a newly created [t] in the zero- and one-element cases. *)
