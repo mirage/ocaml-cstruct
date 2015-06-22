@@ -247,7 +247,7 @@ val blit: t -> int -> t -> int -> int -> unit
 val blit_from_string: string -> int -> t -> int -> int -> unit
 (** [blit_from_string src srcoff dst dstoff len] copies [len]
     characters from string [src], starting at index [srcoff], to
-    string [dst], starting at index [dstoff].
+    cstruct [dst], starting at index [dstoff].
 
     @raise Invalid_argument if [srcoff] and [len] do not designate a
     valid substring of [src], or if [dstoff] and [len] do not
