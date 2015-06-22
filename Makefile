@@ -39,3 +39,12 @@ configure:
 .PHONY: build doc test all install uninstall reinstall clean distclean configure
 
 # OASIS_STOP
+
+JS_DIR ?= $(shell ocamlfind query cstruct)
+
+.PHONY: js-install js-uninstall
+js-install:
+	install -m 0644 js/cstruct.js $(JS_DIR)
+
+js-uninstall:
+	rm $(JS_DIR)/cstruct.js
