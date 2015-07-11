@@ -1,5 +1,6 @@
-1.6.1 (trunk):
-* Add `Cstruct.concat` and `Cstruct.append`
+1.6.1 (2014-07-11):
+* Add `Cstruct.concat` and `Cstruct.append` (#57, @pqwy)
+* Add `js_of_ocaml` stubs (#63, #64, @djs55)
 
 1.6.0 (2014-03-28):
 * Add `memset` to set all the bytes of a cstruct value efficiently (#49)
