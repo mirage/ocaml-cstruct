@@ -1,4 +1,4 @@
-1.6.1 (2014-07-11):
+1.7.0 (2014-07-11):
 * Add `Cstruct.concat` and `Cstruct.append` (#57, @pqwy)
 * Add `js_of_ocaml` stubs (#63, #64, @djs55)
 
