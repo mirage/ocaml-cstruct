@@ -7,15 +7,13 @@ PKG ocplib-endian
 PKG ocplib-endian.bigstring
 PKG sexplib
 PKG sexplib.syntax
+PKG ppx_tools.metaquot
 
 S async
 S lib
 S lib_test
 S lwt
 S unix
+S ppx
 
-B _build/lib
-B _build/lib_test
-B _build/lwt
-B _build/async
-B _build/unix
+B _build/**
