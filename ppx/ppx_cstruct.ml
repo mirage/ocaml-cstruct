@@ -27,6 +27,7 @@ module Ast = Ast_convenience
 type mode = Big_endian | Little_endian | Host_endian
 
 type prim =
+  | Char
   | UInt8
   | UInt16
   | UInt32
@@ -51,6 +52,7 @@ type t = {
 
 let ty_of_string =
   function
+  |"char_t"  |"char" -> Some Char
   |"uint8_t" |"uint8" |"int8" |"int8_t"  -> Some UInt8
   |"uint16_t"|"uint16"|"int16"|"int16_t" -> Some UInt16
   |"uint32_t"|"uint32"|"int32"|"int32_t" -> Some UInt32
@@ -59,6 +61,7 @@ let ty_of_string =
 
 let width_of_field f =
   let rec width = function
+    |Prim Char -> 1
     |Prim UInt8 -> 1
     |Prim UInt16 -> 2
     |Prim UInt32 -> 4
@@ -69,6 +72,7 @@ let width_of_field f =
 
 let field_to_string f =
   let rec string = function
+    |Prim Char -> "char_t"
     |Prim UInt8 -> "uint8_t"
     |Prim UInt16 -> "uint16_t"
     |Prim UInt32 -> "uint32_t"
@@ -112,13 +116,15 @@ let create_struct loc endian name fields =
   in
   { fields; name = name.txt; len; endian }
 
-let mode_mod = function
-  |Big_endian -> [%expr Cstruct.BE]
-  |Little_endian -> [%expr Cstruct.LE]
-  |Host_endian -> [%expr Cstruct.HE]
+let ($.) l x = Longident.Ldot (l, x)
+let cstruct_id = Longident.Lident "Cstruct"
+let mode_mod s = function
+  |Big_endian -> cstruct_id$."BE"$.s
+  |Little_endian -> cstruct_id$."LE"$.s
+  |Host_endian -> cstruct_id$."HE"$.s
 
-let mode_mod _loc x =
-  mode_mod x [@metaloc _loc]
+let mode_mod loc x s =
+  Exp.ident ~loc {loc ; txt = mode_mod s x}
 
 let getter_name s f = sprintf "get_%s_%s" s.name f.field
 let setter_name s f = sprintf "set_%s_%s" s.name f.field
@@ -143,16 +149,18 @@ let output_get _loc s f =
       [%stri
         let [%p Ast.pvar (getter_name s f)] = fun v ->
           [%e match prim with
+              |Char -> [%expr Cstruct.get_char v [%e num f.off]]
               |UInt8 -> [%expr Cstruct.get_uint8 v [%e num f.off]]
-              |UInt16 -> [%expr [%e m].get_uint16 v [%e num f.off]]
-              |UInt32 -> [%expr [%e m].get_uint32 v [%e num f.off]]
-              |UInt64 -> [%expr [%e m].get_uint64 v [%e num f.off]]]]
+              |UInt16 -> [%expr [%e m "get_uint16"] v [%e num f.off]]
+              |UInt32 -> [%expr [%e m "get_uint32"] v [%e num f.off]]
+              |UInt64 -> [%expr [%e m "get_uint64"] v [%e num f.off]]]]
     ]
 
 let output_get loc s f =
   (output_get loc s f) [@metaloc loc]
 
 let type_of_int_field = function
+  |Char -> [%type: char]
   |UInt8 -> [%type: Cstruct.uint8]
   |UInt16 -> [%type: Cstruct.uint16]
   |UInt32 -> [%type: Cstruct.uint32]
@@ -196,10 +204,11 @@ let output_set _loc s f =
       [%stri
         let [%p Ast.pvar (setter_name s f)] = fun v x ->
           [%e match prim with
+              |Char -> [%expr Cstruct.set_char v [%e num f.off] x]
               |UInt8 -> [%expr Cstruct.set_uint8 v [%e num f.off] x]
-              |UInt16 -> [%expr [%e m].set_uint16 v [%e num f.off] x]
-              |UInt32 -> [%expr [%e m].set_uint32 v [%e num f.off] x]
-              |UInt64 -> [%expr [%e m].set_uint64 v [%e num f.off] x]]]
+              |UInt16 -> [%expr [%e m "set_uint16"] v [%e num f.off] x]
+              |UInt32 -> [%expr [%e m "set_uint32"] v [%e num f.off] x]
+              |UInt64 -> [%expr [%e m "set_uint64"] v [%e num f.off] x]]]
     ]
 
 let output_set _loc s f =
@@ -233,6 +242,8 @@ let output_hexdump _loc s =
         [%expr
           [%e a]; Buffer.add_string _buf [%e Ast.str ("  "^f.field^" = ")];
           [%e match f.ty with
+              |Prim Char ->
+                [%expr Printf.bprintf _buf "%c\n" ([%e Ast.evar (getter_name s f)] v)]
               |Prim (UInt8|UInt16) ->
                 [%expr Printf.bprintf _buf "0x%x\n" ([%e Ast.evar (getter_name s f)] v)]
               |Prim UInt32 ->
@@ -286,6 +297,9 @@ let output_struct_sig _loc s =
 let output_enum _loc name fields width ~sexp =
   let intfn,pattfn = match ty_of_string width with
     |None -> loc_err _loc "enum: unknown width specifier %s" width
+    |Some Char ->
+      (fun i -> Exp.constant (Const_char (Char.chr @@ Int64.to_int i))),
+      (fun i -> Pat.constant (Const_char (Char.chr @@ Int64.to_int i)))
     |Some (UInt8 | UInt16) ->
       (fun i -> Exp.constant (Const_int (Int64.to_int i))),
       (fun i -> Pat.constant (Const_int (Int64.to_int i)))
@@ -346,6 +360,7 @@ let output_enum _loc name fields width ~sexp =
 let output_enum_sig _loc name fields width ~sexp =
   let oty = match ty_of_string width with
     |None -> loc_err _loc "enum: unknown width specifier %s" width
+    |Some Char -> [%type: char]
     |Some (UInt8|UInt16) -> [%type: int]
     |Some UInt32 -> [%type: int32]
     |Some UInt64 -> [%type: int64]
