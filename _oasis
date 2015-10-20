@@ -27,9 +27,9 @@ Flag camlp4
 Library cstruct
   Path:          lib/
   Modules:       Cstruct
-  BuildDepends:  bigarray, ocplib-endian, ocplib-endian.bigstring, sexplib,
+  BuildDepends:  bytes, bigarray, ocplib-endian, ocplib-endian.bigstring, sexplib,
                  sexplib.syntax
-  XMETARequires: bigarray, ocplib-endian, ocplib-endian.bigstring, sexplib
+  XMETARequires: bytes, bigarray, ocplib-endian, ocplib-endian.bigstring, sexplib
   CSources:      cstruct_stubs.c
   CCOpt:         -O3 -Wall
 

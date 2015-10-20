@@ -40,6 +40,8 @@ let pp_t ppf t =
   Format.fprintf ppf "[%d,%d](%d)" t.off t.len (Bigarray.Array1.dim t.buffer)
 let string_t ppf str =
   Format.fprintf ppf "[%d]" (String.length str)
+let bytes_t ppf str =
+  Format.fprintf ppf "[%d]" (Bytes.length str)
 
 let err fmt =
   let b = Buffer.create 20 in                         (* for thread safety. *)
@@ -63,12 +65,12 @@ let err_blit_from_string_src src dst =
 let err_blit_from_string_dst src dst =
   err "Cstruct.blit_from_string src=%a dst=%a dst-off=%d len=%d"
     string_t src pp_t dst
-let err_blit_to_string_src src dst =
-  err "Cstruct.blit_to_string src=%a dst=%a src-off=%d len=%d"
-    pp_t src string_t dst
-let err_blit_to_string_dst src dst=
-  err "Cstruct.blit_to_string src=%a dst=%a dst-off=%d len=%d"
-    pp_t src string_t dst
+let err_blit_to_bytes_src src dst =
+  err "Cstruct.blit_to_bytes src=%a dst=%a src-off=%d len=%d"
+    pp_t src bytes_t dst
+let err_blit_to_bytes_dst src dst=
+  err "Cstruct.blit_to_bytes src=%a dst=%a dst-off=%d len=%d"
+    pp_t src bytes_t dst
 let err_invalid_bounds f =
   err "invalid bounds in Cstruct.%s %a off=%d len=%d" f pp_t
 let err_split = err "Cstruct.split %a start=%d off=%d" pp_t
@@ -97,10 +99,6 @@ type byte = char
 
 let byte (i:int) : byte = Char.chr i
 let byte_to_int (b:byte) = int_of_char b
-
-type bytes = string
-
-let bytes (s:string) : bytes = s
 
 type uint8 = int
 
@@ -147,6 +145,8 @@ external unsafe_blit_bigstring_to_bigstring : buffer -> int -> buffer -> int -> 
 
 external unsafe_blit_string_to_bigstring : string -> int -> buffer -> int -> int -> unit = "caml_blit_string_to_bigstring" "noalloc"
 
+external unsafe_blit_bigstring_to_bytes : buffer -> int -> Bytes.t -> int -> int -> unit = "caml_blit_bigstring_to_string" "noalloc"
+
 external unsafe_blit_bigstring_to_string : buffer -> int -> string -> int -> int -> unit = "caml_blit_bigstring_to_string" "noalloc"
 
 external unsafe_compare_bigstring : buffer -> int -> buffer -> int -> int -> int = "caml_compare_bigstring" "noalloc"
@@ -157,9 +157,10 @@ let copy src srcoff len =
   if len < 0 || srcoff < 0 || src.len - srcoff < len then
     err_copy src srcoff len
   else
-    let s = String.create len in
-    unsafe_blit_bigstring_to_string src.buffer (src.off+srcoff) s 0 len;
-    s
+    let b = Bytes.create len in
+    unsafe_blit_bigstring_to_bytes src.buffer (src.off+srcoff) b 0 len;
+    (* The following call is safe, since b is not visible elsewhere. *)
+    Bytes.unsafe_to_string b
 
 let blit src srcoff dst dstoff len =
   if len < 0 || srcoff < 0 || src.len - srcoff < len then
@@ -178,13 +179,15 @@ let blit_from_string src srcoff dst dstoff len =
   else
     unsafe_blit_string_to_bigstring src srcoff dst.buffer (dst.off+dstoff) len
 
-let blit_to_string src srcoff dst dstoff len =
+let blit_to_bytes src srcoff dst dstoff len =
   if len < 0 || srcoff < 0 || dstoff < 0 || src.len - srcoff < len then
-    err_blit_to_string_src src dst srcoff len
-  else if String.length dst - dstoff < len then
-    err_blit_to_string_dst src dst dstoff len
+    err_blit_to_bytes_src src dst srcoff len
+  else if Bytes.length dst - dstoff < len then
+    err_blit_to_bytes_dst src dst dstoff len
   else
-    unsafe_blit_bigstring_to_string src.buffer (src.off+srcoff) dst dstoff len
+    unsafe_blit_bigstring_to_bytes src.buffer (src.off+srcoff) dst dstoff len
+
+let blit_to_string = blit_to_bytes
 
 let compare t1 t2 =
   let l1 = t1.len
@@ -283,14 +286,15 @@ let lenv = function
 
 let copyv ts =
   let sz = lenv ts in
-  let dst = String.create sz in
+  let dst = Bytes.create sz in
   let _ = List.fold_left
     (fun off src ->
       let x = len src in
-      unsafe_blit_bigstring_to_string src.buffer src.off dst off x;
+      unsafe_blit_bigstring_to_bytes src.buffer src.off dst off x;
       off + x
     ) 0 ts in
-  dst
+  (* The following call is safe, since dst is not visible elsewhere. *)
+  Bytes.unsafe_to_string dst
 
 let fillv ~src ~dst =
   let rec aux dst n = function
@@ -311,9 +315,10 @@ let fillv ~src ~dst =
 
 let to_string t =
   let sz = len t in
-  let s = String.create sz in
-  unsafe_blit_bigstring_to_string t.buffer t.off s 0 sz;
-  s
+  let b = Bytes.create sz in
+  unsafe_blit_bigstring_to_bytes t.buffer t.off b 0 sz;
+  (* The following call is safe, since b is not visible elsewhere. *)
+  Bytes.unsafe_to_string b
 
 let of_string ?allocator buf =
   let buflen = String.length buf in
@@ -414,6 +419,7 @@ let t_of_sexp = function
 
 let sexp_of_t t =
   let n   = len t in
-  let str = String.create n in
-  blit_to_string t 0 str 0 n ;
-  Sexp.Atom str
+  let str = Bytes.create n in
+  blit_to_bytes t 0 str 0 n ;
+  (* The following call is safe, since str is not visible elsewhere. *)
+  Sexp.Atom (Bytes.unsafe_to_string str)

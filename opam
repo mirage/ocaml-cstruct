@@ -43,6 +43,7 @@ depends: [
   "ounit"     {test}
   "ocplib-endian"
   "sexplib"
+  "base-bytes"
 ]
 depopts: [
   "camlp4"
