@@ -261,7 +261,7 @@ module LE = struct
     else set_int64 t.buffer (t.off+i) c
 
   let get_uint16 t i =
-    if (i+2) > t.len || i < 0 then err_invalid_bounds "LE.set_uint16" t i 2
+    if (i+2) > t.len || i < 0 then err_invalid_bounds "LE.get_uint16" t i 2
     else get_uint16 t.buffer (t.off+i)
 
   let get_uint32 t i =
