@@ -303,7 +303,7 @@ let fillv ~src ~dst =
           aux (shift dst first) (n + first) tl
         ) else (
           blit hd 0 dst 0 avail;
-          let rest_hd = shift hd first in
+          let rest_hd = shift hd avail in
           (n + avail, rest_hd :: tl)
         ) in
   aux dst 0 src

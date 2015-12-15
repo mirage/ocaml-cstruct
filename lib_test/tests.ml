@@ -84,9 +84,29 @@ let append_is_concat ~n () =
     assert_cs_equal (Cstruct.concat [cs1; cs2]) (Cstruct.append cs1 cs2)
   done
 
+let fillv () =
+  let test src ~buf_size =
+    let dst = Cstruct.create buf_size in
+    let src_len = Cstruct.lenv src in
+    let len, remaining = Cstruct.fillv ~src ~dst in
+    assert (len = min src_len buf_size);
+    let whole = Cstruct.concat (Cstruct.sub dst 0 len :: remaining) in
+    assert (Cstruct.equal whole (Cstruct.concat src)) in
+  test [] 0;
+  test [] 16;
+  test [Cstruct.of_string "abc"] 0;
+  test [Cstruct.of_string "abc"] 2;
+  test [Cstruct.of_string "abc"] 16;
+  test [Cstruct.of_string "abc"; Cstruct.of_string ""; Cstruct.of_string "def"] 0;
+  test [Cstruct.of_string "abc"; Cstruct.of_string ""; Cstruct.of_string "def"] 3;
+  test [Cstruct.of_string "abc"; Cstruct.of_string ""; Cstruct.of_string "def"] 5;
+  test [Cstruct.of_string "abc"; Cstruct.of_string ""; Cstruct.of_string "def"] 6;
+  test [Cstruct.of_string "abc"; Cstruct.of_string ""; Cstruct.of_string "def"] 7
+
 let _ =
   let suite =
     "misc tests" >::: [
+      "fillv">:: fillv;
       "sexp" >::: [
         "sexp_of_t" >:: sexp_writer
       ; "t_of_sexp" >:: sexp_reader
