@@ -1,5 +1,6 @@
 #!/bin/sh -ex
 
+bytes=`ocamlfind query bytes -format "-I %d %a" -predicates native,archive`
 endian=`ocamlfind query ocplib-endian.bigstring -format "-I %d %a" -predicates native,archive`
 sexplib=`ocamlfind query -r sexplib -format "-I %d %a" -predicates native,archive`
 sexplibi=`ocamlfind query -r sexplib -format "-I %d" -predicates native`
@@ -18,7 +19,7 @@ rm -f _build/lib_test/$1.cmi
 cd _build/lib_test
 ocamlopt -pp 'camlp4orf ../syntax/cstruct-syntax.cma' -I ../lib -I ../unix $sexplibi -c $1.mli
 ocamlopt -pp 'camlp4orf ../syntax/cstruct-syntax.cma' -I ../lib -I ../unix $sexplibi -c $1.ml
-ocamlopt -I ../lib -I ../unix $endian $sexplib cstruct.cmxa unix_cstruct.cmxa $1.cmx -o $1.opt
+ocamlopt -I ../lib -I ../unix $bytes $endian $sexplib cstruct.cmxa unix_cstruct.cmxa $1.cmx -o $1.opt
 time ./$1.opt
 cd ../..
 }
