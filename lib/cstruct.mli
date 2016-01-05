@@ -253,7 +253,7 @@ val blit_from_string: string -> int -> t -> int -> int -> unit
     valid substring of [src], or if [dstoff] and [len] do not
     designate a valid segment of [dst]. *)
 
-val blit_to_string: t -> int -> string -> int -> int -> unit
+val blit_to_bytes: t -> int -> Bytes.t -> int -> int -> unit
 (** [blit_to_string src srcoff dst dstoff len] copies [len] characters
     from cstruct [src], starting at index [srcoff], to string [dst],
     starting at index [dstoff].
@@ -261,6 +261,11 @@ val blit_to_string: t -> int -> string -> int -> int -> unit
     @raise Invalid_argument if [srcoff] and [len] do not designate a
     valid segment of [src], or if [dstoff] and [len] do not designate
     a valid substring of [dst]. *)
+
+val blit_to_string: t -> int -> Bytes.t -> int -> int -> unit
+(** [blit_to_string] is a deprecated alias of {!blit_to_bytes}. 
+
+    @deprecated This is a deprecated alias of {!blit_to_bytes}. *)
 
 val memset: t -> int -> unit
 (** [memset t x] sets all the bytes of [t] to [x land 0xff]. *)
