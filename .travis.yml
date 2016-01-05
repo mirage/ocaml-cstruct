@@ -2,8 +2,11 @@ language: c
 install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/master/.travis-opam.sh
 script: bash -ex .travis-opam.sh
 env:
-  - PACKAGE="cstruct" OCAML_VERSION=latest POST_INSTALL_HOOK="opam depext tls && opam install tls"
-  - PACKAGE="cstruct" OCAML_VERSION=4.02 DEPOPTS="lwt" POST_INSTALL_HOOK="opam install dns irmin"
-  - PACKAGE="cstruct" OCAML_VERSION=4.02 DEPOPTS="async"
-  - PACKAGE="cstruct" OCAML_VERSION=4.01 DEPOPTS="async lwt" POST_INSTALL_HOOK="opam install mirage"
-  - PACKAGE="cstruct" OCAML_VERSION=4.01 DEPOPTS="camlp4"
+  global:
+    - PACKAGE="cstruct"
+  matrix:
+    - OCAML_VERSION=4.02 REVDEPS=tls
+    - OCAML_VERSION=4.02 DEPOPTS="lwt" REVDEPS="dns irmin"
+    - OCAML_VERSION=4.02 DEPOPTS="async"
+    - OCAML_VERSION=4.01 DEPOPTS="async lwt" REVDEPS=mirage
+    - OCAML_VERSION=4.01 DEPOPTS="camlp4"

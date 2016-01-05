@@ -1,6 +1,4 @@
 opam-version: "1.2"
-name:         "cstruct"
-version:      "1.6.0"
 maintainer:   "anil@recoil.org"
 authors:      "Anil Madhavapeddy"
 homepage:     "https://github.com/mirage/ocaml-cstruct"
@@ -17,8 +15,7 @@ build: [
       "--%{lwt:enable}%-lwt"
       "--%{camlp4:enable}%-camlp4"
       "--%{async:enable}%-async"
-      "--%{base-unix:enable}%-unix"
-      "--%{ounit:enable}%-tests"]
+      "--%{base-unix:enable}%-unix"]
   [make]
 ]
 build-test: [
@@ -28,16 +25,22 @@ build-test: [
       "--%{camlp4:enable}%-camlp4"
       "--%{async:enable}%-async"
       "--%{base-unix:enable}%-unix"
-      "--%{ounit:enable}%-tests"]
+      "--enable-tests"]
   [make]
   ["./test.sh"]
 ]
-install: [make "install"]
-remove:  ["ocamlfind" "remove" "cstruct"]
+install: [
+  [make "install"]
+  [make "js-install"]
+]
+remove:  [
+  [make "js-uninstall"]
+  ["ocamlfind" "remove" "cstruct"]
+]
 depends: [
   "ocamlfind" {build}
-  "ounit" {test}
   "type_conv" {build}
+  "ounit"     {test}
   "ocplib-endian"
   "sexplib"
 ]

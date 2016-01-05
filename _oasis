@@ -1,8 +1,9 @@
 OASISFormat: 0.4
 Name:        cstruct
-Version:     1.6.0
+Version:     1.7.1
 Synopsis:    Manipulate external buffers as C-like structs
-Authors:     Anil Madhavapeddy, Richard Mortier, Thomas Gazagnaire, Pierre Chambart, David Kaloper
+Authors:     Anil Madhavapeddy, Richard Mortier, Thomas Gazagnaire,
+             Pierre Chambart, David Kaloper
 License:     ISC
 Plugins:     META (0.4), DevFiles (0.4)
 BuildTools:  ocamlbuild
@@ -26,7 +27,8 @@ Flag camlp4
 Library cstruct
   Path:          lib/
   Modules:       Cstruct
-  BuildDepends:  bigarray, ocplib-endian, ocplib-endian.bigstring, sexplib, sexplib.syntax
+  BuildDepends:  bigarray, ocplib-endian, ocplib-endian.bigstring, sexplib,
+                 sexplib.syntax
   XMETARequires: bigarray, ocplib-endian, ocplib-endian.bigstring, sexplib
   CSources:      cstruct_stubs.c
   CCOpt:         -O3 -Wall

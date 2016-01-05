@@ -1,4 +1,13 @@
-1.6.0 (2014-04-03):
+1.7.1 (2015-12-15):
+* Correct error output for `LE.get_uint16` on invalid bounds (#75)
+* Fix `fillv`. If the source didn't fit in the buffer then we
+  skipped the amount we wanted to copy, not the amount actually copied (#77).
+
+1.7.0 (2015-07-11):
+* Add `Cstruct.concat` and `Cstruct.append` (#57, @pqwy)
+* Add `js_of_ocaml` stubs (#63, #64, @djs55)
+
+1.6.0 (2015-03-28):
 * Add `memset` to set all the bytes of a cstruct value efficiently (#49)
 * More useful `Invalid_argument` parameters (#48).
 * Fix `to_sexp` to expose only the current view (#44 from David Kaloper).

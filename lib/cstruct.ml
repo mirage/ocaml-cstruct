@@ -261,7 +261,7 @@ module LE = struct
     else set_int64 t.buffer (t.off+i) c
 
   let get_uint16 t i =
-    if (i+2) > t.len || i < 0 then err_invalid_bounds "LE.set_uint16" t i 2
+    if (i+2) > t.len || i < 0 then err_invalid_bounds "LE.get_uint16" t i 2
     else get_uint16 t.buffer (t.off+i)
 
   let get_uint32 t i =
@@ -303,7 +303,7 @@ let fillv ~src ~dst =
           aux (shift dst first) (n + first) tl
         ) else (
           blit hd 0 dst 0 avail;
-          let rest_hd = shift hd first in
+          let rest_hd = shift hd avail in
           (n + avail, rest_hd :: tl)
         ) in
   aux dst 0 src
@@ -380,6 +380,24 @@ let rec fold f next acc = match next () with
   | None -> acc
   | Some v -> fold f next (f acc v)
 
+let append cs1 cs2 =
+  let l1 = len cs1 and l2 = len cs2 in
+  let cs = create (l1 + l2) in
+  blit cs1 0 cs 0  l1 ;
+  blit cs2 0 cs l1 l2 ;
+  cs
+
+let concat = function
+  | []   -> create 0
+  | [cs] -> cs
+  | css  ->
+      let result = create (lenv css) in
+      let aux off cs =
+        let n = len cs in
+        blit cs 0 result off n ;
+        off + n in
+      ignore @@ List.fold_left aux 0 css ;
+      result
 
 open Sexplib
 

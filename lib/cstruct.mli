@@ -247,7 +247,7 @@ val blit: t -> int -> t -> int -> int -> unit
 val blit_from_string: string -> int -> t -> int -> int -> unit
 (** [blit_from_string src srcoff dst dstoff len] copies [len]
     characters from string [src], starting at index [srcoff], to
-    string [dst], starting at index [dstoff].
+    cstruct [dst], starting at index [dstoff].
 
     @raise Invalid_argument if [srcoff] and [len] do not designate a
     valid substring of [src], or if [dstoff] and [len] do not
@@ -406,3 +406,10 @@ val iter: (t -> int option) -> (t -> 'a) -> t -> 'a iter
 
 val fold: ('b -> 'a -> 'b) -> 'a iter -> 'b -> 'b
 (** [fold f iter acc] is [(f iterN accN ... (f iter acc)...)]. *)
+
+val append: t -> t -> t
+(** [append t1 t2] is the concatenation [t1 || t2]. *)
+
+val concat: t list -> t
+(** [concat ts] is the concatenation of all the [ts]. It is not guaranteed that
+ * the result is a newly created [t] in the zero- and one-element cases. *)
