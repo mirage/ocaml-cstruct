@@ -1,3 +1,9 @@
+1.8.0 (2016-01-05):
+* Add support for `-safe-string` in OCaml 4.02 upwards.
+  The main change is to rename `blit_to_string` to `blit_to_bytes` and
+  change its type so that it writes to bytes rather than string
+  (#74 by @yallop).
+
 1.7.1 (2015-12-15):
 * Correct error output for `LE.get_uint16` on invalid bounds (#75)
 * Fix `fillv`. If the source didn't fit in the buffer then we
