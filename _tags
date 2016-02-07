@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 36be565b982feef97a47ce508b3891b2)
+# DO NOT EDIT (digest: 3f635762aae1318df93fc55726e3919c)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -24,13 +24,11 @@ true: annot, bin_annot
 <lib/*.ml{,i,y}>: pkg_ocplib-endian
 <lib/*.ml{,i,y}>: pkg_ocplib-endian.bigstring
 <lib/*.ml{,i,y}>: pkg_sexplib
-<lib/*.ml{,i,y}>: pkg_sexplib.syntax
 "lib/cstruct_stubs.c": pkg_bigarray
 "lib/cstruct_stubs.c": pkg_bytes
 "lib/cstruct_stubs.c": pkg_ocplib-endian
 "lib/cstruct_stubs.c": pkg_ocplib-endian.bigstring
 "lib/cstruct_stubs.c": pkg_sexplib
-"lib/cstruct_stubs.c": pkg_sexplib.syntax
 # Library async_cstruct
 "async/async_cstruct.cmxs": use_async_cstruct
 <async/*.ml{,i,y}>: pkg_async
@@ -39,7 +37,6 @@ true: annot, bin_annot
 <async/*.ml{,i,y}>: pkg_ocplib-endian
 <async/*.ml{,i,y}>: pkg_ocplib-endian.bigstring
 <async/*.ml{,i,y}>: pkg_sexplib
-<async/*.ml{,i,y}>: pkg_sexplib.syntax
 <async/*.ml{,i,y}>: pkg_threads
 <async/*.ml{,i,y}>: use_cstruct
 # Library lwt_cstruct
@@ -50,7 +47,6 @@ true: annot, bin_annot
 <lwt/*.ml{,i,y}>: pkg_ocplib-endian
 <lwt/*.ml{,i,y}>: pkg_ocplib-endian.bigstring
 <lwt/*.ml{,i,y}>: pkg_sexplib
-<lwt/*.ml{,i,y}>: pkg_sexplib.syntax
 <lwt/*.ml{,i,y}>: use_cstruct
 # Library unix_cstruct
 "unix/unix_cstruct.cmxs": use_unix_cstruct
@@ -59,7 +55,6 @@ true: annot, bin_annot
 <unix/*.ml{,i,y}>: pkg_ocplib-endian
 <unix/*.ml{,i,y}>: pkg_ocplib-endian.bigstring
 <unix/*.ml{,i,y}>: pkg_sexplib
-<unix/*.ml{,i,y}>: pkg_sexplib.syntax
 <unix/*.ml{,i,y}>: pkg_unix
 <unix/*.ml{,i,y}>: use_cstruct
 # Library cstruct-syntax
@@ -68,6 +63,12 @@ true: annot, bin_annot
 <syntax/*.ml{,i,y}>: pkg_camlp4.extend
 <syntax/*.ml{,i,y}>: pkg_camlp4.lib
 <syntax/*.ml{,i,y}>: pkg_camlp4.quotations.r
+# Executable ppx_cstruct
+<ppx/ppx_cstruct.{native,byte}>: pkg_bigarray
+<ppx/ppx_cstruct.{native,byte}>: pkg_ppx_tools.metaquot
+<ppx/*.ml{,i,y}>: pkg_bigarray
+<ppx/*.ml{,i,y}>: pkg_ppx_tools.metaquot
+<ppx/ppx_cstruct.{native,byte}>: custom
 # Executable test_bounds
 <lib_test/bounds.{native,byte}>: pkg_bigarray
 <lib_test/bounds.{native,byte}>: pkg_bytes
@@ -75,7 +76,6 @@ true: annot, bin_annot
 <lib_test/bounds.{native,byte}>: pkg_ocplib-endian
 <lib_test/bounds.{native,byte}>: pkg_ocplib-endian.bigstring
 <lib_test/bounds.{native,byte}>: pkg_sexplib
-<lib_test/bounds.{native,byte}>: pkg_sexplib.syntax
 <lib_test/bounds.{native,byte}>: pkg_unix
 <lib_test/bounds.{native,byte}>: use_cstruct
 <lib_test/bounds.{native,byte}>: use_unix_cstruct
@@ -89,7 +89,6 @@ true: annot, bin_annot
 <lib_test/tests.{native,byte}>: pkg_ocplib-endian
 <lib_test/tests.{native,byte}>: pkg_ocplib-endian.bigstring
 <lib_test/tests.{native,byte}>: pkg_sexplib
-<lib_test/tests.{native,byte}>: pkg_sexplib.syntax
 <lib_test/tests.{native,byte}>: use_cstruct
 <lib_test/*.ml{,i,y}>: pkg_bigarray
 <lib_test/*.ml{,i,y}>: pkg_bytes
@@ -97,11 +96,7 @@ true: annot, bin_annot
 <lib_test/*.ml{,i,y}>: pkg_ocplib-endian
 <lib_test/*.ml{,i,y}>: pkg_ocplib-endian.bigstring
 <lib_test/*.ml{,i,y}>: pkg_sexplib
-<lib_test/*.ml{,i,y}>: pkg_sexplib.syntax
 <lib_test/*.ml{,i,y}>: use_cstruct
 <lib_test/tests.{native,byte}>: custom
 # OASIS_STOP
-<syntax/*.ml>: syntax_camlp4o, pkg_camlp4
-<lib_test/*.ml{i}>: syntax_camlp4o, pkg_camlp4, pkg_cstruct.syntax
 true: annot, bin_annot, debug, principal
-

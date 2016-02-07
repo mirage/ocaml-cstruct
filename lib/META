@@ -53,3 +53,9 @@ package "async" (
 )
 # OASIS_STOP
 
+package "ppx" (
+ version = "1.7.0"
+ description = "Ppx syntax extension for Cstruct"
+ requires = "cstruct"
+ ppx = "ppx_cstruct"
+)

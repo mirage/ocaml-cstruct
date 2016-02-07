@@ -24,12 +24,14 @@ Flag camlp4
   Description: build the camlp4 syntax extension
   Default: true
 
+Flag ppx
+  Description: build the ppx syntax extension
+  Default: true
+
 Library cstruct
   Path:          lib/
   Modules:       Cstruct
-  BuildDepends:  bytes, bigarray, ocplib-endian, ocplib-endian.bigstring, sexplib,
-                 sexplib.syntax
-  XMETARequires: bytes, bigarray, ocplib-endian, ocplib-endian.bigstring, sexplib
+  BuildDepends:  bytes, bigarray, ocplib-endian, ocplib-endian.bigstring, sexplib
   CSources:      cstruct_stubs.c
   CCOpt:         -O3 -Wall
 
@@ -69,6 +71,15 @@ Library "cstruct-syntax"
   XMETAType:     syntax
   XMETADescription: Syntax extension for Cstruct
   XMETARequires: camlp4
+
+Executable ppx_cstruct
+  Build$:       flag(ppx)
+  Install:      true
+  Path:         ppx
+  Custom:       true
+  CompiledObject: best
+  BuildDepends: ppx_tools.metaquot, bigarray
+  MainIs:       ppx_cstruct.ml
 
 Executable test_bounds
   Build$:       flag(tests) && flag(unix)
