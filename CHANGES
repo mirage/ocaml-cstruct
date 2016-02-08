@@ -7,6 +7,7 @@
   The `sexplib` functions were only used in the interface, so replace them
   with manually written ones.  This also enables compatibility with latest
   Core that has switched to ppx.
+* Add multi-distro testing via Travis/Docker containers.
 
 1.7.1 (2015-12-15):
 * Correct error output for `LE.get_uint16` on invalid bounds (#75)
