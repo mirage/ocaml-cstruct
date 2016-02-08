@@ -1,13 +1,19 @@
 language: c
-install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/master/.travis-opam.sh
-script: bash -ex .travis-opam.sh
+sudo: false
+services:
+  - docker
+install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/master/.travis-docker.sh
+script: bash -ex ./.travis-docker.sh
 env:
   global:
-    - PACKAGE="cstruct"
+  - PACKAGE="cstruct"
+  - DEPOPTS="camlp4 ppx_tools async lwt"
+  - REVDEPS="tls dns irmin tcpip"
   matrix:
-    - OCAML_VERSION=4.02 REVDEPS=tls
-    - OCAML_VERSION=4.02 DEPOPTS="lwt" REVDEPS="dns irmin"
-    - OCAML_VERSION=4.02 DEPOPTS="async"
-    - OCAML_VERSION=4.01 DEPOPTS="async lwt" REVDEPS=mirage
-    - OCAML_VERSION=4.01 DEPOPTS="camlp4"
-    - OCAML_VERSION=4.02 DEPOPTS="ppx_tools"
+  - DISTRO="debian-stable" OCAML_VERSION="4.01.0" DEPOPTS="camlp4 lwt"
+  - DISTRO="debian-testing" OCAML_VERSION="4.02.3"
+  - DISTRO="ubuntu-14.04" OCAML_VERSION="4.02.3"
+  - DISTRO="ubuntu-15.10" OCAML_VERSION="4.02.3"
+  - DISTRO="centos-7" OCAML_VERSION="4.02.3"
+  - DISTRO="centos-6" OCAML_VERSION="4.02.3"
+  - DISTRO="fedora-23" OCAML_VERSION="4.02.3"
