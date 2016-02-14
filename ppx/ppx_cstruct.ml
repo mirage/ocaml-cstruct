@@ -320,7 +320,7 @@ let output_enum _loc name fields width ~sexp =
   let printers = List.map (fun ({txt = f},_) ->
       {pc_lhs = Ast.pconstr f []; pc_guard = None; pc_rhs = Ast.str f}) fields in
   let parsers = List.map (fun ({txt = f},_) ->
-      {pc_lhs = Ast.pstr f; pc_guard = None; pc_rhs = Ast.constr f []}) fields in
+      {pc_lhs = Ast.pstr f; pc_guard = None; pc_rhs = Ast.constr "Some" [Ast.constr f []]}) fields in
   let getter {txt = x} = sprintf "int_to_%s" x in
   let setter {txt = x} = sprintf "%s_to_int" x in
   let printer {txt = x} = sprintf "%s_to_string" x in
