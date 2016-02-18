@@ -24,6 +24,16 @@ time ./$1.opt
 cd ../..
 }
 
+test_ppx() {
+echo $1
+mkdir -p _build/ppx_test
+ocamlfind ppx_tools/rewriter _build/ppx/ppx_cstruct.native ppx_test/$1.ml > _build/ppx_test/$1.ml
+cd _build/ppx_test
+ocamlopt -I ../lib -I ../unix $bytes $endian $sexplib cstruct.cmxa unix_cstruct.cmxa -o $1.opt
+time ./$1.opt
+cd ../..
+}
+
 test_ounit() {
 echo $1
 mkdir -p _build/lib_test
@@ -42,3 +52,6 @@ test enum
 mkdir -p _build/lib_test
 ln -nsf ../../lib_test/http.cap _build/lib_test/http.cap
 test pcap
+
+test_ppx basic
+test_ppx enum
