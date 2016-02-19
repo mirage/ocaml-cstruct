@@ -59,5 +59,7 @@ test pcap
 
 test_ppx basic
 test_ppx enum
-ln -nsf ../../lib_test/http.cap _build/ppx_test/http.cap
+if [ -d _build/ppx_test ]; then
+  ln -nsf ../../lib_test/http.cap _build/ppx_test/http.cap
+fi
 test_ppx pcap
