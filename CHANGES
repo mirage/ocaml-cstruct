@@ -1,3 +1,8 @@
+1.9.0 (2016-02-19):
+* Add support for a ppx-based extension that uses the extension point
+  support in OCaml 4.02 and higher to generate Cstruct and Cenum
+  function definitions.  The new syntax is documented in the README file.
+
 1.8.0 (2016-01-05):
 * Add support for `-safe-string` in OCaml 4.02 upwards.
   The main change is to rename `blit_to_string` to `blit_to_bytes` and
