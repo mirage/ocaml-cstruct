@@ -35,7 +35,7 @@ type pcap_packet = {
 
 [%%cstruct
 type ethernet = {
-  dst: uint8_t [@len 8];
+  dst: uint8_t [@len 6];
   src: uint8_t [@len 6];
   ethertype: uint16_t;
 } [@@big_endian]]
@@ -73,8 +73,7 @@ let mac_to_string buf =
   Printf.sprintf "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x"
     (i 0) (i 1) (i 2) (i 3) (i 4) (i 5)
 
-let printf fmt =
-  Printf.kprintf (fun _ -> ()) fmt
+open Printf
 
 let print_packet p =
   let dst_mac = mac_to_string (get_ethernet_dst p) in
@@ -116,7 +115,7 @@ let print_packet p =
      end
      |_ -> printf "unknown ip proto %d\n" proto
   end
-  |_ -> printf "unknown body\n"
+  |x -> printf "unknown body %x\n" x
 
 let rec print_pcap_packet (hdr,pkt) =
   let ts_sec = get_pcap_packet_ts_sec hdr in
@@ -167,6 +166,7 @@ let parse () =
     (fun a packet -> print_pcap_packet packet; (a+1))
     packets 0
   in
-  printf "num_packets %d\n" num_packets
+  printf "num_packets %d\n%!" num_packets
 
 let _ = parse ()
+let _ = print_endline "all done"
