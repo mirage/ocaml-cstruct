@@ -252,7 +252,7 @@ let output_hexdump _loc s =
                 [%expr Printf.bprintf _buf "0x%Lx\n" ([%e Ast.evar (getter_name s f)] v)]
               |Buffer (_,_) ->
                 [%expr Printf.bprintf _buf "<buffer %s>"
-                         [%e Ast.str (field_to_string f)]
+                         [%e Ast.str (field_to_string f)];
                          Cstruct.hexdump_to_buffer _buf ([%e Ast.evar (getter_name s f)] v)]
           ]]
       ) (Ast.unit ()) s.fields
@@ -320,7 +320,7 @@ let output_enum _loc name fields width ~sexp =
   let printers = List.map (fun ({txt = f},_) ->
       {pc_lhs = Ast.pconstr f []; pc_guard = None; pc_rhs = Ast.str f}) fields in
   let parsers = List.map (fun ({txt = f},_) ->
-      {pc_lhs = Ast.pstr f; pc_guard = None; pc_rhs = Ast.constr f []}) fields in
+      {pc_lhs = Ast.pstr f; pc_guard = None; pc_rhs = Ast.constr "Some" [Ast.constr f []]}) fields in
   let getter {txt = x} = sprintf "int_to_%s" x in
   let setter {txt = x} = sprintf "%s_to_int" x in
   let printer {txt = x} = sprintf "%s_to_string" x in
@@ -407,13 +407,19 @@ let constr_enum = function
   | {pcd_loc = loc} ->
     loc_err loc "invalid cenum variant"
 
-let constr_field {pld_name = fname; pld_type = fty; pld_loc = loc} =
-  let sz = match fty.ptyp_attributes with
+let constr_field {pld_name = fname; pld_type = fty; pld_loc = loc; pld_attributes = att} =
+  let get = function
     | [{txt = "len"}, PStr
          [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_constant (Const_int sz)}, _)}]] ->
       Some sz
     | _ ->
       None
+  in
+  let sz = match get fty.ptyp_attributes, get att with
+  | Some sz, None
+  | None, Some sz -> Some sz
+  | Some _, Some _ -> loc_err loc "multiple field length attribute"
+  | None, None -> None
   in
   let fty = match fty.ptyp_desc with
     | Ptyp_constr ({txt = Lident fty}, []) -> fty
