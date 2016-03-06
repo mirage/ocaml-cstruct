@@ -69,3 +69,10 @@ caml_fill_bigstring(value val_buf, value val_ofs, value val_len, value val_byte)
          Long_val(val_len));
   return Val_unit;
 }
+
+CAMLprim value
+caml_address_bigstring(value val_buf)
+{
+  uint64_t address = (uint64_t) Caml_ba_data_val(val_buf);
+  return caml_copy_int64(address);
+}

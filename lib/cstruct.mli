@@ -213,6 +213,13 @@ val check_bounds : t -> int -> bool
 (** [check_bounds cstr len] is [true] if [cstr.buffer]'s size is
     greater or equal than [len], [false] otherwise. *)
 
+val check_alignment : t -> int -> bool
+(** [check_alignment cstr alignment] is [true] if the first byte stored
+    within [cstr] is at a memory address where [address mod alignment = 0],
+    [false] otherwise.
+    Typical uses are to check a buffer is aligned to a page or disk sector
+    boundary. *)
+
 val get_char: t -> int -> char
 (** [get_char t off] returns the character contained in the cstruct
     at offset [off].
