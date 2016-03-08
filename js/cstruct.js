@@ -65,7 +65,7 @@ function caml_fill_bigstring(buf, buf_off, buf_len, v) {
   return 0;
 }
 
-//Provides: caml_address_bigstring
-function caml_address_bigstring(buf) {
-  return 0; // FIXME: No concept of a fixed buffer address?
+//Provides: caml_check_alignment_bigstring
+function caml_check_alignment_bigstring(buf, ofs, alignment) {
+  return true; // FIXME: No concept of a fixed buffer address?
 }
