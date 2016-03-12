@@ -54,12 +54,12 @@ test_ounit bounds
 test basic
 test enum
 mkdir -p _build/lib_test
-ln -nsf ../../lib_test/http.cap _build/lib_test/http.cap
+cp lib_test/http.cap _build/lib_test/http.cap
 test pcap
 
 test_ppx basic
 test_ppx enum
 if [ -d _build/ppx_test ]; then
-  ln -nsf ../../lib_test/http.cap _build/ppx_test/http.cap
+  cp lib_test/http.cap _build/ppx_test/http.cap
 fi
 test_ppx pcap
