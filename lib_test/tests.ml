@@ -103,6 +103,17 @@ let fillv () =
   test [Cstruct.of_string "abc"; Cstruct.of_string ""; Cstruct.of_string "def"] 6;
   test [Cstruct.of_string "abc"; Cstruct.of_string ""; Cstruct.of_string "def"] 7
 
+let check_alignment alignment () =
+  (* Make the buffer big enough to find 4 aligned offsets within it *)
+  let expected = 4 in
+  let buf = Cstruct.create (expected * alignment) in
+  (* How many aligned offsets are there in this buffer? *)
+  let actual = ref 0 in
+  for i = 0 to Cstruct.len buf - 1 do
+    if Cstruct.(check_alignment (shift buf i) alignment) then incr actual
+  done;
+  assert_equal ~printer:string_of_int expected !actual
+
 let _ =
   let suite =
     "misc tests" >::: [
@@ -118,8 +129,11 @@ let _ =
       ] ;
       "append" >::: [
         "append is concat" >:: append_is_concat ~n:5000
+      ] ;
+      "alignment" >::: [
+        "aligned to 4096" >:: check_alignment 4096
+      ; "aligned to 512"  >:: check_alignment 512
       ]
     ]
   in
   run_test_tt suite
-

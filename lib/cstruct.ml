@@ -95,6 +95,10 @@ let create len =
 let check_bounds t len =
   Bigarray.Array1.dim t.buffer >= len
 
+external check_alignment_bigstring : buffer -> int -> int -> bool = "caml_check_alignment_bigstring"
+
+let check_alignment t alignment = check_alignment_bigstring t.buffer t.off alignment
+
 type byte = char
 
 let byte (i:int) : byte = Char.chr i
