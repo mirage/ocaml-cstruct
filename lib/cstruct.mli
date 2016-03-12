@@ -188,7 +188,16 @@ val to_bigarray: t -> buffer
     sharing of the underlying buffer. *)
 
 val create : int -> t
-(** [create len] is a cstruct of size [len] with an offset of 0. *)
+(** [create len] is a cstruct of size [len] with an offset of 0.
+
+    Note that the returned cstruct will contain arbitrary data,
+    likely including the contents of previously-deallocated cstructs.
+
+    Beware!
+
+    Forgetting to replace this data could cause your application
+    to leak sensitive information.
+*)
 
 val of_string: ?allocator:(int -> t) -> string -> t
 (** [of_string ~allocator str] is the cstruct representation of [str],
