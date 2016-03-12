@@ -109,10 +109,26 @@ Test misc_tests
   Run:              true
   WorkingDirectory: _build/lib/
 
-Document api
+Document cstruct
   Title:              Documentation and API reference
   Type:               ocamlbuild (0.3)
   BuildTools+:        ocamldoc
-  XOcamlbuildPath:    doc
-  XOcamlbuildModules: Cstruct, Lwt_cstruct, Unix_cstruct
+  XOcamlbuildPath:    lib
+  XOcamlbuildModules: Cstruct
+  Install:            false
+
+Document cstruct_lwt
+  Title:              Documentation and Lwt API reference
+  Type:               ocamlbuild (0.3)
+  BuildTools+:        ocamldoc
+  XOcamlbuildPath:    lwt
+  XOcamlbuildModules: Lwt_cstruct
+  Install:            false
+
+Document cstruct_unix
+  Title:              Documentation and Unix API reference
+  Type:               ocamlbuild (0.3)
+  BuildTools+:        ocamldoc
+  XOcamlbuildPath:    unix
+  XOcamlbuildModules: Unix_cstruct
   Install:            false
