@@ -30,7 +30,7 @@ build-test: [
       "--%{base-unix:enable}%-unix"
       "--enable-tests"]
   [make]
-  ["./test.sh"]
+  [make "test"]
 ]
 install: [
   [make "install"]
