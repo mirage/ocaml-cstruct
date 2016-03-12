@@ -40,7 +40,7 @@ type ethernet = {
   ethertype: uint16_t;
 } [@@big_endian]]
 
-[%%cstruct 
+[%%cstruct
 type ipv4 = {
   hlen_version: uint8_t;
   tos: uint8_t;
@@ -168,5 +168,4 @@ let parse () =
   in
   printf "num_packets %d\n%!" num_packets
 
-let _ = parse ()
-let _ = print_endline "all done"
+let tests () = parse ()

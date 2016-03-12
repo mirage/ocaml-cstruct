@@ -1,5 +1,5 @@
 (* OASIS_START *)
-(* DO NOT EDIT (digest: fee46527cb5bc622acb53ea96730c579) *)
+(* DO NOT EDIT (digest: 51516879eeeef9c4571a10d0d5ad7b1a) *)
 module OASISGettext = struct
 (* # 22 "src/oasis/OASISGettext.ml" *)
 
@@ -612,8 +612,7 @@ let package_default =
           ("cstruct", ["lib"], []);
           ("async_cstruct", ["async"], []);
           ("lwt_cstruct", ["lwt"], []);
-          ("unix_cstruct", ["unix"], []);
-          ("cstruct-syntax", ["syntax"], [])
+          ("unix_cstruct", ["unix"], [])
        ];
      lib_c = [("cstruct", "lib/", [])];
      flags =
@@ -627,6 +626,7 @@ let package_default =
      includes =
        [
           ("unix", ["lib"]);
+          ("ppx_test", ["lib"; "unix"]);
           ("lwt", ["lib"]);
           ("lib_test", ["lib"; "unix"]);
           ("async", ["lib"])

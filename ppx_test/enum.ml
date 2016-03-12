@@ -55,7 +55,7 @@ type foo8 =
   [@@uint8_t]
 ]
 
-let _ =
+let tests () =
   ignore(int_to_foo64 2L);
   ignore(int_to_foo32 1l);
   ignore(int_to_foo16 1);

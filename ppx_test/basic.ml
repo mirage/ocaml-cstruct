@@ -32,7 +32,7 @@ type bar = {
 } [@@big_endian]
 ]
 
-let _ =
+let tests () =
   (* Test basic set/get functions *)
   let be = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout sizeof_foo)) in
   for i = 0 to 255 do
@@ -92,4 +92,3 @@ let _ =
   assert(get_foo_a be = 7);
   hexdump_foo be;
   print_endline (Sexplib.Sexp.to_string_hum (Cstruct.sexp_of_t be))
-
