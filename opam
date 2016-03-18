@@ -40,7 +40,6 @@ remove:  [
 ]
 depends: [
   "ocamlfind" {build}
-  "type_conv" {build}
   "ounit"     {test}
   "ocplib-endian"
   "sexplib"
