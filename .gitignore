@@ -3,6 +3,7 @@ setup.log
 *.swp
 _build/
 dist/
+ppx/ppx_cstruct.ml
 *.docdir
 *.byte
 *.native

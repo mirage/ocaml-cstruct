@@ -16,52 +16,57 @@
 
 (** Manipulate external memory buffers as C-like structures.
 
-Cstruct is a library and syntax extension to make it easier to access C-like
+Cstruct is a library and ppx rewriter to make it easier to access C-like
 structures directly from OCaml.  It supports both reading and writing to these
 memory buffers, and they are accessed via the [Bigarray] module.
 
 The library interface below is intended to be used in conjunction with the
-[pa_cstruct] camlp4 syntax extension that is also supplied with this library
-(in the [cstruct.syntax] ocamlfind package).
+ppx rewriter that is also supplied with this library (in the [cstruct.ppx]
+ocamlfind package).
 
 An example description for the pcap packet format is:
 
 {[
-cstruct pcap_header {
-  uint32_t magic_number;   (* magic number *)
-  uint16_t version_major;  (* major version number *)
-  uint16_t version_minor;  (* minor version number *)
-  uint32_t thiszone;       (* GMT to local correction *)
-  uint32_t sigfigs;        (* accuracy of timestamps *)
-  uint32_t snaplen;        (* max length of captured packets, in octets *)
-  uint32_t network         (* data link type *)
-} as little_endian
-
-cstruct pcap_packet {
-  uint32_t ts_sec;         (* timestamp seconds *)
-  uint32_t ts_usec;        (* timestamp microseconds *)
-  uint32_t incl_len;       (* number of octets of packet saved in file *)
-  uint32_t orig_len        (* actual length of packet *)
-} as little_endian
-
-cstruct ethernet {
-  uint8_t        dst[6];
-  uint8_t        src[6];
-  uint16_t       ethertype
-} as big_endian
-
-cstruct ipv4 {
-  uint8_t        hlen_version;
-  uint8_t        tos;
-  uint16_t       len;
-  uint16_t       id;
-  uint16_t       off;
-  uint8_t        ttl;
-  uint8_t        proto;
-  uint16_t       csum;
-  uint8_t        src[4];
-  uint8_t        dst[4]
-} as big_endian
+[%%cstruct
+type pcap_header = {
+  magic_number:  uint32_t; (* magic number *)
+  version_major: uint16_t; (* major version number *)
+  version_minor: uint16_t; (* minor version number *)
+  thiszone:      uint32_t; (* GMT to local correction *)
+  sigfigs:       uint32_t; (* accuracy of timestamps *)
+  snaplen:       uint32_t; (* max length of captured packets, in octets *)
+  network:       uint32_t; (* data link type *)
+} [@@little_endian]
+]
+[%%cstruct
+type pcap_packet = {
+  ts_sec:   uint32_t; (* timestamp seconds *)
+  ts_usec:  uint32_t; (* timestamp microseconds *)
+  incl_len: uint32_t; (* number of octets of packet saved in file *)
+  orig_len: uint32_t; (* actual length of packet *)
+} [@@little_endian]
+]
+[%%cstruct
+type ethernet = {
+  dst:       uint8_t;  [@len 6];
+  src:       uint8_t;  [@len 6];
+  ethertype: uint16_t;
+} [@@big_endian]
+]
+[%%cstruct
+type ipv4 = {
+  hlen_version: uint8_t;
+  tos:          uint8_t;
+  len:          uint16_t;
+  id:           uint16_t;
+  off:          uint16_t;
+  ttl:          uint8_t;
+  proto:        uint8_t;
+  csum:         uint16_t;
+  src:          uint8_t;  [@len 4];
+  dst:          uint8_t;  [@len 4]
+} [@@big_endian]
+]
 ]}
 
 These will expand to get and set functions for every field, with types
@@ -95,18 +100,21 @@ val copy_ethernet_src : Cstruct.t -> string
 You can also declare C-like enums:
 
 {[
-cenum foo32 {
-  ONE32;
-  TWO32 = 0xfffffffel;
-  THREE32
-} as uint32_t
-
-cenum bar16 {
-  ONE = 1;
-  TWO;
-  FOUR = 4;
-  FIVE
-} as uint16_t
+[%%cenum
+type foo32 =
+  | ONE32
+  | TWO32     [@id 0xfffffffel]
+  | THREE32
+[@@uint32_t]
+]
+[%%cenum
+type bar16 =
+  | ONE  [@id 1]
+  | TWO
+  | FOUR [@id 4
+  | FIVE
+[@@uint16_t]
+]
 ]}
 
 This generates signatures of the form:

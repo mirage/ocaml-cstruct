@@ -40,10 +40,6 @@ configure:
 
 # OASIS_STOP
 
-test: setup.data build test.sh
-	$(SETUP) -test $(TESTFLAGS)
-	./test.sh
-
 JS_DIR ?= $(shell ocamlfind query cstruct)
 
 .PHONY: js-install js-uninstall
