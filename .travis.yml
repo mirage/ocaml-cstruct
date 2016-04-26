@@ -6,13 +6,16 @@ install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/ma
 script: bash -ex ./.travis-docker.sh
 env:
   global:
-  - PACKAGE="cstruct"
+  - PACKAGE="cstruct.9999"
   - DEPOPTS="ppx_tools async lwt"
   - REVDEPS="tls dns irmin tcpip"
   matrix:
-  - DISTRO="debian-testing" OCAML_VERSION="4.02.3"
+  - DISTRO="debian-stable" OCAML_VERSION="4.02.3"
   - DISTRO="ubuntu-14.04" OCAML_VERSION="4.02.3"
-  - DISTRO="ubuntu-15.10" OCAML_VERSION="4.02.3"
+  - DISTRO="ubuntu-16.04" OCAML_VERSION="4.02.3"
   - DISTRO="centos-7" OCAML_VERSION="4.02.3"
   - DISTRO="centos-6" OCAML_VERSION="4.02.3"
-  - DISTRO="fedora-23" OCAML_VERSION="4.02.3"
+  - DISTRO="alpine-3.3" OCAML_VERSION="4.03.0"
+  - DISTRO="debian-testing" OCAML_VERSION="4.03.0"
+  - DISTRO="fedora-23" OCAML_VERSION="4.03.0"
+
