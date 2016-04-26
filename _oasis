@@ -1,12 +1,13 @@
 OASISFormat: 0.4
 Name:        cstruct
-Version:     1.9.0
+Version:     2.0.0
 Synopsis:    Manipulate external buffers as C-like structs
 Authors:     Anil Madhavapeddy, Richard Mortier, Thomas Gazagnaire,
              Pierre Chambart, David Kaloper, Jeremy Yallop, Hannes Mehnert
 License:     ISC
 Plugins:     META (0.4), DevFiles (0.4)
 BuildTools:  ocamlbuild
+PostConfCommand: ./ppx/select_ppx_version.sh
 
 Flag lwt
   Description: build the Lwt library
