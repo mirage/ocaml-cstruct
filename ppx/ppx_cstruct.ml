@@ -298,17 +298,17 @@ let output_enum _loc name fields width ~sexp =
   let intfn,pattfn = match ty_of_string width with
     |None -> loc_err _loc "enum: unknown width specifier %s" width
     |Some Char ->
-      (fun i -> Exp.constant (Const_char (Char.chr @@ Int64.to_int i))),
-      (fun i -> Pat.constant (Const_char (Char.chr @@ Int64.to_int i)))
+      (fun i -> Exp.constant (Pconst_char (Char.chr @@ Int64.to_int i))),
+      (fun i -> Pat.constant (Pconst_char (Char.chr @@ Int64.to_int i)))
     |Some (UInt8 | UInt16) ->
-      (fun i -> Exp.constant (Const_int (Int64.to_int i))),
-      (fun i -> Pat.constant (Const_int (Int64.to_int i)))
+      (fun i -> Exp.constant (Pconst_integer(Int64.to_string i, None))),
+      (fun i -> Pat.constant (Pconst_integer(Int64.to_string i, None)))
     |Some UInt32 ->
-      (fun i -> Exp.constant (Const_int32 (Int64.to_int32 i))),
-      (fun i -> Pat.constant (Const_int32 (Int64.to_int32 i)))
+      (fun i -> Exp.constant (Pconst_integer (Int64.to_string i, Some 'l'))),
+      (fun i -> Pat.constant (Pconst_integer (Int64.to_string i, Some 'l')))
     |Some UInt64 ->
-      (fun i -> Exp.constant (Const_int64 i)),
-      (fun i -> Pat.constant (Const_int64 i))
+      (fun i -> Exp.constant (Pconst_integer (Int64.to_string i, Some 'L'))),
+      (fun i -> Pat.constant (Pconst_integer (Int64.to_string i, Some 'L')))
   in
   let decls = List.map (fun (f,_) -> Type.constructor f) fields in
   let getters = (List.map (fun ({txt = f},i) ->
@@ -344,7 +344,7 @@ let output_enum _loc name fields width ~sexp =
             | Some r -> r
           ]
       ] in
-  Str.type_ [Type.mk ~kind:(Ptype_variant decls) name] ::
+  Str.type_ Recursive [Type.mk ~kind:(Ptype_variant decls) name] ::
   [%stri
     let [%p Ast.pvar (getter name)] = fun x -> [%e Exp.match_ [%expr x] getters]] ::
   [%stri
@@ -380,7 +380,7 @@ let output_enum_sig _loc name fields width ~sexp =
       Sig.value (Val.mk (Loc.mkloc (of_sexp name) _loc) [%type: Sexplib.Sexp.t -> [%t cty]])
     ]
   in
-  Sig.type_ [Type.mk ~kind:(Ptype_variant decls) name] ::
+  Sig.type_ Recursive [Type.mk ~kind:(Ptype_variant decls) name] ::
   Sig.value (Val.mk (Loc.mkloc (getter name) _loc) [%type: [%t oty] -> [%t ctyo]]) ::
   Sig.value (Val.mk (Loc.mkloc (setter name) _loc) [%type: [%t cty] -> [%t oty]]) ::
   Sig.value (Val.mk (Loc.mkloc (printer name) _loc) [%type: [%t cty] -> string]) ::
@@ -388,14 +388,12 @@ let output_enum_sig _loc name fields width ~sexp =
   if sexp then output_sexp_sig else []
 
 let constr_enum = function
-  | {pcd_name = f; pcd_args = []; pcd_loc = loc; pcd_attributes = attrs} ->
+  | {pcd_name = f; pcd_args = Pcstr_tuple []; pcd_loc = loc; pcd_attributes = attrs} ->
     let id = match attrs with
       | [{txt = "id"}, PStr
            [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_constant cst; pexp_loc = loc}, _)}]] ->
         let cst = match cst with
-          | Const_int i -> Int64.of_int i
-          | Const_int32 i -> Int64.of_int32 i
-          | Const_int64 i -> i
+          | Pconst_integer(i, _) -> Int64.of_string i
           | _ ->
             loc_err loc "invalid id"
         in
@@ -410,8 +408,8 @@ let constr_enum = function
 let constr_field {pld_name = fname; pld_type = fty; pld_loc = loc; pld_attributes = att} =
   let get = function
     | [{txt = "len"}, PStr
-         [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_constant (Const_int sz)}, _)}]] ->
-      Some sz
+         [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_constant (Pconst_integer(sz, _))}, _)}]] ->
+      Some (int_of_string sz)
     | _ ->
       None
   in
@@ -471,11 +469,11 @@ let cenum decl =
 
 let signature_item' mapper = function
   | {psig_desc =
-       Psig_extension (({txt = "cstruct"}, PStr [{pstr_desc = Pstr_type [decl]}]), _);
+       Psig_extension (({txt = "cstruct"}, PStr [{pstr_desc = Pstr_type(_, [decl])}]), _);
      psig_loc = loc} ->
     output_struct_sig loc (cstruct decl)
   | {psig_desc =
-       Psig_extension (({txt = "cenum"}, PStr [{pstr_desc = Pstr_type [decl]}]), _);
+       Psig_extension (({txt = "cenum"}, PStr [{pstr_desc = Pstr_type(_, [decl])}]), _);
      psig_loc = loc} ->
     let name, fields, width, sexp = cenum decl in
     output_enum_sig loc name fields width ~sexp
@@ -487,11 +485,11 @@ let signature mapper s =
 
 let structure_item' mapper = function
   | {pstr_desc =
-       Pstr_extension (({txt = "cstruct"}, PStr [{pstr_desc = Pstr_type [decl]}]), _);
+       Pstr_extension (({txt = "cstruct"}, PStr [{pstr_desc = Pstr_type(_, [decl])}]), _);
      pstr_loc = loc} ->
     output_struct loc (cstruct decl)
   | {pstr_desc =
-       Pstr_extension (({txt = "cenum"}, PStr [{pstr_desc = Pstr_type [decl]}]), _);
+       Pstr_extension (({txt = "cenum"}, PStr [{pstr_desc = Pstr_type(_, [decl])}]), _);
      pstr_loc = loc} ->
     let name, fields, width, sexp = cenum decl in
     output_enum loc name fields width ~sexp
