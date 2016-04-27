@@ -7,7 +7,7 @@ Authors:     Anil Madhavapeddy, Richard Mortier, Thomas Gazagnaire,
 License:     ISC
 Plugins:     META (0.4), DevFiles (0.4)
 BuildTools:  ocamlbuild
-PostConfCommand: ./ppx/select_ppx_version.sh
+PostConfCommand: sh ./ppx/select_ppx_version.sh
 
 Flag lwt
   Description: build the Lwt library
