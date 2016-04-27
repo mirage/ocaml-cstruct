@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 67701b7c18374cb388ad9258d6120134)
+# DO NOT EDIT (digest: 514db63fd66b2beab5efac3ce24087f9)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -76,17 +76,41 @@ true: annot, bin_annot
 <lib_test/*.ml{,i,y}>: pkg_unix
 <lib_test/*.ml{,i,y}>: use_unix_cstruct
 <lib_test/bounds.{native,byte}>: custom
-# Executable test_ppx
-<ppx_test/tests.{native,byte}>: pkg_bigarray
-<ppx_test/tests.{native,byte}>: pkg_bytes
-<ppx_test/tests.{native,byte}>: pkg_oUnit
-<ppx_test/tests.{native,byte}>: pkg_ocplib-endian
-<ppx_test/tests.{native,byte}>: pkg_ocplib-endian.bigstring
-<ppx_test/tests.{native,byte}>: pkg_ppx_tools.metaquot
-<ppx_test/tests.{native,byte}>: pkg_sexplib
-<ppx_test/tests.{native,byte}>: pkg_unix
-<ppx_test/tests.{native,byte}>: use_cstruct
-<ppx_test/tests.{native,byte}>: use_unix_cstruct
+# Executable test_ppx_basic
+<ppx_test/basic.{native,byte}>: pkg_bigarray
+<ppx_test/basic.{native,byte}>: pkg_bytes
+<ppx_test/basic.{native,byte}>: pkg_oUnit
+<ppx_test/basic.{native,byte}>: pkg_ocplib-endian
+<ppx_test/basic.{native,byte}>: pkg_ocplib-endian.bigstring
+<ppx_test/basic.{native,byte}>: pkg_ppx_tools.metaquot
+<ppx_test/basic.{native,byte}>: pkg_sexplib
+<ppx_test/basic.{native,byte}>: pkg_unix
+<ppx_test/basic.{native,byte}>: use_cstruct
+<ppx_test/basic.{native,byte}>: use_unix_cstruct
+<ppx_test/basic.{native,byte}>: custom
+# Executable test_ppx_enum
+<ppx_test/enum.{native,byte}>: pkg_bigarray
+<ppx_test/enum.{native,byte}>: pkg_bytes
+<ppx_test/enum.{native,byte}>: pkg_oUnit
+<ppx_test/enum.{native,byte}>: pkg_ocplib-endian
+<ppx_test/enum.{native,byte}>: pkg_ocplib-endian.bigstring
+<ppx_test/enum.{native,byte}>: pkg_ppx_tools.metaquot
+<ppx_test/enum.{native,byte}>: pkg_sexplib
+<ppx_test/enum.{native,byte}>: pkg_unix
+<ppx_test/enum.{native,byte}>: use_cstruct
+<ppx_test/enum.{native,byte}>: use_unix_cstruct
+<ppx_test/enum.{native,byte}>: custom
+# Executable test_ppx_pcap
+<ppx_test/pcap.{native,byte}>: pkg_bigarray
+<ppx_test/pcap.{native,byte}>: pkg_bytes
+<ppx_test/pcap.{native,byte}>: pkg_oUnit
+<ppx_test/pcap.{native,byte}>: pkg_ocplib-endian
+<ppx_test/pcap.{native,byte}>: pkg_ocplib-endian.bigstring
+<ppx_test/pcap.{native,byte}>: pkg_ppx_tools.metaquot
+<ppx_test/pcap.{native,byte}>: pkg_sexplib
+<ppx_test/pcap.{native,byte}>: pkg_unix
+<ppx_test/pcap.{native,byte}>: use_cstruct
+<ppx_test/pcap.{native,byte}>: use_unix_cstruct
 <ppx_test/*.ml{,i,y}>: pkg_bigarray
 <ppx_test/*.ml{,i,y}>: pkg_bytes
 <ppx_test/*.ml{,i,y}>: pkg_oUnit
@@ -97,7 +121,7 @@ true: annot, bin_annot
 <ppx_test/*.ml{,i,y}>: pkg_unix
 <ppx_test/*.ml{,i,y}>: use_cstruct
 <ppx_test/*.ml{,i,y}>: use_unix_cstruct
-<ppx_test/tests.{native,byte}>: custom
+<ppx_test/pcap.{native,byte}>: custom
 # Executable misc_tests
 <lib_test/tests.{native,byte}>: pkg_bigarray
 <lib_test/tests.{native,byte}>: pkg_bytes
@@ -116,4 +140,4 @@ true: annot, bin_annot
 <lib_test/tests.{native,byte}>: custom
 # OASIS_STOP
 true: annot, bin_annot, debug, principal
-<ppx_test/*.ml>: ppx(ppx_cstruct)
+<ppx_test/*.ml>: ppx(./ppx/ppx_cstruct.native)

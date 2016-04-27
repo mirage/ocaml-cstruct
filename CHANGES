@@ -2,6 +2,7 @@
 * Remove camlp4 extension as it is no longer maintained (#95).
 * Add support for OCaml 4.03 in the PPX extension (#96).
 * Minimum supported OCaml version for the library is now 4.02.3.
+* Fix parsing of high int32 `@@enum` values.
 
 1.9.0 (2016-02-19):
 * Add support for a ppx-based extension that uses the extension point

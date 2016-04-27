@@ -32,6 +32,25 @@ type bar = {
 } [@@big_endian]
 ]
 
+[%%cstruct
+type lbar = {
+  a : uint8_t;
+  b : uint16_t;
+  c : uint32_t;
+  d : uint8_t [@len 8]
+} [@@little_endian]
+]
+
+(* see #72
+[%%cstruct
+type hbar = {
+  a : uint8_t;
+  b : uint16_t;
+  c : uint32_t;
+  d : uint8_t [@len 8]
+} [@@host_endian]
+]
+*)
 let tests () =
   (* Test basic set/get functions *)
   let be = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout sizeof_foo)) in

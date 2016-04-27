@@ -79,7 +79,7 @@ Test test_bounds
   Run:              true
   WorkingDirectory: _build/lib/
 
-Executable test_ppx
+Executable test_ppx_basic
   Build$:       flag(tests) && flag(ppx)
   Install:      false
   Path:         ppx_test
@@ -87,10 +87,40 @@ Executable test_ppx
   CompiledObject: best
   BuildTools:   ppx_cstruct
   BuildDepends: cstruct, unix, oUnit, cstruct.unix
-  MainIs:       tests.ml
+  MainIs:       basic.ml
 
-Test test_ppx
-  Command:          $test_ppx
+Executable test_ppx_enum
+  Build$:       flag(tests) && flag(ppx)
+  Install:      false
+  Path:         ppx_test
+  Custom:       true
+  CompiledObject: best
+  BuildTools:   ppx_cstruct
+  BuildDepends: cstruct, unix, oUnit, cstruct.unix
+  MainIs:       enum.ml
+
+Executable test_ppx_pcap
+  Build$:       flag(tests) && flag(ppx)
+  Install:      false
+  Path:         ppx_test
+  Custom:       true
+  CompiledObject: best
+  BuildTools:   ppx_cstruct
+  BuildDepends: cstruct, unix, oUnit, cstruct.unix
+  MainIs:       pcap.ml
+
+Test test_ppx_pcap
+  Command:          $test_ppx_pcap
+  Run$:              flag(ppx)
+  WorkingDirectory: ppx_test
+
+Test test_ppx_basic
+  Command:          $test_ppx_basic
+  Run$:              flag(ppx)
+  WorkingDirectory: ppx_test
+
+Test test_ppx_enum
+  Command:          $test_ppx_enum
   Run$:              flag(ppx)
   WorkingDirectory: ppx_test
 
