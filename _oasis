@@ -1,12 +1,13 @@
 OASISFormat: 0.4
 Name:        cstruct
-Version:     1.9.0
+Version:     2.0.0
 Synopsis:    Manipulate external buffers as C-like structs
 Authors:     Anil Madhavapeddy, Richard Mortier, Thomas Gazagnaire,
              Pierre Chambart, David Kaloper, Jeremy Yallop, Hannes Mehnert
 License:     ISC
 Plugins:     META (0.4), DevFiles (0.4)
 BuildTools:  ocamlbuild
+PostConfCommand: sh select_ppx_version.sh
 
 Flag lwt
   Description: build the Lwt library
@@ -19,10 +20,6 @@ Flag async
 Flag unix
   Description: build the UNIX library
   Default:     true
-
-Flag camlp4
-  Description: build the camlp4 syntax extension
-  Default: true
 
 Flag ppx
   Description: build the ppx syntax extension
@@ -59,19 +56,6 @@ Library unix_cstruct
   Findlibparent: cstruct
   Modules:       Unix_cstruct
 
-Library "cstruct-syntax"
-  Build$:        flag(camlp4)
-  FindlibName:   syntax
-  FindlibParent: cstruct
-  BuildTools:    ocamlbuild
-  Path:          syntax
-  BuildDepends:  camlp4.lib, camlp4.quotations.r, camlp4.extend, bigarray
-  Modules:       Pa_cstruct
-  XMETAEnable:   true
-  XMETAType:     syntax
-  XMETADescription: Syntax extension for Cstruct
-  XMETARequires: camlp4
-
 Executable ppx_cstruct
   Build$:       flag(ppx)
   Install:      true
@@ -94,6 +78,51 @@ Test test_bounds
   Command:          $test_bounds
   Run:              true
   WorkingDirectory: _build/lib/
+
+Executable test_ppx_basic
+  Build$:       flag(tests) && flag(ppx)
+  Install:      false
+  Path:         ppx_test
+  Custom:       true
+  CompiledObject: best
+  BuildTools:   ppx_cstruct
+  BuildDepends: cstruct, unix, oUnit, cstruct.unix
+  MainIs:       basic.ml
+
+Executable test_ppx_enum
+  Build$:       flag(tests) && flag(ppx)
+  Install:      false
+  Path:         ppx_test
+  Custom:       true
+  CompiledObject: best
+  BuildTools:   ppx_cstruct
+  BuildDepends: cstruct, unix, oUnit, cstruct.unix
+  MainIs:       enum.ml
+
+Executable test_ppx_pcap
+  Build$:       flag(tests) && flag(ppx)
+  Install:      false
+  Path:         ppx_test
+  Custom:       true
+  CompiledObject: best
+  BuildTools:   ppx_cstruct
+  BuildDepends: cstruct, unix, oUnit, cstruct.unix
+  MainIs:       pcap.ml
+
+Test test_ppx_pcap
+  Command:          $test_ppx_pcap
+  Run$:              flag(ppx)
+  WorkingDirectory: ppx_test
+
+Test test_ppx_basic
+  Command:          $test_ppx_basic
+  Run$:              flag(ppx)
+  WorkingDirectory: ppx_test
+
+Test test_ppx_enum
+  Command:          $test_ppx_enum
+  Run$:              flag(ppx)
+  WorkingDirectory: ppx_test
 
 Executable misc_tests
   Build$:       flag(tests)

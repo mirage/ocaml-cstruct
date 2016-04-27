@@ -14,7 +14,6 @@ build: [
   ["./configure"
       "--prefix" prefix
       "--%{lwt:enable}%-lwt"
-      "--%{camlp4:enable}%-camlp4"
       "--%{ppx_tools:enable}%-ppx"
       "--%{async:enable}%-async"
       "--%{base-unix:enable}%-unix"]
@@ -24,7 +23,6 @@ build-test: [
   ["./configure"
       "--prefix" prefix
       "--%{lwt:enable}%-lwt"
-      "--%{camlp4:enable}%-camlp4"
       "--%{ppx_tools:enable}%-ppx"
       "--%{async:enable}%-async"
       "--%{base-unix:enable}%-unix"
@@ -42,19 +40,17 @@ remove:  [
 ]
 depends: [
   "ocamlfind" {build}
-  "type_conv" {build}
   "ounit"     {test}
   "ocplib-endian"
   "sexplib"
   "base-bytes"
 ]
 depopts: [
-  "camlp4"
   "ppx_tools"
   "async"
   "lwt"
 ]
-available: [ocaml-version >= "4.01.0"]
+available: [ocaml-version >= "4.02.3"]
 depexts: [
   [ ["debian"] ["time"] ]
   [ ["ubuntu"] ["time"] ]

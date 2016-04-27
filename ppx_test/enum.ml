@@ -23,6 +23,14 @@ type foo64 =
 ]
 
 [%%cenum
+type bar64 =
+  | ONE64
+  | TWO64 [@id 0xfffffffffffffffeL]
+  | THREE64
+  [@@uint64_t] [@@sexp]
+]
+
+[%%cenum
 type foo32 =
   | ONE32
   | TWO32 [@id 0xfffffffel]
@@ -55,7 +63,7 @@ type foo8 =
   [@@uint8_t]
 ]
 
-let _ =
+let tests () =
   ignore(int_to_foo64 2L);
   ignore(int_to_foo32 1l);
   ignore(int_to_foo16 1);
