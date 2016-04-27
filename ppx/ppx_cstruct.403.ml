@@ -304,8 +304,8 @@ let output_enum _loc name fields width ~sexp =
       (fun i -> Exp.constant (Pconst_integer(Int64.to_string i, None))),
       (fun i -> Pat.constant (Pconst_integer(Int64.to_string i, None)))
     |Some UInt32 ->
-      (fun i -> Exp.constant (Pconst_integer (Int64.to_string i, Some 'l'))),
-      (fun i -> Pat.constant (Pconst_integer (Int64.to_string i, Some 'l')))
+      (fun i -> Exp.constant (Pconst_integer (Int32.to_string (Int64.to_int32 i), Some 'l'))),
+      (fun i -> Pat.constant (Pconst_integer (Int32.to_string (Int64.to_int32 i), Some 'l')))
     |Some UInt64 ->
       (fun i -> Exp.constant (Pconst_integer (Int64.to_string i, Some 'L'))),
       (fun i -> Pat.constant (Pconst_integer (Int64.to_string i, Some 'L')))

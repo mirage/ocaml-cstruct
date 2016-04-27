@@ -23,6 +23,14 @@ type foo64 =
 ]
 
 [%%cenum
+type bar64 =
+  | ONE64
+  | TWO64 [@id 0xfffffffffffffffeL]
+  | THREE64
+  [@@uint64_t] [@@sexp]
+]
+
+[%%cenum
 type foo32 =
   | ONE32
   | TWO32 [@id 0xfffffffel]
