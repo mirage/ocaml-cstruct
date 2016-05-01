@@ -3,6 +3,11 @@
 * Add support for OCaml 4.03 in the PPX extension (#96).
 * Minimum supported OCaml version for the library is now 4.02.3.
 * Fix parsing of high int32 `@@enum` values.
+* Move `Cstruct.check_alignment` into the stubs. Before this patch
+  we returned the buffer address from C and then calculated using
+  OCaml's boxed `Int64.t`. This patch reduces minor allocations by
+  performing the calculation in the C stubs. This makes the function
+  suitable for use in an assert in a performance sensitive path.
 
 1.9.0 (2016-02-19):
 * Add support for a ppx-based extension that uses the extension point
