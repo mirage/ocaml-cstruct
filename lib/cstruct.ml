@@ -336,23 +336,19 @@ let of_string ?allocator buf =
     blit_from_string buf 0 c 0 buflen;
     set_len c buflen
 
-let hexdump t =
+let hexdump_pp fmt t =
   let c = ref 0 in
   for i = 0 to len t - 1 do
-    if !c mod 16 = 0 then print_endline "";
-    printf "%.2x " (Char.code (Bigarray.Array1.get t.buffer (t.off+i)));
+    Format.fprintf fmt "%.2x " (Char.code (Bigarray.Array1.get t.buffer (t.off+i)));
     incr c;
-  done;
-  print_endline ""
+    if !c mod 16 = 0 then Format.pp_print_space fmt ();
+  done
+
+let hexdump = Format.printf "@\n%a@." hexdump_pp
 
 let hexdump_to_buffer buf t =
-  let c = ref 0 in
-  for i = 0 to len t - 1 do
-    if !c mod 16 = 0 then Buffer.add_char buf '\n';
-    bprintf buf "%.2x " (Char.code (Bigarray.Array1.get t.buffer (t.off+i)));
-    incr c;
-  done;
-  Buffer.add_char buf '\n'
+  let f = Format.formatter_of_buffer buf in
+  Format.fprintf f "@\n%a@." hexdump_pp t
 
 let split ?(start=0) t off =
   try
