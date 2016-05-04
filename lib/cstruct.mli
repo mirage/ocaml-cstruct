@@ -343,6 +343,9 @@ val hexdump: t -> unit
 val hexdump_to_buffer: Buffer.t -> t -> unit
 (** [hexdump_to_buffer buf c] will append the pretty-printed hexdump
     of the cstruct [c] to the buffer [buf]. *)
+
+val hexdump_pp: Format.formatter -> t -> unit
+(** [hexdump_pp f c] pretty-prints a hexdump of [c] to [f]. *)
  
 val debug: t -> string
 (** [debug t] will print out the internal details of a cstruct such
