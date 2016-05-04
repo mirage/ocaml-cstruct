@@ -1,3 +1,8 @@
+2.1.0 (2016-05-04):
+* Add `hexdump_pp` that uses the Format module. This works better with the
+  Logs library than using `hexdump_to_buffer`, and also makes it easy to
+  indent the hexdump (#100 via @talex5).
+
 2.0.0 (2016-04-26):
 * Remove camlp4 extension as it is no longer maintained (#95).
 * Add support for OCaml 4.03 in the PPX extension (#96).
