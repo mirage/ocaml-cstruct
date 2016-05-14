@@ -88,7 +88,7 @@ let of_bigarray ?(off=0) ?len buffer =
 let to_bigarray buffer =
   Bigarray.Array1.sub buffer.buffer buffer.off buffer.len
 
-let create len =
+let create_unsafe len =
   let buffer = Bigarray.(Array1.create char c_layout len) in
   { buffer ; len ; off = 0 }
 
@@ -207,6 +207,11 @@ let equal t1 t2 = compare t1 t2 = 0
 
 (* Note that this is only safe as long as all [t]s are coherent. *)
 let memset t x = unsafe_fill_bigstring t.buffer t.off t.len x
+
+let create len =
+  let t = create_unsafe len in
+  memset t 0;
+  t
 
 let set_uint8 t i c =
   if i >= t.len || i < 0 then err_invalid_bounds "set_uint8" t i 1
