@@ -1,3 +1,6 @@
+* Make `create` zero out the new buffer. The new `create_unsafe`
+  function can be used if you want to trade safety for speed.
+
 2.1.0 (2016-05-04):
 * Add `hexdump_pp` that uses the Format module. This works better with the
   Logs library than using `hexdump_to_buffer`, and also makes it easy to
