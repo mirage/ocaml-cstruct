@@ -196,6 +196,10 @@ val to_bigarray: t -> buffer
     sharing of the underlying buffer. *)
 
 val create : int -> t
+(** [create len] is a fresh cstruct of size [len] with an offset of 0,
+    filled with zero bytes. *)
+
+val create_unsafe : int -> t
 (** [create len] is a cstruct of size [len] with an offset of 0.
 
     Note that the returned cstruct will contain arbitrary data,
