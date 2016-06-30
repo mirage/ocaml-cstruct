@@ -1,3 +1,4 @@
+2.2.0 (2016-06-30):
 * Make `create` zero out the new buffer. The new `create_unsafe`
   function can be used if you want to trade safety for speed.
 
