@@ -357,6 +357,18 @@ let of_string ?allocator buf =
     blit_from_string buf 0 c 0 buflen;
     set_len c buflen
 
+let of_bytes ?allocator buf =
+  let buflen = Bytes.length buf in
+  match allocator with
+  |None ->
+    let c = create buflen in
+    blit_from_bytes buf 0 c 0 buflen;
+    c
+  |Some fn ->
+    let c = fn buflen in
+    blit_from_bytes buf 0 c 0 buflen;
+    set_len c buflen
+
 let hexdump_pp fmt t =
   let c = ref 0 in
   for i = 0 to len t - 1 do

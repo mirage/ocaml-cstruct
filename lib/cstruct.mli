@@ -216,6 +216,11 @@ val of_string: ?allocator:(int -> t) -> string -> t
     with the underlying buffer allocated by [alloc]. If [allocator] is not
     provided, [create] is used. *)
 
+val of_bytes: ?allocator:(int -> t) -> Bytes.t -> t
+(** [of_bytes ~allocator byt] is the cstruct representation of [byt],
+    with the underlying buffer allocated by [alloc]. If [allocator] is not
+    provided, [create] is used. *)
+
 (** {2 Comparison } *)
 
 val equal : t -> t -> bool
