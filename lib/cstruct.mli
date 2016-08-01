@@ -299,7 +299,7 @@ val blit_from_string: string -> int -> t -> int -> int -> unit
     designate a valid segment of [dst]. *)
 
 val blit_to_bytes: t -> int -> Bytes.t -> int -> int -> unit
-(** [blit_to_string src srcoff dst dstoff len] copies [len] characters
+(** [blit_to_bytes src srcoff dst dstoff len] copies [len] characters
     from cstruct [src], starting at index [srcoff], to string [dst],
     starting at index [dstoff].
 
