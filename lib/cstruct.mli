@@ -448,6 +448,15 @@ val fillv: src:t list -> dst:t -> int * t list
  * Returns the number of bytes copied and the remaining data from [src], if any.
  * This is useful if you want buffer data into fixed-sized chunks. *)
 
+val subv : t list -> int -> int -> t list
+(** [subv ts off len] returns the range [off] ... [ofs + len - 1]
+    where the indexes are understood as if all Cstructs has been
+    concatenated.  This function does not create Cstructs of length 0
+    (but preserve those in the list), thus [subv ts off 0] returns the
+    empty list.
+    @raise Invalid_argument if [off] and [len] do not designate a
+    valid range. *)
+
 (** {2 Iterations} *)
 
 type 'a iter = unit -> 'a option

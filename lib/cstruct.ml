@@ -74,6 +74,7 @@ let err_blit_to_bytes_dst src dst=
 let err_invalid_bounds f =
   err "invalid bounds in Cstruct.%s %a off=%d len=%d" f pp_t
 let err_split = err "Cstruct.split %a start=%d off=%d" pp_t
+let err_copyv = err "Cstruct.copyv off=%d len=%d"
 let err_iter = err "Cstruct.iter %a i=%d len=%d" pp_t
 
 let of_bigarray ?(off=0) ?len buffer =
@@ -304,6 +305,35 @@ let copyv ts =
     ) 0 ts in
   (* The following call is safe, since dst is not visible elsewhere. *)
   Bytes.unsafe_to_string dst
+
+
+let rec subv_trunc off_init len_init ts len =
+  (* Assume [len > 0]. *)
+  match ts with
+  | [] -> if len <= 0 then [] else err_copyv off_init len_init
+  | t :: tl ->
+     if t.len < len then
+       t :: subv_trunc off_init len_init tl (len - t.len)
+     else [ { t with len } ]
+
+let rec subv_drop off_init len_init ts off0 =
+  match ts with
+  | [] -> if off0 = 0 then [] else err_copyv off_init len_init
+  | t :: tl ->
+     if off0 >= t.len then
+       subv_drop off_init len_init tl (off0 - t.len)
+     else
+       let off = t.off + off0 in
+       let len = t.len - off0 (* > 0 *) in
+       if len_init <= len then [ { t with off; len = len_init } ]
+       else { t with off; len }
+            :: subv_trunc off_init len_init tl (len_init - len (* > 0 *))
+
+let rec subv ts off0 len =
+  if off0 < 0 || len < 0 then err_copyv off0 len
+  else if len = 0 then [] (* Do not hold to a bigarray for no data. *)
+  else subv_drop off0 len ts off0
+
 
 let fillv ~src ~dst =
   let rec aux dst n = function
