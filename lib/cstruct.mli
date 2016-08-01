@@ -147,6 +147,9 @@ val buffer_of_sexp : Sexplib.Sexp.t -> buffer
 (** [buffer_of_sexp s] returns a fresh memory buffer from the s-expression [s].
     [s] should have been constructed using {!sexp_of_buffer}. *)
 
+(** A Cstruct is a slice of the [buffer].  Positions/offsets to a
+    Cstruct [t] (in the functions below) are relative to that slice.
+    Thus, the byte of index 0 correspond to [t.buffer.{t.off}]. *)
 type t = private {
   buffer: buffer;
   off   : int;
