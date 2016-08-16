@@ -2,8 +2,8 @@
 
 case $1 in
   clean) rm -f ppx/ppx_cstruct.ml; exit 0 ;;
-  conf) (* continue *) ;;
-  *) echo "supported actions: conf, clean"; exit 1 ;;
+  conf) ;;
+  *) echo "Usage: $0 [conf|clean]"; exit 1 ;;
 esac
 
 V=`ocamlc -version`
