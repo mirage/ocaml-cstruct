@@ -216,6 +216,11 @@ val of_string: ?allocator:(int -> t) -> string -> t
     with the underlying buffer allocated by [alloc]. If [allocator] is not
     provided, [create] is used. *)
 
+val of_bytes: ?allocator:(int -> t) -> Bytes.t -> t
+(** [of_bytes ~allocator byt] is the cstruct representation of [byt],
+    with the underlying buffer allocated by [alloc]. If [allocator] is not
+    provided, [create] is used. *)
+
 (** {2 Comparison } *)
 
 val equal : t -> t -> bool
@@ -293,6 +298,15 @@ val blit_from_string: string -> int -> t -> int -> int -> unit
 
     @raise Invalid_argument if [srcoff] and [len] do not designate a
     valid substring of [src], or if [dstoff] and [len] do not
+    designate a valid segment of [dst]. *)
+
+val blit_from_bytes: Bytes.t -> int -> t -> int -> int -> unit
+(** [blit_from_bytes src srcoff dst dstoff len] copies [len]
+    characters from bytes [src], starting at index [srcoff], to
+    cstruct [dst], starting at index [dstoff].
+
+    @raise Invalid_argument if [srcoff] and [len] do not designate a
+    valid subsequence of [src], or if [dstoff] and [len] do not
     designate a valid segment of [dst]. *)
 
 val blit_to_bytes: t -> int -> Bytes.t -> int -> int -> unit

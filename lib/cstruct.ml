@@ -65,6 +65,12 @@ let err_blit_from_string_src src dst =
 let err_blit_from_string_dst src dst =
   err "Cstruct.blit_from_string src=%a dst=%a dst-off=%d len=%d"
     string_t src pp_t dst
+let err_blit_from_bytes_src src dst =
+  err "Cstruct.blit_from_bytes src=%a dst=%a src-off=%d len=%d"
+    bytes_t src pp_t dst
+let err_blit_from_bytes_dst src dst =
+  err "Cstruct.blit_from_bytes src=%a dst=%a dst-off=%d len=%d"
+    bytes_t src pp_t dst
 let err_blit_to_bytes_src src dst =
   err "Cstruct.blit_to_bytes src=%a dst=%a src-off=%d len=%d"
     pp_t src bytes_t dst
@@ -149,6 +155,8 @@ external unsafe_blit_bigstring_to_bigstring : buffer -> int -> buffer -> int -> 
 
 external unsafe_blit_string_to_bigstring : string -> int -> buffer -> int -> int -> unit = "caml_blit_string_to_bigstring" "noalloc"
 
+external unsafe_blit_bytes_to_bigstring : Bytes.t -> int -> buffer -> int -> int -> unit = "caml_blit_string_to_bigstring" "noalloc"
+
 external unsafe_blit_bigstring_to_bytes : buffer -> int -> Bytes.t -> int -> int -> unit = "caml_blit_bigstring_to_string" "noalloc"
 
 external unsafe_blit_bigstring_to_string : buffer -> int -> string -> int -> int -> unit = "caml_blit_bigstring_to_string" "noalloc"
@@ -182,6 +190,14 @@ let blit_from_string src srcoff dst dstoff len =
     err_blit_from_string_dst src dst dstoff len
   else
     unsafe_blit_string_to_bigstring src srcoff dst.buffer (dst.off+dstoff) len
+
+let blit_from_bytes src srcoff dst dstoff len =
+  if len < 0 || srcoff < 0 || dstoff < 0 || Bytes.length src - srcoff < len then
+    err_blit_from_bytes_src src dst srcoff len
+  else if dst.len - dstoff < len then
+    err_blit_from_bytes_dst src dst dstoff len
+  else
+    unsafe_blit_bytes_to_bigstring src srcoff dst.buffer (dst.off+dstoff) len
 
 let blit_to_bytes src srcoff dst dstoff len =
   if len < 0 || srcoff < 0 || dstoff < 0 || src.len - srcoff < len then
@@ -339,6 +355,18 @@ let of_string ?allocator buf =
   |Some fn ->
     let c = fn buflen in
     blit_from_string buf 0 c 0 buflen;
+    set_len c buflen
+
+let of_bytes ?allocator buf =
+  let buflen = Bytes.length buf in
+  match allocator with
+  |None ->
+    let c = create buflen in
+    blit_from_bytes buf 0 c 0 buflen;
+    c
+  |Some fn ->
+    let c = fn buflen in
+    blit_from_bytes buf 0 c 0 buflen;
     set_len c buflen
 
 let hexdump_pp fmt t =
