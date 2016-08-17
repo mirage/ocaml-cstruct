@@ -1,3 +1,9 @@
+2.3.0 (2016-08-16):
+* Add `Cstruct.of_bytes/to_bytes`. In common with the existing
+  implementation, this relies on the representation of bytes and string
+  being the same, which is true as of OCaml 4.04 and lower (#105 via @yallop).
+* Support OCaml 4.04 (#111 via @gasche).
+
 2.2.0 (2016-06-30):
 * Make `create` zero out the new buffer. The new `create_unsafe`
   function can be used if you want to trade safety for speed.
