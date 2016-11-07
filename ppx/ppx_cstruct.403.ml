@@ -288,7 +288,7 @@ let output_struct _loc s =
   in expr @ output_hexdump _loc s
 
 let output_struct_sig _loc s =
-  (* Generate signaturs of the form {get/set}_<struct>_<field> *)
+  (* Generate signatures of the form {get/set}_<struct>_<field> *)
   let expr = List.fold_left (fun a f ->
       a @ output_get_sig _loc s f @ output_set_sig _loc s f
     ) [output_sizeof_sig _loc s] s.fields
