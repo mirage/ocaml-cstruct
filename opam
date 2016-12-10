@@ -1,7 +1,8 @@
 opam-version: "1.2"
 maintainer:   "anil@recoil.org"
 authors:      ["Anil Madhavapeddy" "Richard Mortier" "Thomas Gazagnaire"
-               "Pierre Chambart" "David Kaloper" "Jeremy Yallop" "David Scott" ]
+               "Pierre Chambart" "David Kaloper" "Jeremy Yallop" "David Scott"
+               "Mindy Preston" ]
 homepage:     "https://github.com/mirage/ocaml-cstruct"
 license:      "ISC"
 dev-repo:     "https://github.com/mirage/ocaml-cstruct.git"
