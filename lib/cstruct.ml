@@ -49,12 +49,12 @@ let err fmt =
   let k ppf = Format.pp_print_flush ppf (); invalid_arg (Buffer.contents b) in
   Format.kfprintf k ppf fmt
 
-let err_of_bigarray = err "Cstruct.of_bigarray off=%d len=%d"
-let err_sub = err "Cstruct.sub: %a off=%d len=%d" pp_t
-let err_shift = err "Cstruct.shift %a %d" pp_t
-let err_set_len = err "Cstruct.set_len %a %d" pp_t
-let err_add_len = err "Cstruct.add_len %a %d" pp_t
-let err_copy = err "Cstruct.copy %a off=%d len=%d" pp_t
+let err_of_bigarray t = err "Cstruct.of_bigarray off=%d len=%d" t
+let err_sub t = err "Cstruct.sub: %a off=%d len=%d" pp_t t
+let err_shift t = err "Cstruct.shift %a %d" pp_t t
+let err_set_len t = err "Cstruct.set_len %a %d" pp_t t
+let err_add_len t = err "Cstruct.add_len %a %d" pp_t t
+let err_copy t = err "Cstruct.copy %a off=%d len=%d" pp_t t
 let err_blit_src src dst =
   err "Cstruct.blit src=%a dst=%a src-off=%d len=%d" pp_t src pp_t dst
 let err_blit_dst src dst =
@@ -79,8 +79,8 @@ let err_blit_to_bytes_dst src dst=
     pp_t src bytes_t dst
 let err_invalid_bounds f =
   err "invalid bounds in Cstruct.%s %a off=%d len=%d" f pp_t
-let err_split = err "Cstruct.split %a start=%d off=%d" pp_t
-let err_iter = err "Cstruct.iter %a i=%d len=%d" pp_t
+let err_split t = err "Cstruct.split %a start=%d off=%d" pp_t t
+let err_iter t = err "Cstruct.iter %a i=%d len=%d" pp_t t
 
 let of_bigarray ?(off=0) ?len buffer =
   let dim = Bigarray.Array1.dim buffer in
