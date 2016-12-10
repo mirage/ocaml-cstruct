@@ -1,3 +1,9 @@
+2.3.1 (2016-12-10):
+* Fix a memory leak in the exception printing code (#130 via @djs55)
+* Appveyor CI fixes (#130 via @avsm)
+* Fix typo in docstring (#117 via @yomimono)
+* Fix opam base-unix dependency (#115 via @avsm)
+
 2.3.0 (2016-08-16):
 * Add `Cstruct.of_bytes/to_bytes`. In common with the existing
   implementation, this relies on the representation of bytes and string
