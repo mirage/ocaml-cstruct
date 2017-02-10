@@ -271,7 +271,7 @@ val sub: t -> int -> int -> t
     @raise Invalid_argument if the offset exceeds cstruct length. *)
 
 val shift: t -> int -> t
-(** [shift cstr len] is [{ t with off=t.off+off; len=t.len-off }]
+(** [shift cstr len] is [{ cstr with off=t.off+len; len=t.len-len }]
     @raise Invalid_argument if the offset exceeds cstruct length. *)
 
 val copy: t -> int -> int -> string
