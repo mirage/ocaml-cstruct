@@ -1,3 +1,7 @@
+2.3.2:
+* Add support for OCaml 4.05 for the PPX extension.
+* Docs: correct to description of shift function (#121 via @orbifx).
+
 2.3.1 (2016-12-10):
 * Fix a memory leak in the exception printing code (#130 via @djs55)
 * Appveyor CI fixes (#130 via @avsm)
