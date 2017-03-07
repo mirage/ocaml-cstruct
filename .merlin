@@ -7,7 +7,8 @@ PKG ocplib-endian
 PKG ocplib-endian.bigstring
 PKG sexplib
 PKG sexplib.syntax
-PKG ppx_tools.metaquot
+PKG ocaml-migrate-parsetree
+PKG ppx_tools_versioned.metaquot_404
 
 S async
 S lib
