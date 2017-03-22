@@ -45,6 +45,7 @@ depends: [
   "ocplib-endian"
   "sexplib"
   "base-bytes"
+  "ocaml-migrate-parsetree"
 ]
 depopts: [
   "ppx_tools"
