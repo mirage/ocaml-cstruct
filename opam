@@ -15,7 +15,7 @@ build: [
   ["./configure"
       "--prefix" prefix
       "--%{lwt+base-unix:enable}%-lwt"
-      "--%{ppx_tools:enable}%-ppx"
+      "--%{ppx_tools_versioned+ocaml-migrate-parsetree:enable}%-ppx"
       "--%{async:enable}%-async"
       "--%{base-unix:enable}%-unix"]
   [make]
@@ -24,7 +24,7 @@ build-test: [
   ["./configure"
       "--prefix" prefix
       "--%{lwt:enable}%-lwt"
-      "--%{ppx_tools:enable}%-ppx"
+      "--%{ppx_tools_versioned+ocaml-migrate-parsetree:enable}%-ppx"
       "--%{async:enable}%-async"
       "--%{base-unix:enable}%-unix"
       "--enable-tests"]
@@ -45,10 +45,10 @@ depends: [
   "ocplib-endian"
   "sexplib"
   "base-bytes"
-  "ocaml-migrate-parsetree"
 ]
 depopts: [
-  "ppx_tools"
+  "ocaml-migrate-parsetree"
+  "ppx_tools_versioned"
   "async"
   "lwt"
   "base-unix"
