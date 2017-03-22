@@ -1,3 +1,7 @@
+2.3.3 (2017-03-22):
+* Port ppx extension to use `ocaml-migrate-parsetree` so it should
+  also compile on future revisions of OCaml (#127 via @let-def).
+
 2.3.2 (2017-03-03):
 * Add support for OCaml 4.05 for the PPX extension.
 * Docs: correct to description of shift function (#121 via @orbifx).
