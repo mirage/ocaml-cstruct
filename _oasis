@@ -8,8 +8,6 @@ Authors:     Anil Madhavapeddy, Richard Mortier, Thomas Gazagnaire,
 License:     ISC
 Plugins:     META (0.4), DevFiles (0.4)
 BuildTools:  ocamlbuild
-PostConfCommand: sh select_ppx_version.sh conf
-PostDistCleanCommand: sh select_ppx_version.sh clean
 
 Flag lwt
   Description: build the Lwt library
@@ -64,7 +62,7 @@ Executable ppx_cstruct
   Path:         ppx
   Custom:       true
   CompiledObject: best
-  BuildDepends: ppx_tools.metaquot, bigarray
+  BuildDepends: ocaml-migrate-parsetree, ppx_tools_versioned.metaquot_404, bigarray
   MainIs:       ppx_cstruct.ml
 
 Executable test_bounds

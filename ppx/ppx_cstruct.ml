@@ -14,15 +14,17 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+open Migrate_parsetree
 open Printf
 
+open Ast_404
 open Longident
 open Asttypes
 open Parsetree
 open Ast_helper
 open Ast_mapper
 module Loc = Location
-module Ast = Ast_convenience
+module Ast = Ast_convenience_404
 
 type mode = Big_endian | Little_endian | Host_endian
 
@@ -500,5 +502,6 @@ let structure mapper s =
   List.concat (List.map (structure_item' mapper) s)
 
 let () =
-  Ast_mapper.register "ppx_cstruct"
-    (fun argv -> {default_mapper with structure; signature})
+  Driver.register ~name:"ppx_cstruct" Versions.ocaml_404
+    (fun _config _cookies -> {default_mapper with structure; signature});
+  Driver.run_as_ppx_rewriter ()

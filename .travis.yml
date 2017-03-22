@@ -7,7 +7,7 @@ script: bash -ex ./.travis-docker.sh
 env:
   global:
   - PACKAGE="cstruct.9999"
-  - DEPOPTS="ppx_tools async lwt"
+  - DEPOPTS="ppx_tools_versioned async lwt"
   - REVDEPS="tls dns irmin tcpip"
   matrix:
   - DISTRO="debian-stable" OCAML_VERSION="4.02.3"
