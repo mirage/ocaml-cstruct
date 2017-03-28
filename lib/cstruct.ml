@@ -370,11 +370,9 @@ let of_bytes ?allocator buf =
     set_len c buflen
 
 let hexdump_pp fmt t =
-  let c = ref 0 in
   for i = 0 to len t - 1 do
     Format.fprintf fmt "%.2x " (Char.code (Bigarray.Array1.get t.buffer (t.off+i)));
-    incr c;
-    if !c mod 16 = 0 then Format.pp_print_space fmt ();
+    if i mod 16 = 15 then Format.pp_print_space fmt ();
   done
 
 let hexdump = Format.printf "@\n%a@." hexdump_pp
