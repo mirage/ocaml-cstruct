@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: 576bf3b733eb8c25d161baf58f0401a9)
+# DO NOT EDIT (digest: 13bd1c0f803ec1e9d184ece54994027a)
 version = "2.3.3"
 description = "Manipulate external buffers as C-like structs"
 requires = "bytes bigarray ocplib-endian ocplib-endian.bigstring sexplib"
@@ -30,6 +30,16 @@ package "lwt" (
  exists_if = "lwt_cstruct.cma"
 )
 
+package "ignore" (
+ version = "2.3.3"
+ description = "Manipulate external buffers as C-like structs"
+ requires =
+ "ocaml-migrate-parsetree ppx_tools_versioned.metaquot_404 bigarray"
+ archive(byte) = "ppx_cstruct.cmo"
+ archive(native) = "ppx_cstruct.cmx"
+ exists_if = "ppx_cstruct.cmo"
+)
+
 package "async" (
  version = "2.3.3"
  description = "Manipulate external buffers as C-like structs"
@@ -45,6 +55,9 @@ package "async" (
 package "ppx" (
  version = "1.9.0"
  description = "Ppx syntax extension for Cstruct"
- requires = "cstruct"
- ppx = "ppx_cstruct"
+ requires(-ppx_driver) = "cstruct"
+ requires(ppx_driver) = "ppx_tools_versioned"
+ ppx(-custom_ppx,-ppx_driver) = "ppx_cstruct --as-ppx"
+ archive(byte,ppx_driver) = "ppx_cstruct.cmo"
+ archive(native,ppx_driver) = "ppx_cstruct.cmx"
 )

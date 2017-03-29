@@ -503,5 +503,4 @@ let structure mapper s =
 
 let () =
   Driver.register ~name:"ppx_cstruct" Versions.ocaml_404
-    (fun _config _cookies -> {default_mapper with structure; signature});
-  Driver.run_as_ppx_rewriter ()
+    (fun _config _cookies -> {default_mapper with structure; signature})
