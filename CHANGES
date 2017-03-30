@@ -1,3 +1,25 @@
+2.4.0 (2017-03-30):
+
+Distribute the PPX extension so that it is compatible with Jbuilder.
+`ppx_cstruct` is now distributed as both a library and a binary.
+Findlib predicates are used to distinguish usage:
+ - the binary is used for toplevel and simple -ppx building
+ - the library is used for linking custom rewriters
+ - `-package cstruct.ppx` alone uses the binary for rewriting.
+ - `-package cstruct.ppx` -predicates custom_ppx,ppx_driver" is used to link the rewriter.
+
+To use the PPX extension in jbuilder, just add:
+
+```
+  (libraries (cstruct))
+  (preprocess (pps (cstruct.ppx)))
+```
+
+to your `jbuild` file.  This may be renamed to `ppx_cstruct` in a
+future release so that the PPX dependency is decoupled from the main
+library, so this `cstruct.ppx` is intended to be transitional as it
+is what was originally used.
+
 2.3.3 (2017-03-28):
 * Port ppx extension to use `ocaml-migrate-parsetree` so it should
   also compile on future revisions of OCaml (#127 via @let-def).
