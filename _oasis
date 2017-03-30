@@ -1,13 +1,15 @@
-OASISFormat: 0.4
-Name:        cstruct
-Version:     2.3.3
-Synopsis:    Manipulate external buffers as C-like structs
-Authors:     Anil Madhavapeddy, Richard Mortier, Thomas Gazagnaire,
-             Pierre Chambart, David Kaloper, Jeremy Yallop, Hannes Mehnert,
-             David Scott, Mindy Preston, Frederic Bour
-License:     ISC
-Plugins:     META (0.4), DevFiles (0.4)
-BuildTools:  ocamlbuild
+OASISFormat:  0.4
+Name:         cstruct
+Version:      2.3.3
+Synopsis:     Manipulate external buffers as C-like structs
+Authors:      Anil Madhavapeddy, Richard Mortier, Thomas Gazagnaire,
+              Pierre Chambart, David Kaloper, Jeremy Yallop, Hannes Mehnert,
+              David Scott, Mindy Preston, Frederic Bour
+License:      ISC
+Plugins:      META (0.4), DevFiles (0.4)
+BuildTools:   ocamlbuild
+BetaFeatures: section_object
+OCamlVersion: >= 4.01
 
 Flag lwt
   Description: build the Lwt library
@@ -56,6 +58,13 @@ Library unix_cstruct
   Findlibparent: cstruct
   Modules:       Unix_cstruct
 
+Object ppx_cstruct
+  Build$:        flag(ppx)
+  Path:          ppx
+  BuildDepends:  ocaml-migrate-parsetree, ppx_tools_versioned.metaquot_404, bigarray
+  Modules:       Ppx_cstruct
+  FindlibFullname : cstruct.ignore
+
 Executable ppx_cstruct
   Build$:       flag(ppx)
   Install:      true
@@ -63,7 +72,7 @@ Executable ppx_cstruct
   Custom:       true
   CompiledObject: best
   BuildDepends: ocaml-migrate-parsetree, ppx_tools_versioned.metaquot_404, bigarray
-  MainIs:       ppx_cstruct.ml
+  MainIs:       standalone.ml
 
 Executable test_bounds
   Build$:       flag(tests) && flag(unix)
