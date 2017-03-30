@@ -147,4 +147,4 @@ true: annot, bin_annot
 <lib_test/tests.{native,byte}>: custom
 # OASIS_STOP
 true: annot, bin_annot, debug, principal
-<ppx_test/*.ml>: ppx(./ppx/ppx_cstruct.native)
+<ppx_test/*.ml>: ppx(./ppx/standalone.native --as-ppx)
