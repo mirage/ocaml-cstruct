@@ -1,0 +1,21 @@
+(jbuild_version 1)
+
+(executables
+ ((libraries (cstruct oUnit))
+  (preprocess (pps (ppx_cstruct)))
+  (names (pcap basic enum))))
+
+(alias
+ ((name   runtest)
+  (deps   (pcap.exe))
+  (action (run ${<}))))
+
+(alias
+ ((name   runtest)
+  (deps   (basic.exe))
+  (action (run ${<}))))
+
+(alias
+ ((name   runtest)
+  (deps   (enum.exe))
+  (action (run ${<}))))
