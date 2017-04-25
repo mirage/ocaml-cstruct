@@ -12,7 +12,7 @@ build: [
   ["jbuilder" "build" "--only-packages" "ppx_cstruct" "--root" "ppx" "-j" jobs "@install"]
 ]
 depends: [
-  "ocamlfind" {build}
+  "jbuilder" {build}
   "cstruct"
   "ppx_tools_versioned" 
   "ocaml-migrate-parsetree"

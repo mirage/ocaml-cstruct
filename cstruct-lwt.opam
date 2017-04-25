@@ -12,7 +12,6 @@ build: [
   ["jbuilder" "build" "--only-packages" "cstruct-lwt" "--root" "lwt" "-j" jobs "@install"]
 ]
 depends: [
-  "ocamlfind" {build}
   "base-unix"
   "lwt"
   "cstruct"

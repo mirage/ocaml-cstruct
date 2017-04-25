@@ -12,7 +12,7 @@ build: [
   ["jbuilder" "build" "--only-packages" "cstruct" "--root" "lib" "-j" jobs "@install"]
 ]
 depends: [
-  "ocamlfind" {build}
+  "jbuilder" {build}
   "ounit"     {test}
   "ocplib-endian"
   "sexplib"
