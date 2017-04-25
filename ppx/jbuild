@@ -6,4 +6,8 @@
   (kind ppx_rewriter)
   (ppx_runtime_libraries (cstruct))
   (preprocess (pps (ppx_tools_versioned.metaquot_404)))
-  (libraries (ocaml-migrate-parsetree ppx_tools_versioned bigarray))))
+  (libraries
+   (ocaml-migrate-parsetree
+    ppx_tools_versioned
+    ppx_tools_versioned.metaquot_404
+    bigarray))))
