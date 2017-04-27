@@ -9,7 +9,7 @@ dev-repo:     "https://github.com/mirage/ocaml-cstruct.git"
 bug-reports:  "https://github.com/mirage/ocaml-cstruct/issues"
 tags: [ "org:mirage" "org:ocamllabs" ]
 build: [
-  ["jbuilder" "build" "--only-packages" "cstruct" "--root" "lib" "-j" jobs "@install"]
+  ["jbuilder" "build" "-p" name "-j" jobs]
 ]
 depends: [
   "jbuilder" {build}
