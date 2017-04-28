@@ -1,15 +1,18 @@
 # JBUILDER_GEN
 
 package "unix" (
+  description = "Deprecated. Use cstruct-unix"
   requires = "cstruct-unix"
 )
 
 package "lwt" (
+  description = "Deprecated. Use cstruct-lwt"
   requires = "cstruct-lwt"
 )
 
 package "async" (
-  requires = "async_cstruct"
+  description = "Deprecated. Use cstruct-async"
+  requires = "cstruct-async"
 )
 
 package "ppx" (
