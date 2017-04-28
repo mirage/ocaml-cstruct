@@ -13,11 +13,6 @@ package "async" (
 )
 
 package "ppx" (
- version = "1.9.0"
- description = "Ppx syntax extension for Cstruct"
- requires(-ppx_driver) = "cstruct"
- requires(ppx_driver) = "ppx_tools_versioned"
- ppx(-custom_ppx,-ppx_driver) = "ppx_cstruct --as-ppx"
- archive(byte,ppx_driver) = "ppx_cstruct.cmo"
- archive(native,ppx_driver) = "ppx_cstruct.cmx"
+ description = "Deprecated. Use ppx_cstruct"
+ requires = "ppx_cstruct.deprecated-ppx-method"
 )
