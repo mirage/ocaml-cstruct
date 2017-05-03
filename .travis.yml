@@ -2,10 +2,12 @@ language: c
 sudo: false
 services:
   - docker
-install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/master/.travis-docker.sh
+install: wget https://raw.githubusercontent.com/avsm/ocaml-travisci-skeleton/debug/.travis-docker.sh
 script: bash -ex ./.travis-docker.sh
 env:
   global:
+  - FORK_USER="avsm"
+  - FORK_BRANCH="debug"
   - PACKAGE="cstruct.9999"
   - DEPOPTS="ppx_tools_versioned async lwt"
   - REVDEPS="tls dns irmin tcpip"
