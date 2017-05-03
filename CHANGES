@@ -1,3 +1,7 @@
+2.4.1 (2017-050-03):
+
+- fix missing ppx_tools_versioned dependency (#136, @et-def)
+
 2.4.0 (2017-03-30):
 
 Distribute the PPX extension so that it is compatible with Jbuilder.
