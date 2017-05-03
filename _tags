@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: d14f060ba12c9fdd5809a46bc9db9ae1)
+# DO NOT EDIT (digest: a5c666d406381545d5b767eada6e1abc)
 # Ignore VCS directories, you can use the same kind of rule outside
 # OASIS_START/STOP if you want to exclude directories that contains
 # useless stuff for the build process
@@ -61,9 +61,11 @@ true: annot, bin_annot
 # Executable ppx_cstruct
 <ppx/standalone.{native,byte}>: package(bigarray)
 <ppx/standalone.{native,byte}>: package(ocaml-migrate-parsetree)
+<ppx/standalone.{native,byte}>: package(ppx_tools_versioned)
 <ppx/standalone.{native,byte}>: package(ppx_tools_versioned.metaquot_404)
 <ppx/*.ml{,i,y}>: package(bigarray)
 <ppx/*.ml{,i,y}>: package(ocaml-migrate-parsetree)
+<ppx/*.ml{,i,y}>: package(ppx_tools_versioned)
 <ppx/*.ml{,i,y}>: package(ppx_tools_versioned.metaquot_404)
 <ppx/standalone.{native,byte}>: custom
 # Executable test_bounds
@@ -86,6 +88,7 @@ true: annot, bin_annot
 <ppx_test/basic.{native,byte}>: package(ocaml-migrate-parsetree)
 <ppx_test/basic.{native,byte}>: package(ocplib-endian)
 <ppx_test/basic.{native,byte}>: package(ocplib-endian.bigstring)
+<ppx_test/basic.{native,byte}>: package(ppx_tools_versioned)
 <ppx_test/basic.{native,byte}>: package(ppx_tools_versioned.metaquot_404)
 <ppx_test/basic.{native,byte}>: package(sexplib)
 <ppx_test/basic.{native,byte}>: package(unix)
@@ -99,6 +102,7 @@ true: annot, bin_annot
 <ppx_test/enum.{native,byte}>: package(ocaml-migrate-parsetree)
 <ppx_test/enum.{native,byte}>: package(ocplib-endian)
 <ppx_test/enum.{native,byte}>: package(ocplib-endian.bigstring)
+<ppx_test/enum.{native,byte}>: package(ppx_tools_versioned)
 <ppx_test/enum.{native,byte}>: package(ppx_tools_versioned.metaquot_404)
 <ppx_test/enum.{native,byte}>: package(sexplib)
 <ppx_test/enum.{native,byte}>: package(unix)
@@ -112,6 +116,7 @@ true: annot, bin_annot
 <ppx_test/pcap.{native,byte}>: package(ocaml-migrate-parsetree)
 <ppx_test/pcap.{native,byte}>: package(ocplib-endian)
 <ppx_test/pcap.{native,byte}>: package(ocplib-endian.bigstring)
+<ppx_test/pcap.{native,byte}>: package(ppx_tools_versioned)
 <ppx_test/pcap.{native,byte}>: package(ppx_tools_versioned.metaquot_404)
 <ppx_test/pcap.{native,byte}>: package(sexplib)
 <ppx_test/pcap.{native,byte}>: package(unix)
@@ -123,6 +128,7 @@ true: annot, bin_annot
 <ppx_test/*.ml{,i,y}>: package(ocaml-migrate-parsetree)
 <ppx_test/*.ml{,i,y}>: package(ocplib-endian)
 <ppx_test/*.ml{,i,y}>: package(ocplib-endian.bigstring)
+<ppx_test/*.ml{,i,y}>: package(ppx_tools_versioned)
 <ppx_test/*.ml{,i,y}>: package(ppx_tools_versioned.metaquot_404)
 <ppx_test/*.ml{,i,y}>: package(sexplib)
 <ppx_test/*.ml{,i,y}>: package(unix)

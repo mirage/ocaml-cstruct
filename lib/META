@@ -1,5 +1,5 @@
 # OASIS_START
-# DO NOT EDIT (digest: fb431389e9ab426f0ae3345e52406fa7)
+# DO NOT EDIT (digest: abba109badf3db9b63b3ceae5fb360b3)
 version = "2.4.0"
 description = "Manipulate external buffers as C-like structs"
 requires = "bytes bigarray ocplib-endian ocplib-endian.bigstring sexplib"
@@ -34,7 +34,7 @@ package "ignore" (
  version = "2.4.0"
  description = "Manipulate external buffers as C-like structs"
  requires =
- "ocaml-migrate-parsetree ppx_tools_versioned.metaquot_404 bigarray"
+ "ocaml-migrate-parsetree ppx_tools_versioned ppx_tools_versioned.metaquot_404 bigarray"
  archive(byte) = "ppx_cstruct.cmo"
  archive(native) = "ppx_cstruct.cmx"
  exists_if = "ppx_cstruct.cmo"

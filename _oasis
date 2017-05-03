@@ -61,7 +61,7 @@ Library unix_cstruct
 Object ppx_cstruct
   Build$:        flag(ppx)
   Path:          ppx
-  BuildDepends:  ocaml-migrate-parsetree, ppx_tools_versioned.metaquot_404, bigarray
+  BuildDepends:  ocaml-migrate-parsetree, ppx_tools_versioned, ppx_tools_versioned.metaquot_404, bigarray
   Modules:       Ppx_cstruct
   FindlibFullname : cstruct.ignore
 
@@ -71,7 +71,7 @@ Executable ppx_cstruct
   Path:         ppx
   Custom:       true
   CompiledObject: best
-  BuildDepends: ocaml-migrate-parsetree, ppx_tools_versioned.metaquot_404, bigarray
+  BuildDepends: ocaml-migrate-parsetree, ppx_tools_versioned, ppx_tools_versioned.metaquot_404, bigarray
   MainIs:       standalone.ml
 
 Executable test_bounds
