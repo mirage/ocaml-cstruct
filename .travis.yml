@@ -9,6 +9,7 @@ env:
   - FORK_USER="avsm"
   - FORK_BRANCH="debug"
   - REVDEPS="tls dns irmin tcpip"
+  - PINS="cstruct-async:. cstruct-lwt:. cstruct-unix:. ppx_cstruct:."
   matrix:
   - PACKAGE="ppx_cstruct.dev" DISTRO="debian-stable" OCAML_VERSION="4.02.3"
   - PACKAGE="ppx_cstruct.dev" DISTRO="debian-testing" OCAML_VERSION="4.03.0"
@@ -19,4 +20,3 @@ env:
   - PACKAGE="cstruct-lwt.dev" DISTRO="centos-6" OCAML_VERSION="4.02.3"
   - PACKAGE="cstruct-lwt.dev" DISTRO="alpine-3.5" OCAML_VERSION="4.04.0" DEPOPTS="cstruct-async ppx_cstruct"
   - PACKAGE="ppx_cstruct.dev" DISTRO="fedora-25" OCAML_VERSION="4.03.0"
-  - PACKAGE="ppx_cstruct.dev" DISTRO="opensuse-42.2" OCAML_VERSION="4.04.0"
