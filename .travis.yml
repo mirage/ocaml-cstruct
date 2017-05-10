@@ -6,17 +6,15 @@ install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/ma
 script: bash -ex ./.travis-docker.sh
 env:
   global:
-  - PACKAGE="cstruct.9999"
-  - DEPOPTS="ppx_tools_versioned async lwt"
-  - REVDEPS="tls dns irmin tcpip"
+  - FORK_USER="ocaml"
+  - FORK_BRANCH="master"
+  - PINS="cstruct-async:. cstruct-lwt:. cstruct-unix:. ppx_cstruct:."
   matrix:
-  - DISTRO="debian-stable" OCAML_VERSION="4.02.3"
-  - DISTRO="debian-testing" OCAML_VERSION="4.03.0"
-  - DISTRO="debian-unstable" OCAML_VERSION="4.04.0"
-  - DISTRO="ubuntu-14.04" OCAML_VERSION="4.02.3"
-  - DISTRO="ubuntu-16.04" OCAML_VERSION="4.05.0" DEPOPTS="ppx_tools_versioned lwt"
-  - DISTRO="centos-7" OCAML_VERSION="4.03.0"
-  - DISTRO="centos-6" OCAML_VERSION="4.02.3"
-  - DISTRO="alpine-3.5" OCAML_VERSION="4.04.0"
-  - DISTRO="fedora-24" OCAML_VERSION="4.03.0"
-  - DISTRO="opensuse-42.2" OCAML_VERSION="4.04.0"
+  - PACKAGE="ppx_cstruct.dev" DISTRO="debian-stable" OCAML_VERSION="4.02.3"
+  - PACKAGE="ppx_cstruct.dev" DISTRO="debian-testing" OCAML_VERSION="4.03.0"
+  - PACKAGE="cstruct-async.dev" DISTRO="debian-unstable" OCAML_VERSION="4.04.0"
+  - PACKAGE="cstruct-lwt.dev" DISTRO="ubuntu-16.04" OCAML_VERSION="4.05.0"
+  - PACKAGE="ppx_cstruct.dev" DISTRO="centos-7" OCAML_VERSION="4.03.0"
+  - PACKAGE="cstruct-lwt.dev" DISTRO="centos-6" OCAML_VERSION="4.02.3"
+  - PACKAGE="cstruct-lwt.dev" DISTRO="alpine-3.5" OCAML_VERSION="4.04.0" DEPOPTS="cstruct-async ppx_cstruct"
+  - PACKAGE="ppx_cstruct.dev" DISTRO="fedora-25" OCAML_VERSION="4.03.0"

@@ -1,0 +1,4 @@
+(library
+ ((name async_cstruct)
+  (wrapped false)
+  (libraries (cstruct async.unix))))

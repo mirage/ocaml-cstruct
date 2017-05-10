@@ -4,6 +4,7 @@ platform:
 environment:
   FORK_USER: ocaml
   FORK_BRANCH: master
+  PACKAGE: cstruct
   CYG_ROOT: C:\cygwin64
 
 install:

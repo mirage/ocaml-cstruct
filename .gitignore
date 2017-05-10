@@ -15,3 +15,5 @@ dist/
 *.cmx
 *.cmxs
 *.cmxa
+.merlin
+*.install
