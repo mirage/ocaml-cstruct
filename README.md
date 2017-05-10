@@ -1,6 +1,11 @@
+Cstruct %%VERSION%%
+--------------------
+
 Cstruct is a library and syntax extension to make it easier to access C-like
 structures directly from OCaml.  It supports both reading and writing to these
 structures, and they are accessed via the `Bigarray` module.
+
+## Installation
 
 This repository provides several packages that can be installed via the
 [OPAM](https://opam.ocaml.org) package manager:
@@ -17,7 +22,16 @@ extension point. The old
 syntax extension is nolonger available; the last version which contained it
 was v1.9.0.
 
-## PPX
+### Local development
+
+You can build the library via [jbuilder](https://github.com/janestreet/jbuilder),
+using `make` or `jbuilder build` directly.  Since everything is built via jbuilder,
+you can also place this repository within a wider jbuilder workspace in order to
+make local modifications across repositories. 
+
+## Usage
+
+### PPX
 
 The PPX processor is used by passing the OCaml source code through the
 `ppx_cstruct` binary. An example pcap description is:
