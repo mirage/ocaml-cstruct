@@ -1,4 +1,17 @@
-2.4.1 (2017-050-03):
+3.0.0 (2017-05-11):
+
+- Split up OPAM packages into multiple independent ones. We now
+  have a standalone `cstruct`, and then separate `cstruct-lwt`,
+  `cstruct-async`, `cstruct-unix` packages, and a `ppx_cstruct`
+  package for the syntax extension. Transitional findlib packages
+  with the old scheme are available, but now packages should migrate
+  to using `cstruct-async` instead of `cstruct.async` for example.
+  This has the added benefit of the OPAM package names now matching
+  the findlib names.
+
+- Port build to [jbuilder](https://github.com/janestreet/jbuilder)
+
+2.4.1 (2017-05-03):
 
 - fix missing ppx_tools_versioned dependency (#136, @et-def)
 
