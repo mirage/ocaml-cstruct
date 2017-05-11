@@ -7,9 +7,10 @@
   with the old scheme are available, but now packages should migrate
   to using `cstruct-async` instead of `cstruct.async` for example.
   This has the added benefit of the OPAM package names now matching
-  the findlib names.
+  the findlib names. (#138 by @avsm @rgrinberg).
 
-- Port build to [jbuilder](https://github.com/janestreet/jbuilder)
+- Port build to [jbuilder](https://github.com/janestreet/jbuilder).
+  See the README for local development instructions.
 
 2.4.1 (2017-05-03):
 
