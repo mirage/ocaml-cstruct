@@ -114,6 +114,10 @@ let check_alignment alignment () =
   done;
   assert_equal ~printer:string_of_int expected !actual
 
+let check_alignment_zero () =
+  let buf = Cstruct.create 512 in
+  assert_equal (Cstruct.check_alignment buf 0) false
+
 let _ =
   let suite =
     "misc tests" >::: [
@@ -133,6 +137,7 @@ let _ =
       "alignment" >::: [
         "aligned to 4096" >:: check_alignment 4096
       ; "aligned to 512"  >:: check_alignment 512
+      ; "aligned to 0"  >:: check_alignment_zero
       ]
     ]
   in
