@@ -6,6 +6,9 @@ all:
 clean:
 	rm -rf _build *.install
 
+test:
+	jbuilder runtest
+
 REPO=../../mirage/opam-repository
 PACKAGES=$(REPO)/packages
 # until we have https://github.com/ocaml/opam-publish/issues/38

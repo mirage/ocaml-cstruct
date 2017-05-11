@@ -244,7 +244,8 @@ val check_alignment : t -> int -> bool
     within [cstr] is at a memory address where [address mod alignment = 0],
     [false] otherwise.
     Typical uses are to check a buffer is aligned to a page or disk sector
-    boundary. *)
+    boundary.
+    [alignment] must a positive integer or else [Invalid_argument] is raised. *)
 
 val get_char: t -> int -> char
 (** [get_char t off] returns the character contained in the cstruct
