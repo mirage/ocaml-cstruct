@@ -1,5 +1,6 @@
-Cstruct %%VERSION%%
---------------------
+Cstruct -- access C-like structures directly from OCaml
+-------------------------------------------------------
+%%VERSION%%
 
 Cstruct is a library and syntax extension to make it easier to access C-like
 structures directly from OCaml.  It supports both reading and writing to these
