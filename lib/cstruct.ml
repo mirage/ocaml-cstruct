@@ -103,7 +103,10 @@ let check_bounds t len =
 
 external check_alignment_bigstring : buffer -> int -> int -> bool = "caml_check_alignment_bigstring"
 
-let check_alignment t alignment = check_alignment_bigstring t.buffer t.off alignment
+let check_alignment t alignment =
+  if alignment > 0 then
+    check_alignment_bigstring t.buffer t.off alignment
+  else invalid_arg "check_alignment must be positive integer"
 
 type byte = char
 

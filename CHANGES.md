@@ -13,6 +13,9 @@ v3.0.0 2017-05-11
 - Port build to [jbuilder](https://github.com/janestreet/jbuilder).
   See the README for local development instructions.
 
+- Ensure that `check_alignment` only takes a non-zero argument
+  for alignment (#143 #145 by @cfcs @avsm).
+
 v2.4.1 2017-05-03)
 ------------------
 
