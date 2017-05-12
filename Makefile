@@ -9,6 +9,15 @@ clean:
 test:
 	jbuilder runtest
 
+install:
+	jbuilder install
+
+js-install:
+	# whatever
+
+js-uninstall:
+	# whatever
+
 REPO=../../mirage/opam-repository
 PACKAGES=$(REPO)/packages
 # until we have https://github.com/ocaml/opam-publish/issues/38
