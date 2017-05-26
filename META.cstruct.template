@@ -17,5 +17,5 @@ package "async" (
 
 package "ppx" (
  description = "Deprecated. Use ppx_cstruct"
- requires = "ppx_cstruct.deprecated-ppx-method"
+ requires = "ppx_cstruct"
 )
