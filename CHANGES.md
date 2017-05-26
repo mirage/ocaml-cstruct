@@ -16,13 +16,13 @@ v3.0.0 2017-05-11
 - Ensure that `check_alignment` only takes a non-zero argument
   for alignment (#143 #145 by @cfcs @avsm).
 
-v2.4.1 2017-05-03)
-------------------
+v2.4.1 2017-05-03
+-----------------
 
 - fix missing `ppx_tools_versioned` dependency (#136, @let-def)
 
 v2.4.0 2017-03-30
-----------------
+-----------------
 
 Distribute the PPX extension so that it is compatible with Jbuilder.
 `ppx_cstruct` is now distributed as both a library and a binary.
