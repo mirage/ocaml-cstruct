@@ -6,11 +6,12 @@ install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/ma
 script: bash -ex ./.travis-docker.sh
 env:
   global:
-  - PINS="cstruct-async:. cstruct-lwt:. cstruct-unix:. ppx_cstruct:."
+  - PACKAGE="cstruct"
+  - PINS="cstruct:. cstruct-async:. cstruct-lwt:. cstruct-unix:. ppx_cstruct:."
   matrix:
-  - PACKAGE="ppx_cstruct.dev" DISTRO="debian-stable" OCAML_VERSION="4.02.3"
-  - PACKAGE="ppx_cstruct.dev" DISTRO="debian-testing" OCAML_VERSION="4.03.0"
-  - PACKAGE="cstruct-async.dev" DISTRO="debian-unstable" OCAML_VERSION="4.04.0"
-  - PACKAGE="cstruct-lwt.dev" DISTRO="ubuntu-16.04" OCAML_VERSION="4.05.0"
-  - PACKAGE="cstruct-lwt.dev" DISTRO="alpine-3.5" OCAML_VERSION="4.04.0" DEPOPTS="cstruct-async ppx_cstruct"
-  - PACKAGE="ppx_cstruct.dev" DISTRO="fedora-25" OCAML_VERSION="4.03.0"
+  - DISTRO="debian-stable" OCAML_VERSION="4.02.3" DEPOPTS="ppx_cstruct"
+  - DISTRO="debian-testing" OCAML_VERSION="4.03.0" DEPOPTS="ppx_cstruct cstruct-lwt"
+  - DISTRO="debian-unstable" OCAML_VERSION="4.04.0" DEPOPTS="cstruct-unix cstruct-async"
+  - DISTRO="ubuntu-16.04" OCAML_VERSION="4.05.0"
+  - DISTRO="alpine-3.5" OCAML_VERSION="4.04.0" DEPOPTS="cstruct-async ppx_cstruct"
+  - DISTRO="fedora-25" OCAML_VERSION="4.03.0"
