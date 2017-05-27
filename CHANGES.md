@@ -1,3 +1,11 @@
+v3.0.1
+------
+
+- Update opam rules to use `jbuilder subst` for version information
+  in the distribution.
+- Fix tests so that `check_alignment` expects a negative result.
+- Add opam test target for core library.
+
 v3.0.0 2017-05-11
 -----------------
 
