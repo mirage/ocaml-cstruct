@@ -116,7 +116,11 @@ let check_alignment alignment () =
 
 let check_alignment_zero () =
   let buf = Cstruct.create 512 in
-  assert_equal (Cstruct.check_alignment buf 0) false
+  try
+    assert_equal (Cstruct.check_alignment buf 0) false;
+    assert false
+  with
+    Invalid_argument _ -> ()
 
 let _ =
   let suite =
