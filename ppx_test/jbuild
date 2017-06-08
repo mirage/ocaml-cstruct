@@ -19,3 +19,4 @@
  ((name   runtest)
   (deps   (enum.exe))
   (action (run ${<}))))
+

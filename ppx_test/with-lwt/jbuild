@@ -1,0 +1,12 @@
+(jbuild_version 1)
+
+(executables
+ ((names (ppx_cstruct_and_lwt))
+  (preprocess (pps (lwt.ppx cstruct.ppx)))
+  (libraries (cstruct lwt))))
+
+(alias
+ ((name   runtest)
+  (deps   (ppx_cstruct_and_lwt.exe))
+  (action (run ${<}))))
+

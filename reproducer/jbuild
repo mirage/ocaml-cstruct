@@ -1,8 +1,0 @@
-(jbuild_version 1)
-
-(library
- ((name        example)
-  (preprocess (pps (lwt.ppx cstruct.ppx)))
-  (libraries (cstruct lwt))
-  ))
-
