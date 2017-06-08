@@ -9,11 +9,11 @@ dev-repo:     "https://github.com/mirage/ocaml-cstruct.git"
 bug-reports:  "https://github.com/mirage/ocaml-cstruct/issues"
 tags: [ "org:mirage" "org:ocamllabs" ]
 build: [
+  ["jbuilder" "subst" "-p" name "--name" name] {pinned}
   ["jbuilder" "build" "-p" name "-j" jobs]
 ]
 depends: [
   "jbuilder" {build & >="1.0+beta7"}
-  "ounit"     {test}
   "ocplib-endian"
   "sexplib"
   "base-bytes"
