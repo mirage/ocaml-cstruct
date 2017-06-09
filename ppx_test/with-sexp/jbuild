@@ -1,0 +1,12 @@
+(jbuild_version 1)
+
+(executables
+ ((names (ppx_cstruct_and_sexp))
+  (preprocess (pps (cstruct.ppx ppx_sexp_conv -no-check)))
+  (libraries (cstruct))))
+
+(alias
+ ((name   runtest)
+  (deps   (ppx_cstruct_and_sexp.exe))
+  (action (run ${<}))))
+
