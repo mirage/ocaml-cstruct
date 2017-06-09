@@ -3,7 +3,7 @@
 (executables
  ((names (ppx_cstruct_and_lwt))
   (preprocess (pps (lwt.ppx cstruct.ppx)))
-  (libraries (cstruct lwt))))
+  (libraries (cstruct lwt lwt.unix))))
 
 (alias
  ((name   runtest)
