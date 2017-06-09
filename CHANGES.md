@@ -1,6 +1,12 @@
 v3.0.1
 ------
 
+- ppx: remove an errant standalone initialiser that was messing up
+  the composition of cstruct with other `ppx_driver` based ppx converters
+  (most notably `ppx_sexp_conv`.  If you are having trouble with using
+  `ppx_cstruct` with other drivers, put a constraint on `ppx_cstruct>=3.0.1`.
+- ppx: also add a test case for `cstruct` and `lwt` working together, but
+  this will not work until a `lwt>3.0` release happens.
 - Update opam rules to use `jbuilder subst` for version information
   in the distribution.
 - Fix tests so that `check_alignment` expects a negative result.
