@@ -2,7 +2,7 @@
 
 (executables
  ((names (ppx_cstruct_and_lwt))
-  (preprocess (pps (lwt.ppx cstruct.ppx)))
+  (preprocess (pps (lwt.ppx ppx_cstruct)))
   (libraries (cstruct lwt lwt.unix))))
 
 (alias
