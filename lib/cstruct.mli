@@ -327,6 +327,10 @@ val blit_to_string: t -> int -> Bytes.t -> int -> int -> unit
 val memset: t -> int -> unit
 (** [memset t x] sets all the bytes of [t] to [x land 0xff]. *)
 
+val get_pointer: t -> int option
+(** [get_pointer t] returns the memory pointer to the data contained in [t].
+    For use with FFI and similar where you need to reference the buffer directly. *)
+
 val len: t -> int
 (** Returns the length of the current cstruct view.  Note that this
     length is potentially smaller than the actual size of the underlying

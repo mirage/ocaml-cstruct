@@ -153,6 +153,9 @@ let add_len t len =
   if len < 0 || not (check_bounds t (t.off+len)) then err_add_len t len
   else { t with len }
 
+external unsafe_get_pointer : buffer -> int option = "caml_get_pointer"
+
+let get_pointer x = unsafe_get_pointer x.buffer
 
 external unsafe_blit_bigstring_to_bigstring : buffer -> int -> buffer -> int -> int -> unit = "caml_blit_bigstring_to_bigstring" "noalloc"
 
