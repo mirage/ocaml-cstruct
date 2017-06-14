@@ -1,3 +1,9 @@
+v3.0.2 2017-06-14
+-----------------
+
+- fix the `cstruct-async` package build, and depend on the latest
+  Async packages (>="v0.9.0") as part of this. (#152 @jnfoster)
+
 v3.0.1 2017-06-09
 -----------------
 

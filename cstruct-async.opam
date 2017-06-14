@@ -14,9 +14,9 @@ build: [
 ]
 depends: [
   "jbuilder" {build & >="1.0+beta7"}
-  "async_kernel"
-  "async_unix"
-  "core_kernel"
-  "cstruct" 
+  "async_kernel" {>="v0.9.0"}
+  "async_unix" {>="v0.9.0"}
+  "core_kernel" {>="v0.9.0"}
+  "cstruct" {>="3.0.0"}
 ]
 available: [ocaml-version >= "4.02.3"]
