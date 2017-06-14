@@ -14,8 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Core.Std
-open Async.Std
+open Core
+open Async
 
 val to_bigsubstring : Cstruct.t -> Bigsubstring.t
 val of_bigsubstring : Bigsubstring.t -> Cstruct.t

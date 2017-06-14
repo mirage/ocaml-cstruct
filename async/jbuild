@@ -1,4 +1,5 @@
 (library
  ((name async_cstruct)
   (wrapped false)
-  (libraries (cstruct async.unix))))
+  (public_name cstruct-async)
+  (libraries (cstruct async async_unix))))
