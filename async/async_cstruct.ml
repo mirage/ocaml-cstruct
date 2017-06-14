@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-open Core
+open Core_kernel
 open Async_unix
 open Async_kernel
 
