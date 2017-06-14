@@ -14,7 +14,7 @@ build: [
 ]
 depends: [
   "jbuilder" {build & >="1.0+beta7"}
-  "async"
+  "async_kernel"
   "async_unix"
   "cstruct" 
 ]

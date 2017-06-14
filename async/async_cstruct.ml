@@ -15,7 +15,8 @@
  *)
 
 open Core
-open Async
+open Async_unix
+open Async_kernel
 
 let to_bigsubstring t =
   Bigsubstring.create 

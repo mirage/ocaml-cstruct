@@ -15,7 +15,8 @@
  *)
 
 open Core
-open Async
+open Async_unix
+open Async_kernel
 
 val to_bigsubstring : Cstruct.t -> Bigsubstring.t
 val of_bigsubstring : Bigsubstring.t -> Cstruct.t
