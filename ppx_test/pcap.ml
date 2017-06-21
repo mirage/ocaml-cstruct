@@ -14,6 +14,8 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
+[@@@ocaml.warning "-32"]
+
 [%%cstruct
 type pcap_header = {
   magic_number: uint32_t;   (* magic number *)
@@ -66,7 +68,7 @@ type tcpv4 = {
   urg: uint16_t;
 } [@@big_endian]]
 
-let num_packets = ref 0
+[@@@ocaml.warning "+32"]
 
 let mac_to_string buf =
   let i n = Cstruct.get_uint8 buf n in
@@ -117,7 +119,7 @@ let print_packet p =
   end
   |x -> printf "unknown body %x\n" x
 
-let rec print_pcap_packet (hdr,pkt) =
+let print_pcap_packet (hdr,pkt) =
   let ts_sec = get_pcap_packet_ts_sec hdr in
   let ts_usec = get_pcap_packet_ts_usec hdr in
   let incl_len = get_pcap_packet_incl_len hdr in

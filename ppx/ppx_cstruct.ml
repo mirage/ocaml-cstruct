@@ -168,7 +168,7 @@ let type_of_int_field = function
   |UInt32 -> [%type: Cstruct.uint32]
   |UInt64 -> [%type: Cstruct.uint64]
 
-let type_of_int_field loc x =
+let type_of_int_field _loc x =
   type_of_int_field x [@metaloc loc]
 
 let output_get_sig _loc s f =
@@ -313,22 +313,22 @@ let output_enum _loc name fields width ~sexp =
       (fun i -> Pat.constant (Pconst_integer (Int64.to_string i, Some 'L')))
   in
   let decls = List.map (fun (f,_) -> Type.constructor f) fields in
-  let getters = (List.map (fun ({txt = f},i) ->
+  let getters = (List.map (fun ({txt = f; _},i) ->
       {pc_lhs = pattfn i; pc_guard = None; pc_rhs = Ast.constr "Some" [Ast.constr f []]}
     ) fields) @ [{pc_lhs = Pat.any (); pc_guard = None; pc_rhs = Ast.constr "None" []}] in
-  let setters = List.map (fun ({txt = f},i) ->
+  let setters = List.map (fun ({txt = f; _},i) ->
       {pc_lhs = Ast.pconstr f []; pc_guard = None; pc_rhs = intfn i}
     ) fields in
-  let printers = List.map (fun ({txt = f},_) ->
+  let printers = List.map (fun ({txt = f; _},_) ->
       {pc_lhs = Ast.pconstr f []; pc_guard = None; pc_rhs = Ast.str f}) fields in
-  let parsers = List.map (fun ({txt = f},_) ->
+  let parsers = List.map (fun ({txt = f; _},_) ->
       {pc_lhs = Ast.pstr f; pc_guard = None; pc_rhs = Ast.constr "Some" [Ast.constr f []]}) fields in
-  let getter {txt = x} = sprintf "int_to_%s" x in
-  let setter {txt = x} = sprintf "%s_to_int" x in
-  let printer {txt = x} = sprintf "%s_to_string" x in
-  let parse {txt = x} = sprintf "string_to_%s" x in
-  let of_sexp {txt = x} = sprintf "%s_of_sexp" x in
-  let to_sexp {txt = x} = sprintf "sexp_of_%s" x in
+  let getter {txt = x; _} = sprintf "int_to_%s" x in
+  let setter {txt = x; _} = sprintf "%s_to_int" x in
+  let printer {txt = x; _} = sprintf "%s_to_string" x in
+  let parse {txt = x; _} = sprintf "string_to_%s" x in
+  let of_sexp {txt = x; _} = sprintf "%s_of_sexp" x in
+  let to_sexp {txt = x; _} = sprintf "sexp_of_%s" x in
   let output_sexp_struct =
     [
       [%stri
@@ -368,12 +368,12 @@ let output_enum_sig _loc name fields width ~sexp =
     |Some UInt64 -> [%type: int64]
   in
   let decls = List.map (fun (f,_) -> Type.constructor f) fields in
-  let getter {txt = x}  = sprintf "int_to_%s" x in
-  let setter {txt = x}  = sprintf "%s_to_int" x in
-  let printer {txt = x} = sprintf "%s_to_string" x in
-  let parse {txt = x}   = sprintf "string_to_%s" x in
-  let of_sexp {txt = x} = sprintf "%s_of_sexp" x in
-  let to_sexp {txt = x} = sprintf "sexp_of_%s" x in
+  let getter {txt = x; _}  = sprintf "int_to_%s" x in
+  let setter {txt = x; _}  = sprintf "%s_to_int" x in
+  let printer {txt = x; _} = sprintf "%s_to_string" x in
+  let parse {txt = x; _}   = sprintf "string_to_%s" x in
+  let of_sexp {txt = x; _} = sprintf "%s_of_sexp" x in
+  let to_sexp {txt = x; _} = sprintf "sexp_of_%s" x in
   let ctyo = [%type: [%t Ast.tconstr name.txt []] option] in
   let cty = Ast.tconstr name.txt [] in
   let output_sexp_sig =
@@ -390,10 +390,10 @@ let output_enum_sig _loc name fields width ~sexp =
   if sexp then output_sexp_sig else []
 
 let constr_enum = function
-  | {pcd_name = f; pcd_args = Pcstr_tuple []; pcd_loc = loc; pcd_attributes = attrs} ->
+  | {pcd_name = f; pcd_args = Pcstr_tuple []; pcd_attributes = attrs; _} ->
     let id = match attrs with
-      | [{txt = "id"}, PStr
-           [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_constant cst; pexp_loc = loc}, _)}]] ->
+      | [{txt = "id"; _}, PStr
+           [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_constant cst; pexp_loc = loc; _}, _); _}]] ->
         let cst = match cst with
           | Pconst_integer(i, _) -> Int64.of_string i
           | _ ->
@@ -404,13 +404,13 @@ let constr_enum = function
         None
     in
     (f, id)
-  | {pcd_loc = loc} ->
+  | {pcd_loc = loc; _} ->
     loc_err loc "invalid cenum variant"
 
-let constr_field {pld_name = fname; pld_type = fty; pld_loc = loc; pld_attributes = att} =
+let constr_field {pld_name = fname; pld_type = fty; pld_loc = loc; pld_attributes = att; _} =
   let get = function
-    | [{txt = "len"}, PStr
-         [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_constant (Pconst_integer(sz, _))}, _)}]] ->
+    | [{txt = "len"; _}, PStr
+         [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_constant (Pconst_integer(sz, _)); _}, _); _}]] ->
       Some (int_of_string sz)
     | _ ->
       None
@@ -422,7 +422,7 @@ let constr_field {pld_name = fname; pld_type = fty; pld_loc = loc; pld_attribute
   | None, None -> None
   in
   let fty = match fty.ptyp_desc with
-    | Ptyp_constr ({txt = Lident fty}, []) -> fty
+    | Ptyp_constr ({txt = Lident fty; _}, []) -> fty
     | _ ->
       loc_err fty.ptyp_loc "type identifier expected"
   in
@@ -430,13 +430,13 @@ let constr_field {pld_name = fname; pld_type = fty; pld_loc = loc; pld_attribute
 
 let cstruct decl =
   let {ptype_name = name; ptype_kind = kind;
-       ptype_attributes = attrs; ptype_loc = loc} = decl in
+       ptype_attributes = attrs; ptype_loc = loc; _} = decl in
   let fields = match kind with
     | Ptype_record fields -> List.map constr_field fields
     | _ -> loc_err loc "record type declaration expected"
   in
   let endian = match attrs with
-    | [{txt = endian}, PStr []] -> endian
+    | [{txt = endian; _}, PStr []] -> endian
     | [_, _] -> loc_err loc "no attribute payload expected"
     | _ -> loc_err loc "too many attributes"
   in
@@ -444,7 +444,7 @@ let cstruct decl =
 
 let cenum decl =
   let {ptype_name = name; ptype_kind = kind;
-       ptype_attributes = attrs; ptype_loc = loc} = decl in
+       ptype_attributes = attrs; ptype_loc = loc; _} = decl in
   let fields = match kind with
     | Ptype_variant fields -> fields
     | _ ->
@@ -452,9 +452,9 @@ let cenum decl =
   in
   let width, sexp =
     match attrs with
-    | ({txt = width}, PStr []) :: ({txt = "sexp"}, PStr []) :: [] ->
+    | ({txt = width; _}, PStr []) :: ({txt = "sexp"; _}, PStr []) :: [] ->
       width, true
-    | ({txt = width}, PStr []) :: [] ->
+    | ({txt = width; _}, PStr []) :: [] ->
       width, false
     | _ ->
       loc_err loc "invalid cenum attributes"
@@ -471,11 +471,11 @@ let cenum decl =
 
 let signature_item' mapper = function
   | {psig_desc =
-       Psig_extension (({txt = "cstruct"}, PStr [{pstr_desc = Pstr_type(_, [decl])}]), _);
+       Psig_extension (({txt = "cstruct"; _}, PStr [{pstr_desc = Pstr_type(_, [decl]); _}]), _);
      psig_loc = loc} ->
     output_struct_sig loc (cstruct decl)
   | {psig_desc =
-       Psig_extension (({txt = "cenum"}, PStr [{pstr_desc = Pstr_type(_, [decl])}]), _);
+       Psig_extension (({txt = "cenum"; _}, PStr [{pstr_desc = Pstr_type(_, [decl]); _}]), _);
      psig_loc = loc} ->
     let name, fields, width, sexp = cenum decl in
     output_enum_sig loc name fields width ~sexp
@@ -487,11 +487,11 @@ let signature mapper s =
 
 let structure_item' mapper = function
   | {pstr_desc =
-       Pstr_extension (({txt = "cstruct"}, PStr [{pstr_desc = Pstr_type(_, [decl])}]), _);
+       Pstr_extension (({txt = "cstruct"; _}, PStr [{pstr_desc = Pstr_type(_, [decl]); _}]), _);
      pstr_loc = loc} ->
     output_struct loc (cstruct decl)
   | {pstr_desc =
-       Pstr_extension (({txt = "cenum"}, PStr [{pstr_desc = Pstr_type(_, [decl])}]), _);
+       Pstr_extension (({txt = "cenum"; _}, PStr [{pstr_desc = Pstr_type(_, [decl]); _}]), _);
      pstr_loc = loc} ->
     let name, fields, width, sexp = cenum decl in
     output_enum loc name fields width ~sexp
