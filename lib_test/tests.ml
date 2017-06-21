@@ -42,7 +42,7 @@ let sexp_reader () =
     assert_cs_equal cs (of_string_as_sexp str)
 
 let sexp_invertibility ~n () =
-  for i = 1 to n do
+  for _i = 1 to n do
     let cs1 = random_cs () in
     let s1  = to_string_as_sexp cs1 in
     let cs2 = of_string_as_sexp s1  in
@@ -72,20 +72,20 @@ let concat_random ~n () =
     if n = 0 then [] else
       let k = Random.int (n + 1) in
       Cstruct.sub cs 0 k :: explode (Cstruct.shift cs k) in
-  for i = 1 to n do
+  for _i = 1 to n do
     let cs  = random_cs () in
     let css = explode cs in
     assert_cs_equal cs (Cstruct.concat css)
   done
 
 let append_is_concat ~n () =
-  for i = 1 to n do
+  for _i = 1 to n do
     let (cs1, cs2) = (random_cs (), random_cs ()) in
     assert_cs_equal (Cstruct.concat [cs1; cs2]) (Cstruct.append cs1 cs2)
   done
 
 let fillv () =
-  let test src ~buf_size =
+  let test src buf_size =
     let dst = Cstruct.create buf_size in
     let src_len = Cstruct.lenv src in
     let len, remaining = Cstruct.fillv ~src ~dst in

@@ -7,7 +7,7 @@ clean:
 	rm -rf _build *.install
 
 test:
-	jbuilder runtest
+	jbuilder runtest --dev
 
 REPO=../../mirage/opam-repository
 PACKAGES=$(REPO)/packages
@@ -21,4 +21,3 @@ pkg-%:
 PKGS=$(basename $(wildcard *.opam))
 opam-pkg:
 	$(MAKE) $(PKGS:%=pkg-%)
-
