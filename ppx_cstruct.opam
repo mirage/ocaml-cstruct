@@ -23,5 +23,6 @@ depends: [
   "ocaml-migrate-parsetree"
   "ppx_driver"    {test & >= "v0.9.0"}
   "ppx_sexp_conv" {test}
+  "cstruct-unix"  {test}
 ]
 available: [ocaml-version >= "4.02.3"]
