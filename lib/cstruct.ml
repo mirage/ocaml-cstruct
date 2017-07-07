@@ -341,7 +341,7 @@ let of_string ?allocator buf =
   let buflen = String.length buf in
   match allocator with
   |None ->
-    let c = create buflen in
+    let c = create_unsafe buflen in
     blit_from_string buf 0 c 0 buflen;
     c
   |Some fn ->
@@ -353,7 +353,7 @@ let of_bytes ?allocator buf =
   let buflen = Bytes.length buf in
   match allocator with
   |None ->
-    let c = create buflen in
+    let c = create_unsafe buflen in
     blit_from_bytes buf 0 c 0 buflen;
     c
   |Some fn ->
@@ -410,16 +410,16 @@ let rec fold f next acc = match next () with
 
 let append cs1 cs2 =
   let l1 = len cs1 and l2 = len cs2 in
-  let cs = create (l1 + l2) in
+  let cs = create_unsafe (l1 + l2) in
   blit cs1 0 cs 0  l1 ;
   blit cs2 0 cs l1 l2 ;
   cs
 
 let concat = function
-  | []   -> create 0
+  | []   -> create_unsafe 0
   | [cs] -> cs
   | css  ->
-      let result = create (lenv css) in
+      let result = create_unsafe (lenv css) in
       let aux off cs =
         let n = len cs in
         blit cs 0 result off n ;
@@ -435,7 +435,7 @@ let sexp_of_buffer b = Conv.sexp_of_bigstring b
 let t_of_sexp = function
   | Sexp.Atom str ->
       let n = String.length str in
-      let t = create n in
+      let t = create_unsafe n in
       blit_from_string str 0 t 0 n ;
       t
   | sexp -> Conv.of_sexp_error "Cstruct.t_of_sexp: atom needed" sexp
