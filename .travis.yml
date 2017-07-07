@@ -7,6 +7,7 @@ script: bash -ex ./.travis-docker.sh
 env:
   global:
   - PINS="cstruct.dev:. cstruct-async.dev:. cstruct-lwt.dev:. cstruct-unix.dev:. ppx_cstruct.dev:."
+  - TESTS="true"
   matrix:
   - DISTRO="debian-stable" OCAML_VERSION="4.05.0" PACKAGE="ppx_cstruct"
   - DISTRO="debian-testing" OCAML_VERSION="4.03.0" PACKAGE="cstruct-lwt"
