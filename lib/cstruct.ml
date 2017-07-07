@@ -296,13 +296,22 @@ end
 let len t =
   t.len
 
-let lenv = function
-  | []  -> 0
-  | [t] -> len t
-  | ts  -> List.fold_left (fun a b -> len b + a) 0 ts
+(** [sum_lengths ~caller acc l] is [acc] plus the sum of the lengths
+    of the elements of [l].  Raises [Invalid_argument caller] if 
+    arithmetic overflows. *)
+let rec sum_lengths_aux ~caller acc = function
+  | [] -> acc
+  | h :: t -> 
+     let sum = len h + acc in
+     if sum < acc then invalid_arg caller
+     else sum_lengths_aux ~caller sum t
+
+let sum_lengths ~caller l = sum_lengths_aux ~caller 0 l
+
+let lenv l = sum_lengths ~caller:"Cstruct.lenv" l
 
 let copyv ts =
-  let sz = lenv ts in
+  let sz = sum_lengths ~caller:"Cstruct.copyv" ts in
   let dst = Bytes.create sz in
   let _ = List.fold_left
     (fun off src ->
@@ -419,7 +428,7 @@ let concat = function
   | []   -> create 0
   | [cs] -> cs
   | css  ->
-      let result = create (lenv css) in
+      let result = create (sum_lengths ~caller:"Cstruct.concat" css) in
       let aux off cs =
         let n = len cs in
         blit cs 0 result off n ;
