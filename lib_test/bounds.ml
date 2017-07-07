@@ -328,6 +328,24 @@ let test_view_bounds_too_small_get_le64 () =
   with
     Invalid_argument _ -> ()
 
+let test_lenv_overflow () =
+  if Sys.word_size = 32 then
+    let b = Cstruct.create max_int and c = Cstruct.create 3 in
+    try
+      let _ = Cstruct.lenv [b; b; c] in
+      failwith "test_lenv_overflow"
+    with
+      Invalid_argument _ -> ()
+
+let test_copyv_overflow () =
+  if Sys.word_size = 32 then
+    let b = Cstruct.create max_int and c = Cstruct.create 3 in
+    try
+      let _ = Cstruct.copyv [b; b; c] in
+      failwith "test_copyv_overflow"
+    with
+      Invalid_argument _ -> ()
+
 (* Steamroll over a buffer and a contained subview, checking that only the
  * contents of the subview is visible. *)
 let test_subview_containment_get_char,
@@ -438,6 +456,8 @@ let _ =
     "test_view_bounds_too_small_get_le16"  >:: test_view_bounds_too_small_get_le16;
     "test_view_bounds_too_small_get_le32"  >:: test_view_bounds_too_small_get_le32;
     "test_view_bounds_too_small_get_le64"  >:: test_view_bounds_too_small_get_le64;
+    "test_lenv_overflow" >:: test_lenv_overflow;
+    "test_copyv_overflow" >:: test_copyv_overflow;
     "test_subview_containment_get_char" >:: test_subview_containment_get_char;
     "test_subview_containment_get_8"    >:: test_subview_containment_get_8;
     "test_subview_containment_get_be16" >:: test_subview_containment_get_be16;
