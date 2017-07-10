@@ -7,16 +7,19 @@
 
 (alias
  ((name   runtest)
+  (package ppx_cstruct)
   (deps   (pcap.exe))
   (action (run ${<}))))
 
 (alias
  ((name   runtest)
+  (package ppx_cstruct)
   (deps   (basic.exe))
   (action (run ${<}))))
 
 (alias
  ((name   runtest)
+  (package ppx_cstruct)
   (deps   (enum.exe))
   (action (run ${<}))))
 
