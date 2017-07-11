@@ -449,11 +449,14 @@ end
 (** {2 List of buffers} *)
 
 val lenv: t list -> int
-(** [lenv cstrs] is the combined length of all cstructs in [cstrs]. *)
+(** [lenv cstrs] is the combined length of all cstructs in [cstrs].
+    @raise Invalid_argument if computing the sum overflows. *)
 
 val copyv: t list -> string
 (** [copyv cstrs] is the string representation of the concatenation of
-    all cstructs in [cstrs]. *)
+    all cstructs in [cstrs].
+    @raise Invalid_argument if the length of the result would
+    exceed [Sys.max_string_length]. *)
 
 val fillv: src:t list -> dst:t -> int * t list
 (** [fillv ~src ~dst] copies from [src] to [dst] until [src] is exhausted or [dst] is full.
