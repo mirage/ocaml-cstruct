@@ -7,5 +7,6 @@
 
 (alias
  ((name   runtest)
+  (package ppx_cstruct)
   (deps   (ppx_cstruct_and_sexp.exe))
   (action (run ${<}))))
