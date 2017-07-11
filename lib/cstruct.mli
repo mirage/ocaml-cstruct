@@ -245,7 +245,7 @@ val check_alignment : t -> int -> bool
     [false] otherwise.
     Typical uses are to check a buffer is aligned to a page or disk sector
     boundary.
-    [alignment] must a positive integer or else [Invalid_argument] is raised. *)
+    @raise Invalid_argument if [alignment] is not a positive integer. *)
 
 val get_char: t -> int -> char
 (** [get_char t off] returns the character contained in the cstruct
@@ -346,7 +346,8 @@ val split: ?start:int -> t -> int -> t * t
 (** [split ~start cstr len] is a tuple containing the cstruct
     extracted from [cstr] at offset [start] (default: 0) of length
     [len] as first element, and the rest of [cstr] as second
-    element. *)
+    element.
+    @raise Invalid_argument if the offset exceeds the cstruct length *)
 
 val to_string: t -> string
 (** [to_string t] will allocate a fresh OCaml [string] and copy the
@@ -460,8 +461,8 @@ val copyv: t list -> string
 
 val fillv: src:t list -> dst:t -> int * t list
 (** [fillv ~src ~dst] copies from [src] to [dst] until [src] is exhausted or [dst] is full.
- * Returns the number of bytes copied and the remaining data from [src], if any.
- * This is useful if you want buffer data into fixed-sized chunks. *)
+    Returns the number of bytes copied and the remaining data from [src], if any.
+    This is useful if you want buffer data into fixed-sized chunks. *)
 
 (** {2 Iterations} *)
 
