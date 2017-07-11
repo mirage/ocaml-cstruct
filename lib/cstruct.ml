@@ -85,7 +85,7 @@ let of_bigarray ?(off=0) ?len buffer =
     match len with
     | None     -> dim - off
     | Some len -> len in
-  if off < 0 || len < 0 || off + len > dim then err_of_bigarray off len
+  if off < 0 || len < 0 || off + len < 0 || off + len > dim then err_of_bigarray off len
   else { buffer; off; len }
 
 let to_bigarray buffer =
@@ -96,7 +96,7 @@ let create_unsafe len =
   { buffer ; len ; off = 0 }
 
 let check_bounds t len =
-  Bigarray.Array1.dim t.buffer >= len
+  len >= 0 && Bigarray.Array1.dim t.buffer >= len
 
 external check_alignment_bigstring : buffer -> int -> int -> bool = "caml_check_alignment_bigstring"
 
