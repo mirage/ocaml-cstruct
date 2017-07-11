@@ -222,6 +222,14 @@ let test_blit_dst_offset_too_small () =
     failwith "test_blit_dst_offset_too_small"
   with Invalid_argument _ -> ()
 
+let test_blit_dst_offset_negative () =
+  let x = Cstruct.create 1 in
+  let y = Cstruct.create 1 in
+  try
+    Cstruct.blit x 0 y (-1) 1;
+    failwith "test_blit_dst_offset_negative"
+  with Invalid_argument _ -> ()
+
 let test_blit_len_too_big () =
   let x = Cstruct.create 1 in
   let y = Cstruct.create 2 in
@@ -444,6 +452,7 @@ let _ =
     "test blit offset too small" >:: test_blit_offset_too_small;
     "test blit dst offset too big" >:: test_blit_dst_offset_too_big;
     "test blit dst offset too small" >:: test_blit_dst_offset_too_small;
+    "test blit dst offset negative" >:: test_blit_dst_offset_negative;
     "test blit len too big" >:: test_blit_len_too_big;
     "test blit len too big2" >:: test_blit_len_too_big2;
     "test blit len too small" >:: test_blit_len_too_small;

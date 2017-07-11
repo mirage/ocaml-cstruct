@@ -169,7 +169,7 @@ let copy src srcoff len =
 let blit src srcoff dst dstoff len =
   if len < 0 || srcoff < 0 || src.len - srcoff < len then
     err_blit_src src dst srcoff len
-  else if dst.len - dstoff < len then
+  else if dstoff < 0 || dst.len - dstoff < len then
     err_blit_dst src dst dstoff len
   else
     unsafe_blit_bigstring_to_bigstring src.buffer (src.off+srcoff) dst.buffer
