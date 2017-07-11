@@ -85,7 +85,7 @@ let of_bigarray ?(off=0) ?len buffer =
     match len with
     | None     -> dim - off
     | Some len -> len in
-  if off < 0 || len < 0 || off + len > dim then err_of_bigarray off len
+  if off < 0 || len < 0 || off + len < 0 || off + len > dim then err_of_bigarray off len
   else { buffer; off; len }
 
 let to_bigarray buffer =
@@ -96,7 +96,7 @@ let create_unsafe len =
   { buffer ; len ; off = 0 }
 
 let check_bounds t len =
-  Bigarray.Array1.dim t.buffer >= len
+  len >= 0 && Bigarray.Array1.dim t.buffer >= len
 
 external check_alignment_bigstring : buffer -> int -> int -> bool = "caml_check_alignment_bigstring"
 
@@ -169,7 +169,7 @@ let copy src srcoff len =
 let blit src srcoff dst dstoff len =
   if len < 0 || srcoff < 0 || src.len - srcoff < len then
     err_blit_src src dst srcoff len
-  else if dst.len - dstoff < len then
+  else if dstoff < 0 || dst.len - dstoff < len then
     err_blit_dst src dst dstoff len
   else
     unsafe_blit_bigstring_to_bigstring src.buffer (src.off+srcoff) dst.buffer
@@ -296,13 +296,22 @@ end
 let len t =
   t.len
 
-let lenv = function
-  | []  -> 0
-  | [t] -> len t
-  | ts  -> List.fold_left (fun a b -> len b + a) 0 ts
+(** [sum_lengths ~caller acc l] is [acc] plus the sum of the lengths
+    of the elements of [l].  Raises [Invalid_argument caller] if 
+    arithmetic overflows. *)
+let rec sum_lengths_aux ~caller acc = function
+  | [] -> acc
+  | h :: t -> 
+     let sum = len h + acc in
+     if sum < acc then invalid_arg caller
+     else sum_lengths_aux ~caller sum t
+
+let sum_lengths ~caller l = sum_lengths_aux ~caller 0 l
+
+let lenv l = sum_lengths ~caller:"Cstruct.lenv" l
 
 let copyv ts =
-  let sz = lenv ts in
+  let sz = sum_lengths ~caller:"Cstruct.copyv" ts in
   let dst = Bytes.create sz in
   let _ = List.fold_left
     (fun off src ->
@@ -419,7 +428,7 @@ let concat = function
   | []   -> create_unsafe 0
   | [cs] -> cs
   | css  ->
-      let result = create_unsafe (lenv css) in
+      let result = create_unsafe (sum_lengths ~caller:"Cstruct.concat" css) in
       let aux off cs =
         let n = len cs in
         blit cs 0 result off n ;

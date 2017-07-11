@@ -1,3 +1,15 @@
+v3.1.0 2017-07-11
+-----------------
+
+- Fix arithmetic overflow in `Cstruct.lenv` and `copyv` (#159 by @yallop)
+- Reject negative destination offsets in `blit` (#160 by @yallop)
+- Add AFL fuzz tests using Crowbar, which independently discovered
+  #160 and also an overflow in `of_bigarray` and `sub`, now bith
+  fixed (#164 by @talex5)
+- Improve performance of several allocation functions by eliminating an
+  unnecessary buffer zero step (#158 by @hannesm)
+- Bump the required minimum OCaml version up to 4.03.0.
+
 v3.0.2 2017-06-14
 -----------------
 
