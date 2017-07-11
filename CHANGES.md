@@ -8,7 +8,9 @@ v3.1.0 2017-07-11
   fixed (#164 by @talex5)
 - Improve performance of several allocation functions by eliminating an
   unnecessary buffer zero step (#158 by @hannesm)
-- Bump the required minimum OCaml version up to 4.03.0.
+- Compile the source tree with stricter flags, including dead variable
+  detection and deprecation warnings (#157 by @samoht)
+- Bump the required minimum OCaml version up to 4.03.0 (due to #157).
 
 v3.0.2 2017-06-14
 -----------------

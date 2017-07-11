@@ -1,7 +1,7 @@
 .PHONY: all clean fuzz build-fuzz
 
 all:
-	jbuilder build
+	jbuilder build @install --dev
 
 clean:
 	rm -rf _build *.install
