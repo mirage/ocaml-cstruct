@@ -347,7 +347,8 @@ val split: ?start:int -> t -> int -> t * t
     extracted from [cstr] at offset [start] (default: 0) of length
     [len] as first element, and the rest of [cstr] as second
     element.
-    @raise Invalid_argument if the offset exceeds the cstruct length *)
+    @raise Invalid_argument if [start] exceeds the cstruct length,
+    or if there is a bounds violation of the cstruct via [len+start]. *)
 
 val to_string: t -> string
 (** [to_string t] will allocate a fresh OCaml [string] and copy the
