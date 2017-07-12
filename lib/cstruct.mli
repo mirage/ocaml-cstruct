@@ -236,8 +236,8 @@ val byte_to_int : byte -> int
 (** Convert a byte to an integer *)
 
 val check_bounds : t -> int -> bool
-(** [check_bounds cstr len] is [true] if [cstr.buffer]'s size is
-    greater or equal than [len], [false] otherwise. *)
+(** [check_bounds cstr len] is [true] if [len] is a non-negative integer and
+    [cstr.buffer]'s size is greater or equal than [len] [false] otherwise.*)
 
 val check_alignment : t -> int -> bool
 (** [check_alignment cstr alignment] is [true] if the first byte stored
