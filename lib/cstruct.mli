@@ -236,8 +236,8 @@ val byte_to_int : byte -> int
 (** Convert a byte to an integer *)
 
 val check_bounds : t -> int -> bool
-(** [check_bounds cstr len] is [true] if [cstr.buffer]'s size is
-    greater or equal than [len], [false] otherwise. *)
+(** [check_bounds cstr len] is [true] if [len] is a non-negative integer and
+    [cstr.buffer]'s size is greater or equal than [len] [false] otherwise.*)
 
 val check_alignment : t -> int -> bool
 (** [check_alignment cstr alignment] is [true] if the first byte stored
@@ -347,7 +347,8 @@ val split: ?start:int -> t -> int -> t * t
     extracted from [cstr] at offset [start] (default: 0) of length
     [len] as first element, and the rest of [cstr] as second
     element.
-    @raise Invalid_argument if the offset exceeds the cstruct length *)
+    @raise Invalid_argument if [start] exceeds the cstruct length,
+    or if there is a bounds violation of the cstruct via [len+start]. *)
 
 val to_string: t -> string
 (** [to_string t] will allocate a fresh OCaml [string] and copy the

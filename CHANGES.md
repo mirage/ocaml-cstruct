@@ -1,4 +1,4 @@
-v3.1.0 2017-07-11
+v3.1.0 2017-07-12
 -----------------
 
 - Fix arithmetic overflow in `Cstruct.lenv` and `copyv` (#159 by @yallop)
