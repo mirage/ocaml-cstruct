@@ -122,6 +122,9 @@ let check_alignment_zero () =
   with
     Invalid_argument _ -> ()
 
+let check_alignment_large () =
+  assert_equal (Cstruct.(check_alignment (create 1) 4294967296)) false
+
 let _ =
   let suite =
     "misc tests" >::: [
@@ -142,6 +145,7 @@ let _ =
         "aligned to 4096" >:: check_alignment 4096
       ; "aligned to 512"  >:: check_alignment 512
       ; "aligned to 0"  >:: check_alignment_zero
+      ; "aligned to large"  >:: check_alignment_large
       ]
     ]
   in
