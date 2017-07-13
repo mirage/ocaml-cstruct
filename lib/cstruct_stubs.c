@@ -75,6 +75,6 @@ CAMLprim value
 caml_check_alignment_bigstring(value val_buf, value val_ofs, value val_alignment)
 {
   uint64_t address = (uint64_t) (Caml_ba_data_val(val_buf) + Long_val(val_ofs));
-  int alignment = Int_val(val_alignment);
+  uintnat alignment = Unsigned_long_val(val_alignment);
   return Val_bool(address % alignment == 0);
 }
