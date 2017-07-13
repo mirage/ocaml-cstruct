@@ -123,7 +123,7 @@ let check_alignment_zero () =
     Invalid_argument _ -> ()
 
 let check_alignment_large () =
-  assert_equal (Cstruct.(check_alignment (create 1) 4294967296)) false
+  assert_equal (Cstruct.(check_alignment (create 1) (Int64.to_int 4294967296L))) false
 
 let _ =
   let suite =
