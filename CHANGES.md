@@ -1,3 +1,11 @@
+v3.1.1 2017-07-13
+-----------------
+
+- `check_alignment` now treats a large alignment as an unsigned value
+  and so doesnt raise a signal (#171 by @yallop)
+- Improve Windows support by avoiding `void *` pointer arithmetic and
+  have more portable headers in the C stubs (#170 by @fdopen)
+
 v3.1.0 2017-07-12
 -----------------
 
