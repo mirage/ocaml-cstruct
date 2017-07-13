@@ -15,9 +15,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <sys/param.h>
-#include <stdlib.h>
-#include <errno.h>
 #include <string.h>
 #include <stdint.h>
 
