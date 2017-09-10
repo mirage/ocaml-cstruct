@@ -374,7 +374,10 @@ let hexdump_pp fmt t =
   Format.pp_open_box fmt 0 ;
   for i = 0 to len t - 1 do
     Format.fprintf fmt "%.2x@ " (Char.code (Bigarray.Array1.get t.buffer (t.off+i)));
-    if i mod 16 = 15 then Format.pp_force_newline fmt ();
+    match i mod 16 with
+    | 15 -> Format.pp_force_newline fmt ()
+    |  7 -> Format.pp_print_space fmt ()
+    |  _ -> ()
   done ;
   Format.pp_close_box fmt ()
 
