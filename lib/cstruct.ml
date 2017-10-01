@@ -223,74 +223,82 @@ let create len =
 
 let set_uint8 t i c =
   if i >= t.len || i < 0 then err_invalid_bounds "set_uint8" t i 1
-  else EndianBigstring.BigEndian.set_int8 t.buffer (t.off+i) c
+  else Bigarray.Array1.set t.buffer (t.off+i) (Char.unsafe_chr c)
 
 let set_char t i c =
   if i >= t.len || i < 0 then err_invalid_bounds "set_char" t i 1
-  else EndianBigstring.BigEndian.set_char t.buffer (t.off+i) c
+  else Bigarray.Array1.set t.buffer (t.off+i) c
 
 let get_uint8 t i =
   if i >= t.len || i < 0 then err_invalid_bounds "get_uint8" t i 1
-  else EndianBigstring.BigEndian.get_uint8 t.buffer (t.off+i)
+  else Char.code (Bigarray.Array1.get t.buffer (t.off+i))
 
 let get_char t i =
   if i >= t.len || i < 0 then err_invalid_bounds "get_char" t i 1
-  else EndianBigstring.BigEndian.get_char t.buffer (t.off+i)
+  else Bigarray.Array1.get t.buffer (t.off+i)
+
+
+external ba_set_int16 : buffer -> int -> uint16 -> unit = "caml_ba_uint8_set16"
+external ba_set_int32 : buffer -> int -> uint32 -> unit = "caml_ba_uint8_set32"
+external ba_set_int64 : buffer -> int -> uint64 -> unit = "caml_ba_uint8_set64"
+external ba_get_int16 : buffer -> int -> uint16 = "caml_ba_uint8_get16"
+external ba_get_int32 : buffer -> int -> uint32 = "caml_ba_uint8_get32"
+external ba_get_int64 : buffer -> int -> uint64 = "caml_ba_uint8_get64"
+
+external swap16 : int -> int = "%bswap16"
+external swap32 : int32 -> int32 = "%bswap_int32"
+external swap64 : int64 -> int64 = "%bswap_int64"
 
 module BE = struct
-  include EndianBigstring.BigEndian
-
   let set_uint16 t i c =
     if (i+2) > t.len || i < 0 then err_invalid_bounds "BE.set_uint16" t i 2
-    else set_int16 t.buffer (t.off+i) c
+    else ba_set_int16 t.buffer (t.off+i) (swap16 c)
 
   let set_uint32 t i c =
     if (i+4) > t.len || i < 0 then err_invalid_bounds "BE.set_uint32" t i 4
-    else set_int32 t.buffer (t.off+i) c
+    else ba_set_int32 t.buffer (t.off+i) (swap32 c)
 
   let set_uint64 t i c =
     if (i+8) > t.len || i < 0 then err_invalid_bounds "BE.set_uint64" t i 8
-    else set_int64 t.buffer (t.off+i) c
+    else ba_set_int64 t.buffer (t.off+i) (swap64 c)
 
   let get_uint16 t i =
     if (i+2) > t.len || i < 0 then err_invalid_bounds "BE.get_uint16" t i 2
-    else get_uint16 t.buffer (t.off+i)
+    else swap16 (ba_get_int16 t.buffer (t.off+i))
 
   let get_uint32 t i =
     if (i+4) > t.len || i < 0 then err_invalid_bounds "BE.get_uint32" t i 4
-    else get_int32 t.buffer (t.off+i)
+    else swap32 (ba_get_int32 t.buffer (t.off+i))
 
   let get_uint64 t i =
     if (i+8) > t.len || i < 0 then err_invalid_bounds "BE.uint64" t i 8
-    else get_int64 t.buffer (t.off+i)
+    else swap64 (ba_get_int64 t.buffer (t.off+i))
 end
 
 module LE = struct
-  include EndianBigstring.LittleEndian
-
   let set_uint16 t i c =
     if (i+2) > t.len || i < 0 then err_invalid_bounds "LE.set_uint16" t i 2
-    else set_int16 t.buffer (t.off+i) c
+    else ba_set_int16 t.buffer (t.off+i) c
 
   let set_uint32 t i c =
     if (i+4) > t.len || i < 0 then err_invalid_bounds "LE.set_uint32" t i 4
-    else set_int32 t.buffer (t.off+i) c
+    else ba_set_int32 t.buffer (t.off+i) c
 
   let set_uint64 t i c =
     if (i+8) > t.len || i < 0 then err_invalid_bounds "LE.set_uint64" t i 8
-    else set_int64 t.buffer (t.off+i) c
+    else ba_set_int64 t.buffer (t.off+i) c
 
   let get_uint16 t i =
     if (i+2) > t.len || i < 0 then err_invalid_bounds "LE.get_uint16" t i 2
-    else get_uint16 t.buffer (t.off+i)
+    else ba_get_int16 t.buffer (t.off+i)
 
   let get_uint32 t i =
     if (i+4) > t.len || i < 0 then err_invalid_bounds "LE.get_uint32" t i 4
-    else get_int32 t.buffer (t.off+i)
+    else ba_get_int32 t.buffer (t.off+i)
 
   let get_uint64 t i =
     if (i+8) > t.len || i < 0 then err_invalid_bounds "LE.get_uint64" t i 8
-    else get_int64 t.buffer (t.off+i)
+    else ba_get_int64 t.buffer (t.off+i)
 end
 
 let len t =

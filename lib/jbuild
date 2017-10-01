@@ -2,7 +2,7 @@
   ((name cstruct)
    (public_name cstruct)
    (modules (cstruct))
-   (libraries (sexplib ocplib-endian ocplib-endian.bigstring))
+   (libraries (sexplib))
    (c_names (cstruct_stubs))
 ))
 (jbuild_version 1)
