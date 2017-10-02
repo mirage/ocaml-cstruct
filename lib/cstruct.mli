@@ -221,6 +221,15 @@ val of_bytes: ?allocator:(int -> t) -> Bytes.t -> t
     with the underlying buffer allocated by [alloc]. If [allocator] is not
     provided, [create] is used. *)
 
+val of_hex: string -> t
+(** [of_hex str] is the cstruct [cs].  Every pair of hex-encoded characters in
+    [str] are converted to one byte in [cs].  Whitespaces (space, newline, tab,
+    carriage return) in [str] are skipped.  The resulting cstruct is exactly
+    half the size of the non-skipped characters of [str].
+
+    @raise Invalid_argument if the input string contains invalid characters or
+    has an odd numbers of non-whitespace characters. *)
+
 (** {2 Comparison } *)
 
 val equal : t -> t -> bool
