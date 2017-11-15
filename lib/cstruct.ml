@@ -125,7 +125,8 @@ let debug t =
 
 let sub t off0 len =
   let off = t.off + off0 in
-  if off0 < 0 || len < 0 || not (check_bounds t (off+len)) then err_sub t off0 len
+  let offlen = off + len in
+  if off < off0 || offlen < off || off0 < 0 || len < 0 || not (check_bounds t (offlen)) then err_sub t off0 len
   else { t with off; len }
 
 let shift t amount =
