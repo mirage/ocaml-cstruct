@@ -346,7 +346,8 @@ let to_bytes t =
   b
 
 let to_string t =
-  (* The following call is safe, since b is not visible elsewhere. *)
+  (* The following call is safe, since this is the only reference to the
+     freshly-created value built by [to_bytes t]. *)
   Bytes.unsafe_to_string (to_bytes t)
 
 let of_string ?allocator buf =
