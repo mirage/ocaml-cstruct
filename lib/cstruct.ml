@@ -98,6 +98,8 @@ let create_unsafe len =
 let check_bounds t len =
   len >= 0 && Bigarray.Array1.dim t.buffer >= len
 
+let empty = create_unsafe 0
+
 external check_alignment_bigstring : buffer -> int -> int -> bool = "caml_check_alignment_bigstring"
 
 let check_alignment t alignment =
