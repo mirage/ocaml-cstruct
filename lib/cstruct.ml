@@ -339,12 +339,15 @@ let fillv ~src ~dst =
   aux dst 0 src
 
 
-let to_string t =
+let to_bytes t =
   let sz = len t in
   let b = Bytes.create sz in
   unsafe_blit_bigstring_to_bytes t.buffer t.off b 0 sz;
+  b
+
+let to_string t =
   (* The following call is safe, since b is not visible elsewhere. *)
-  Bytes.unsafe_to_string b
+  Bytes.unsafe_to_string (to_bytes t)
 
 let of_string ?allocator buf =
   let buflen = String.length buf in
