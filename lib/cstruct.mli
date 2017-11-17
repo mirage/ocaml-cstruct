@@ -219,7 +219,7 @@ val of_string: ?allocator:(int -> t) -> string -> t
     with the underlying buffer allocated by [alloc]. If [allocator] is not
     provided, [create] is used. *)
 
-val of_bytes: ?allocator:(int -> t) -> Bytes.t -> t
+val of_bytes: ?allocator:(int -> t) -> bytes -> t
 (** [of_bytes ~allocator byt] is the cstruct representation of [byt],
     with the underlying buffer allocated by [alloc]. If [allocator] is not
     provided, [create] is used. *)
@@ -313,7 +313,7 @@ val blit_from_string: string -> int -> t -> int -> int -> unit
     valid substring of [src], or if [dstoff] and [len] do not
     designate a valid segment of [dst]. *)
 
-val blit_from_bytes: Bytes.t -> int -> t -> int -> int -> unit
+val blit_from_bytes: bytes -> int -> t -> int -> int -> unit
 (** [blit_from_bytes src srcoff dst dstoff len] copies [len]
     characters from bytes [src], starting at index [srcoff], to
     cstruct [dst], starting at index [dstoff].
@@ -322,7 +322,7 @@ val blit_from_bytes: Bytes.t -> int -> t -> int -> int -> unit
     valid subsequence of [src], or if [dstoff] and [len] do not
     designate a valid segment of [dst]. *)
 
-val blit_to_bytes: t -> int -> Bytes.t -> int -> int -> unit
+val blit_to_bytes: t -> int -> bytes -> int -> int -> unit
 (** [blit_to_string src srcoff dst dstoff len] copies [len] characters
     from cstruct [src], starting at index [srcoff], to string [dst],
     starting at index [dstoff].
@@ -331,7 +331,7 @@ val blit_to_bytes: t -> int -> Bytes.t -> int -> int -> unit
     valid segment of [src], or if [dstoff] and [len] do not designate
     a valid substring of [dst]. *)
 
-val blit_to_string: t -> int -> Bytes.t -> int -> int -> unit
+val blit_to_string: t -> int -> bytes -> int -> int -> unit
 (** [blit_to_string] is a deprecated alias of {!blit_to_bytes}. 
 
     @deprecated This is a deprecated alias of {!blit_to_bytes}. *)
