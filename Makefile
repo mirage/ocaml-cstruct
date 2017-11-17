@@ -29,3 +29,6 @@ pkg-%:
 PKGS=$(basename $(wildcard *.opam))
 opam-pkg:
 	$(MAKE) $(PKGS:%=pkg-%)
+
+all-supported-ocaml-versions:
+	jbuilder build --dev @install @runtest --workspace jbuild-workspace.dev
