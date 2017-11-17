@@ -377,6 +377,39 @@ let of_bytes ?allocator buf =
     blit_from_bytes buf 0 c 0 buflen;
     set_len c buflen
 
+let of_hex str =
+  let string_fold ~f ~z str =
+    let st = ref z in
+    ( String.iter (fun c -> st := f !st c) str  ; !st )
+  in
+  let hexdigit p = function
+    | 'a' .. 'f' as x -> int_of_char x - 87
+    | 'A' .. 'F' as x -> int_of_char x - 55
+    | '0' .. '9' as x -> int_of_char x - 48
+    | x ->
+      Format.ksprintf invalid_arg "of_hex: invalid character at pos %d: %C" p x
+  in
+  let whitespace = function
+    | ' ' | '\t' | '\r' | '\n' -> true
+    | _ -> false
+  in
+  match
+    string_fold
+      ~f:(fun (cs, i, p, acc) ->
+          let p' = succ p in
+          function
+          | char when whitespace char -> (cs, i, p', acc)
+          | char ->
+            match acc, hexdigit p char with
+            | (None  , x) -> (cs, i, p', Some (x lsl 4))
+            | (Some y, x) -> set_uint8 cs i (x lor y) ; (cs, succ i, p', None))
+      ~z:(create_unsafe (String.length str lsr 1), 0, 0, None)
+      str
+  with
+  | _ , _, _, Some _ ->
+    Format.ksprintf invalid_arg "of_hex: odd numbers of characters"
+  | cs, i, _, _ -> sub cs 0 i
+
 let hexdump_pp fmt t =
   Format.pp_open_box fmt 0 ;
   for i = 0 to len t - 1 do
