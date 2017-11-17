@@ -357,6 +357,10 @@ val to_string: t -> string
 (** [to_string t] will allocate a fresh OCaml [string] and copy the
     contents of the cstruct into it, and return that string copy. *)
 
+val to_bytes: t -> bytes
+(** [to_bytes t] will allocate a fresh OCaml [bytes] and copy the
+    contents of the cstruct into it, and return that byte copy. *)
+
 (** {2 Debugging } *)
 
 val hexdump: t -> unit
