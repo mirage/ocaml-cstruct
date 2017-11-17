@@ -1,3 +1,15 @@
+v3.2.0 2017-11-17
+-----------------
+
+- wrap `hexdump_pp` output in a box (#175 by @cfcs)
+- remove dependency on `ocplib-endian` (#177 by @hannesm)
+- add `of_hex: string -> t` (#179 by @hannesm and @pqwy)
+- add `to_bytes: t -> Bytes.t` (#183 by @hannesm)
+- add `empty: t` (#184 by @hannesm)
+- sub: check the bounds more carefully for overflow (#185 by @hannesm)
+- cstruct-unix: fix the build on OCaml 4.06.0 (#187 by @djs55)
+- travis: test OCaml 4.04.2 and 4.06.0 (#186 by @hannesm)
+
 v3.1.1 2017-07-13
 -----------------
 
