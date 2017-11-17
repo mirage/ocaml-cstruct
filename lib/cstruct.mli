@@ -186,6 +186,9 @@ type uint64 = int64
 
 (** {2 Creation and conversion} *)
 
+val empty : t
+(** [empty] is the cstruct of length 0. *)
+
 val of_bigarray: ?off:int -> ?len:int -> buffer -> t
 (** [of_bigarray ~off ~len b] is the cstruct contained in [b] starting
     at [off], of length [len]. *)
