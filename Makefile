@@ -4,7 +4,7 @@ all:
 	jbuilder build @install --dev
 
 clean:
-	rm -rf _build *.install
+	jbuilder clean
 
 test:
 	jbuilder runtest --dev
