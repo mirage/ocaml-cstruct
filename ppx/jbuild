@@ -4,6 +4,7 @@
  ((name ppx_cstruct)
   (public_name ppx_cstruct)
   (kind ppx_rewriter)
+  (wrapped false)
   (ppx_runtime_libraries (cstruct))
   (preprocess (pps (ppx_tools_versioned.metaquot_404)))
   (libraries
