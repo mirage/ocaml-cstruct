@@ -1,3 +1,9 @@
+v3.2.1 2017-12-13
+-----------------
+
+- improve performance by using primitives instead of C stubs.  the performance
+  regression was introduced in #177 in 3.2.0 (#195 by @pqwy)
+
 v3.2.0 2017-11-17
 -----------------
 
