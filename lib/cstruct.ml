@@ -241,12 +241,12 @@ let get_char t i =
   else Bigarray.Array1.get t.buffer (t.off+i)
 
 
-external ba_set_int16 : buffer -> int -> uint16 -> unit = "caml_ba_uint8_set16"
-external ba_set_int32 : buffer -> int -> uint32 -> unit = "caml_ba_uint8_set32"
-external ba_set_int64 : buffer -> int -> uint64 -> unit = "caml_ba_uint8_set64"
-external ba_get_int16 : buffer -> int -> uint16 = "caml_ba_uint8_get16"
-external ba_get_int32 : buffer -> int -> uint32 = "caml_ba_uint8_get32"
-external ba_get_int64 : buffer -> int -> uint64 = "caml_ba_uint8_get64"
+external ba_set_int16 : buffer -> int -> uint16 -> unit = "%caml_bigstring_set16"
+external ba_set_int32 : buffer -> int -> uint32 -> unit = "%caml_bigstring_set32"
+external ba_set_int64 : buffer -> int -> uint64 -> unit = "%caml_bigstring_set64"
+external ba_get_int16 : buffer -> int -> uint16 = "%caml_bigstring_get16"
+external ba_get_int32 : buffer -> int -> uint32 = "%caml_bigstring_get32"
+external ba_get_int64 : buffer -> int -> uint64 = "%caml_bigstring_get64"
 
 external swap16 : int -> int = "%bswap16"
 external swap32 : int32 -> int32 = "%bswap_int32"
@@ -304,11 +304,11 @@ let len t =
   t.len
 
 (** [sum_lengths ~caller acc l] is [acc] plus the sum of the lengths
-    of the elements of [l].  Raises [Invalid_argument caller] if 
+    of the elements of [l].  Raises [Invalid_argument caller] if
     arithmetic overflows. *)
 let rec sum_lengths_aux ~caller acc = function
   | [] -> acc
-  | h :: t -> 
+  | h :: t ->
      let sum = len h + acc in
      if sum < acc then invalid_arg caller
      else sum_lengths_aux ~caller sum t
