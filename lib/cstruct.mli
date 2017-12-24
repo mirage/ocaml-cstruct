@@ -464,6 +464,44 @@ module LE : sig
 
 end
 
+module NE : sig
+
+  (** Get/set native-endian integers of various sizes. The second
+      argument of those functions is the position relative to the
+      current offset of the cstruct. *)
+
+  val get_uint16: t -> int -> uint16
+  (** [get_uint16 cstr off] is the 16 bit long native-endian unsigned
+      integer stored in [cstr] at offset [off].
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val get_uint32: t -> int -> uint32
+  (** [get_uint32 cstr off] is the 32 bit long native-endian unsigned
+      integer stored in [cstr] at offset [off].
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val get_uint64: t -> int -> uint64
+  (** [get_uint64 cstr off] is the 64 bit long native-endian unsigned
+      integer stored in [cstr] at offset [off].
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val set_uint16: t -> int -> uint16 -> unit
+  (** [set_uint16 cstr off i] writes the 16 bit long native-endian
+      unsigned integer [i] at offset [off] of [cstr].
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val set_uint32: t -> int -> uint32 -> unit
+  (** [set_uint32 cstr off i] writes the 32 bit long native-endian
+      unsigned integer [i] at offset [off] of [cstr].
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val set_uint64: t -> int -> uint64 -> unit
+  (** [set_uint64 cstr off i] writes the 64 bit long native-endian
+      unsigned integer [i] at offset [off] of [cstr].
+      @raise Invalid_argument if the buffer is too small. *)
+
+end
+
 (** {2 List of buffers} *)
 
 val lenv: t list -> int

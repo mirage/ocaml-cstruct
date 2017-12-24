@@ -300,6 +300,15 @@ module LE = struct
   let get_uint64 t i = get_uint64 Sys.big_endian "LE" t i
 end
 
+module NE = struct
+  let set_uint16 t i c = set_uint16 false "NE" t i c
+  let set_uint32 t i c = set_uint32 false "NE" t i c
+  let set_uint64 t i c = set_uint64 false "NE" t i c
+  let get_uint16 t i = get_uint16 false "NE" t i
+  let get_uint32 t i = get_uint32 false "NE" t i
+  let get_uint64 t i = get_uint64 false "NE" t i
+end
+
 let len t =
   t.len
 
