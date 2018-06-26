@@ -21,7 +21,7 @@ depends: [
   "ounit" {test}
   "ppx_tools_versioned" {>="5.0.1"}
   "ocaml-migrate-parsetree"
-  "ppx_driver"    {test & >= "v0.9.0"}
+  ("ppx_driver"    {test & >= "v0.9.0"} | "ppxlib" { test })
   "ppx_sexp_conv" {test}
   "cstruct-unix"  {test}
 ]
