@@ -214,13 +214,15 @@ val create_unsafe : int -> t
     to leak sensitive information.
 *)
 
-val of_string: ?allocator:(int -> t) -> string -> t
-(** [of_string ~allocator str] is the cstruct representation of [str],
+val of_string: ?allocator:(int -> t) -> ?off:int -> ?len:int -> string -> t
+(** [of_string ~allocator ~off ~len str] is the cstruct representation of [str]
+    slice located at [off] offset and of [len] length,
     with the underlying buffer allocated by [alloc]. If [allocator] is not
     provided, [create] is used. *)
 
-val of_bytes: ?allocator:(int -> t) -> bytes -> t
-(** [of_bytes ~allocator byt] is the cstruct representation of [byt],
+val of_bytes: ?allocator:(int -> t) -> ?off:int -> ?len:int -> bytes -> t
+(** [of_bytes ~allocator byt] is the cstruct representation of [byt]
+    slice located at [off] offset and of [len] length,
     with the underlying buffer allocated by [alloc]. If [allocator] is not
     provided, [create] is used. *)
 

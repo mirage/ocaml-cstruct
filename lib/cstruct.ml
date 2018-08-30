@@ -357,29 +357,26 @@ let to_string t =
      freshly-created value built by [to_bytes t]. *)
   Bytes.unsafe_to_string (to_bytes t)
 
-let of_string ?allocator buf =
-  let buflen = String.length buf in
+let of_data_abstract blitfun lenfun ?allocator ?(off=0) ?len buf =
+  let buflen =
+    match len with
+    | None -> lenfun buf
+    | Some len -> len in
   match allocator with
-  |None ->
+  | None ->
     let c = create_unsafe buflen in
-    blit_from_string buf 0 c 0 buflen;
+    blitfun buf off c 0 buflen;
     c
-  |Some fn ->
+  | Some fn ->
     let c = fn buflen in
-    blit_from_string buf 0 c 0 buflen;
+    blitfun buf off c 0 buflen;
     set_len c buflen
 
-let of_bytes ?allocator buf =
-  let buflen = Bytes.length buf in
-  match allocator with
-  |None ->
-    let c = create_unsafe buflen in
-    blit_from_bytes buf 0 c 0 buflen;
-    c
-  |Some fn ->
-    let c = fn buflen in
-    blit_from_bytes buf 0 c 0 buflen;
-    set_len c buflen
+let of_string ?allocator ?off ?len buf =
+  of_data_abstract blit_from_string String.length ?allocator ?off ?len buf
+
+let of_bytes ?allocator ?off ?len buf =
+  of_data_abstract blit_from_bytes Bytes.length ?allocator ?off ?len buf
 
 let of_hex str =
   let string_fold ~f ~z str =
