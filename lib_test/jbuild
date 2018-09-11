@@ -1,7 +1,7 @@
 (jbuild_version 1)
 
 (executables
- ((libraries (cstruct oUnit))
+ ((libraries (cstruct alcotest))
   (names (tests bounds))))
 
 (alias

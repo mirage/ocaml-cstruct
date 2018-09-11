@@ -1,7 +1,7 @@
 (jbuild_version 1)
 
 (executables
- ((libraries (cstruct-unix oUnit))
+ ((libraries (cstruct-unix))
   (preprocess (pps (ppx_cstruct)))
   (names (pcap basic enum))))
 
@@ -22,4 +22,3 @@
   (package ppx_cstruct)
   (deps   (enum.exe))
   (action (run ${<}))))
-

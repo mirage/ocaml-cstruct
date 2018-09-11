@@ -1,5 +1,3 @@
-open OUnit
-
 let _ = Random.self_init ()
 
 let random_cs ?(len = Random.int 128) () =
@@ -13,11 +11,14 @@ let to_string_as_sexp cs =
 let of_string_as_sexp str =
   Cstruct.t_of_sexp (Sexplib.Sexp.of_string str)
 
-let assert_cs_equal ?msg cs1 cs2 =
-  assert_equal ~cmp:Cstruct.equal ~printer:Cstruct.to_string ?msg cs1 cs2
+let assert_cs_equal ?(msg="cstruct") cs1 cs2 =
+  let cstruct =
+    Alcotest.testable (Fmt.of_to_string Cstruct.to_string) Cstruct.equal
+  in
+  Alcotest.check cstruct msg cs1 cs2
 
-let assert_string_equal ?msg s1 s2 =
-  assert_equal ~printer:(fun s -> s) ?msg s1 s2
+let assert_string_equal ?(msg="string") s1 s2 =
+  Alcotest.(check string) msg s1 s2
 
 let sexp_repr =
   let open Cstruct in
@@ -112,41 +113,45 @@ let check_alignment alignment () =
   for i = 0 to Cstruct.len buf - 1 do
     if Cstruct.(check_alignment (shift buf i) alignment) then incr actual
   done;
-  assert_equal ~printer:string_of_int expected !actual
+  Alcotest.(check int) "alignement" expected !actual
 
 let check_alignment_zero () =
   let buf = Cstruct.create 512 in
   try
-    assert_equal (Cstruct.check_alignment buf 0) false;
-    assert false
+    Alcotest.(check bool) "alignement zero"
+      (Cstruct.check_alignment buf 0)
+      false;
+    Alcotest.fail "alignement zero should raise"
   with
     Invalid_argument _ -> ()
 
 let check_alignment_large () =
-  assert_equal (Cstruct.(check_alignment (create 1) (Int64.to_int 4294967296L))) false
+  Alcotest.(check bool) "alignement large"
+    (Cstruct.(check_alignment (create 1) (Int64.to_int 4294967296L)))
+    false
 
-let _ =
-  let suite =
-    "misc tests" >::: [
-      "fillv">:: fillv;
-      "sexp" >::: [
-        "sexp_of_t" >:: sexp_writer
-      ; "t_of_sexp" >:: sexp_reader
-      ; "sexp invertibility" >:: sexp_invertibility ~n:5000
-      ] ;
-      "concat" >::: [
-        "concat samples" >:: concat_samples
-      ; "concat random"  >:: concat_random ~n:5000
-      ] ;
-      "append" >::: [
-        "append is concat" >:: append_is_concat ~n:5000
-      ] ;
-      "alignment" >::: [
-        "aligned to 4096" >:: check_alignment 4096
-      ; "aligned to 512"  >:: check_alignment 512
-      ; "aligned to 0"  >:: check_alignment_zero
-      ; "aligned to large"  >:: check_alignment_large
-      ]
-    ]
-  in
-  run_test_tt suite
+let suite = [
+  "fillv", [
+    "fillv", `Quick, fillv
+  ];
+  "sexp", [
+    "sexp_of_t"         , `Quick, sexp_writer;
+    "t_of_sexp"         , `Quick, sexp_reader;
+    "sexp invertibility", `Quick, sexp_invertibility ~n:5000;
+  ];
+  "concat", [
+    "concat samples", `Quick, concat_samples;
+    "concat random" , `Quick, concat_random ~n:5000;
+  ];
+  "append", [
+    "append is concat", `Quick, append_is_concat ~n:5000
+  ];
+  "alignment", [
+    "aligned to 4096" , `Quick, check_alignment 4096;
+    "aligned to 512"  , `Quick, check_alignment 512;
+    "aligned to 0"    , `Quick, check_alignment_zero;
+    "aligned to large", `Quick, check_alignment_large;
+  ]
+]
+
+let () = Alcotest.run "cstruct" (("bounds", Bounds.suite) :: suite)
