@@ -118,17 +118,24 @@ let check_alignment alignment () =
 let check_alignment_zero () =
   let buf = Cstruct.create 512 in
   try
-    Alcotest.(check bool) "alignement zero"
-      (Cstruct.check_alignment buf 0)
-      false;
+    let _ = Cstruct.check_alignment buf 0 in
     Alcotest.fail "alignement zero should raise"
   with
     Invalid_argument _ -> ()
 
 let check_alignment_large () =
-  Alcotest.(check bool) "alignement large"
-    (Cstruct.(check_alignment (create 1) (Int64.to_int 4294967296L)))
-    false
+  let check () =
+    Cstruct.check_alignment (Cstruct.create 1) (Int64.to_int 4294967296L)
+  in
+  if Sys.word_size > 32 then
+    let msg =
+      Fmt.strf "alignement large: int-size:%d len=%d"
+        Sys.word_size (Int64.to_int 4294967296L)
+    in
+    Alcotest.(check bool) msg (check ()) false
+  else
+    try let _ = check () in Alcotest.fail "alignement should raise"
+    with Invalid_argument _ -> ()
 
 let suite = [
   "fillv", [
