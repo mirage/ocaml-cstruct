@@ -336,22 +336,26 @@ let test_view_bounds_too_small_get_le64 () =
     Invalid_argument _ -> ()
 
 let test_lenv_overflow () =
-  if Sys.word_size = 32 then
+  if Sys.word_size = 32 then (
+    (* free-up some space *)
+    Gc.major ();
     let b = Cstruct.create max_int and c = Cstruct.create 3 in
     try
       let _ = Cstruct.lenv [b; b; c] in
       failwith "test_lenv_overflow"
     with
-      Invalid_argument _ -> ()
+      Invalid_argument _ -> ())
 
 let test_copyv_overflow () =
-  if Sys.word_size = 32 then
+  if Sys.word_size = 32 then (
+    (* free-up some space *)
+    Gc.major ();
     let b = Cstruct.create max_int and c = Cstruct.create 3 in
     try
       let _ = Cstruct.copyv [b; b; c] in
       failwith "test_copyv_overflow"
     with
-      Invalid_argument _ -> ()
+      Invalid_argument _ -> ())
 
 (* Steamroll over a buffer and a contained subview, checking that only the
  * contents of the subview is visible. *)
