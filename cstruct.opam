@@ -17,6 +17,6 @@ build-test: ["jbuilder" "runtest" "-p" name]
 depends: [
   "jbuilder" {build & >="1.0+beta10"}
   "sexplib"
-  "ounit" {test}
+  "alcotest" {test}
 ]
 available: [ocaml-version >= "4.03.0"]

@@ -18,7 +18,6 @@ build-test: [
 depends: [
   "jbuilder" {build & >="1.0+beta7"}
   "cstruct"
-  "ounit" {test}
   "ppx_tools_versioned" {>="5.0.1"}
   "ocaml-migrate-parsetree"
   ("ppx_driver"    {test & >= "v0.9.0"} | "ppxlib" { test })

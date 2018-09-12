@@ -1,15 +1,11 @@
 (jbuild_version 1)
 
 (executables
- ((libraries (cstruct oUnit))
-  (names (tests bounds))))
+ ((libraries (cstruct alcotest))
+  (names     (tests bounds))))
 
 (alias
  ((name   runtest)
+  (package cstruct)
   (deps   (tests.exe))
-  (action (run ${<}))))
-
-(alias
- ((name   runtest)
-  (deps   (bounds.exe))
-  (action (run ${<}))))
+  (action (run ${<} -e))))

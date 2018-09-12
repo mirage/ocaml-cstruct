@@ -14,7 +14,6 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
-open OUnit
 
 let to_string { Cstruct.buffer; off; len } =
   Printf.sprintf "buffer length = %d; off=%d; len=%d" (Bigarray.Array1.dim buffer) off len
@@ -22,9 +21,9 @@ let to_string { Cstruct.buffer; off; len } =
 (* Check we can create and use an empty cstruct *)
 let test_empty_cstruct () =
   let x = Cstruct.create 0 in
-  assert_equal ~printer:string_of_int 0 (Cstruct.len x);
+  Alcotest.(check int) "empty len" 0 (Cstruct.len x);
   let y = Cstruct.to_string x in
-  assert_equal "" y
+  Alcotest.(check string) "empty" "" y
 
 (* Check that we can't create a cstruct with a negative length *)
 let test_anti_cstruct () =
@@ -38,7 +37,7 @@ let test_anti_cstruct () =
 let test_positive_shift () =
   let x = Cstruct.create 1 in
   let y = Cstruct.shift x 1 in
-  assert_equal ~printer:string_of_int 0 (Cstruct.len y)
+  Alcotest.(check int) "positive shift" 0 (Cstruct.len y)
 
 (* Check that negative shifts are forbidden. *)
 let test_negative_shift () =
@@ -66,11 +65,11 @@ let test_bad_positive_shift () =
 let test_sub () =
   let x = Cstruct.create 100 in
   let y = Cstruct.sub x 10 80 in
-  assert_equal ~printer:string_of_int 10 y.Cstruct.off;
-  assert_equal ~printer:string_of_int 80 y.Cstruct.len;
+  Alcotest.(check int) "sub 1" 10 y.Cstruct.off;
+  Alcotest.(check int) "sub 2" 80 y.Cstruct.len;
   let z = Cstruct.sub y 10 60 in
-  assert_equal ~printer:string_of_int 20 z.Cstruct.off;
-  assert_equal ~printer:string_of_int 60 z.Cstruct.len
+  Alcotest.(check int) "sub 3" 20 z.Cstruct.off;
+  Alcotest.(check int) "sub 4" 60 z.Cstruct.len
 
 let test_negative_sub () =
   let x = Cstruct.create 2 in
@@ -337,22 +336,26 @@ let test_view_bounds_too_small_get_le64 () =
     Invalid_argument _ -> ()
 
 let test_lenv_overflow () =
-  if Sys.word_size = 32 then
+  if Sys.word_size = 32 then (
+    (* free-up some space *)
+    Gc.major ();
     let b = Cstruct.create max_int and c = Cstruct.create 3 in
     try
       let _ = Cstruct.lenv [b; b; c] in
       failwith "test_lenv_overflow"
     with
-      Invalid_argument _ -> ()
+      Invalid_argument _ -> ())
 
 let test_copyv_overflow () =
-  if Sys.word_size = 32 then
+  if Sys.word_size = 32 then (
+    (* free-up some space *)
+    Gc.major ();
     let b = Cstruct.create max_int and c = Cstruct.create 3 in
     try
       let _ = Cstruct.copyv [b; b; c] in
       failwith "test_copyv_overflow"
     with
-      Invalid_argument _ -> ()
+      Invalid_argument _ -> ())
 
 (* Steamroll over a buffer and a contained subview, checking that only the
  * contents of the subview is visible. *)
@@ -423,66 +426,57 @@ let test_subview_containment_set_char,
   test LE.set_uint32 0xffffffffl,
   test LE.set_uint64 0xffffffffffffffffL
 
-let _ =
-  let verbose = ref false in
-  Arg.parse [
-    "-verbose", Arg.Unit (fun _ -> verbose := true), "Run in verbose mode";
-  ] (fun x -> Printf.fprintf stderr "Ignoring argument: %s" x)
-  "Test bounds checks";
-
-  let suite = "bounds" >::: [
-    "test empty cstruct" >:: test_empty_cstruct;
-    "test anti cstruct" >:: test_anti_cstruct;
-    "test positive shift" >:: test_positive_shift;
-    "test negative shift" >:: test_negative_shift;
-    "test bad positive shift" >:: test_bad_positive_shift;
-    "test sub" >:: test_sub;
-    "test negative sub" >:: test_negative_sub;
-    "test sub len too big" >:: test_sub_len_too_big;
-    "test sub len too small" >:: test_sub_len_too_small;
-    "test sub offset too big" >:: test_sub_offset_too_big;
-    "test of_bigarray negative params" >:: test_of_bigarray_negative_params;
-    "test of_bigarray large offset" >:: test_of_bigarray_large_offset;
-    "test of_bigarray large length" >:: test_of_bigarray_large_length;
-    "test set len too big" >:: test_set_len_too_big;
-    "test set len too small" >:: test_set_len_too_small;
-    "test add len too big" >:: test_add_len_too_big;
-    "test add len too small" >:: test_add_len_too_small;
-    "test blit offset too big" >:: test_blit_offset_too_big;
-    "test blit offset too small" >:: test_blit_offset_too_small;
-    "test blit dst offset too big" >:: test_blit_dst_offset_too_big;
-    "test blit dst offset too small" >:: test_blit_dst_offset_too_small;
-    "test blit dst offset negative" >:: test_blit_dst_offset_negative;
-    "test blit len too big" >:: test_blit_len_too_big;
-    "test blit len too big2" >:: test_blit_len_too_big2;
-    "test blit len too small" >:: test_blit_len_too_small;
-    "test view bounds too small" >:: test_view_bounds_too_small;
-    "test_view_bounds_too_small_get_u8"  >:: test_view_bounds_too_small_get_u8;
-    "test_view_bounds_too_small_get_char"  >:: test_view_bounds_too_small_get_char;
-    "test_view_bounds_too_small_get_be16"  >:: test_view_bounds_too_small_get_be16;
-    "test_view_bounds_too_small_get_be32"  >:: test_view_bounds_too_small_get_be32;
-    "test_view_bounds_too_small_get_be64"  >:: test_view_bounds_too_small_get_be64;
-    "test_view_bounds_too_small_get_le16"  >:: test_view_bounds_too_small_get_le16;
-    "test_view_bounds_too_small_get_le32"  >:: test_view_bounds_too_small_get_le32;
-    "test_view_bounds_too_small_get_le64"  >:: test_view_bounds_too_small_get_le64;
-    "test_lenv_overflow" >:: test_lenv_overflow;
-    "test_copyv_overflow" >:: test_copyv_overflow;
-    "test_subview_containment_get_char" >:: test_subview_containment_get_char;
-    "test_subview_containment_get_8"    >:: test_subview_containment_get_8;
-    "test_subview_containment_get_be16" >:: test_subview_containment_get_be16;
-    "test_subview_containment_get_be32" >:: test_subview_containment_get_be32;
-    "test_subview_containment_get_be64" >:: test_subview_containment_get_be64;
-    "test_subview_containment_get_le16" >:: test_subview_containment_get_le16;
-    "test_subview_containment_get_le32" >:: test_subview_containment_get_le32;
-    "test_subview_containment_get_le64" >:: test_subview_containment_get_le64;
-    "test_subview_containment_set_char" >:: test_subview_containment_set_char;
-    "test_subview_containment_set_8"    >:: test_subview_containment_set_8;
-    "test_subview_containment_set_be16" >:: test_subview_containment_set_be16;
-    "test_subview_containment_set_be32" >:: test_subview_containment_set_be32;
-    "test_subview_containment_set_be64" >:: test_subview_containment_set_be64;
-    "test_subview_containment_set_le16" >:: test_subview_containment_set_le16;
-    "test_subview_containment_set_le32" >:: test_subview_containment_set_le32;
-    "test_subview_containment_set_le64" >:: test_subview_containment_set_le64;
-  ] in
-  run_test_tt ~verbose:!verbose suite
-
+let suite = [
+  "test empty cstruct", `Quick, test_empty_cstruct;
+  "test anti cstruct", `Quick, test_anti_cstruct;
+  "test positive shift", `Quick, test_positive_shift;
+  "test negative shift", `Quick, test_negative_shift;
+  "test bad positive shift", `Quick, test_bad_positive_shift;
+  "test sub", `Quick, test_sub;
+  "test negative sub", `Quick, test_negative_sub;
+  "test sub len too big", `Quick, test_sub_len_too_big;
+  "test sub len too small", `Quick, test_sub_len_too_small;
+  "test sub offset too big", `Quick, test_sub_offset_too_big;
+  "test of_bigarray negative params", `Quick, test_of_bigarray_negative_params;
+  "test of_bigarray large offset", `Quick, test_of_bigarray_large_offset;
+  "test of_bigarray large length", `Quick, test_of_bigarray_large_length;
+  "test set len too big", `Quick, test_set_len_too_big;
+  "test set len too small", `Quick, test_set_len_too_small;
+  "test add len too big", `Quick, test_add_len_too_big;
+  "test add len too small", `Quick, test_add_len_too_small;
+  "test blit offset too big", `Quick, test_blit_offset_too_big;
+  "test blit offset too small", `Quick, test_blit_offset_too_small;
+  "test blit dst offset too big", `Quick, test_blit_dst_offset_too_big;
+  "test blit dst offset too small", `Quick, test_blit_dst_offset_too_small;
+  "test blit dst offset negative", `Quick, test_blit_dst_offset_negative;
+  "test blit len too big", `Quick, test_blit_len_too_big;
+  "test blit len too big2", `Quick, test_blit_len_too_big2;
+  "test blit len too small", `Quick, test_blit_len_too_small;
+  "test view bounds too small", `Quick, test_view_bounds_too_small;
+  "test_view_bounds_too_small_get_u8" , `Quick, test_view_bounds_too_small_get_u8;
+  "test_view_bounds_too_small_get_char" , `Quick, test_view_bounds_too_small_get_char;
+  "test_view_bounds_too_small_get_be16" , `Quick, test_view_bounds_too_small_get_be16;
+  "test_view_bounds_too_small_get_be32" , `Quick, test_view_bounds_too_small_get_be32;
+  "test_view_bounds_too_small_get_be64" , `Quick, test_view_bounds_too_small_get_be64;
+  "test_view_bounds_too_small_get_le16" , `Quick, test_view_bounds_too_small_get_le16;
+  "test_view_bounds_too_small_get_le32" , `Quick, test_view_bounds_too_small_get_le32;
+  "test_view_bounds_too_small_get_le64" , `Quick, test_view_bounds_too_small_get_le64;
+  "test_lenv_overflow", `Quick, test_lenv_overflow;
+  "test_copyv_overflow", `Quick, test_copyv_overflow;
+  "test_subview_containment_get_char", `Quick, test_subview_containment_get_char;
+  "test_subview_containment_get_8"   , `Quick, test_subview_containment_get_8;
+  "test_subview_containment_get_be16", `Quick, test_subview_containment_get_be16;
+  "test_subview_containment_get_be32", `Quick, test_subview_containment_get_be32;
+  "test_subview_containment_get_be64", `Quick, test_subview_containment_get_be64;
+  "test_subview_containment_get_le16", `Quick, test_subview_containment_get_le16;
+  "test_subview_containment_get_le32", `Quick, test_subview_containment_get_le32;
+  "test_subview_containment_get_le64", `Quick, test_subview_containment_get_le64;
+  "test_subview_containment_set_char", `Quick, test_subview_containment_set_char;
+  "test_subview_containment_set_8"   , `Quick, test_subview_containment_set_8;
+  "test_subview_containment_set_be16", `Quick, test_subview_containment_set_be16;
+  "test_subview_containment_set_be32", `Quick, test_subview_containment_set_be32;
+  "test_subview_containment_set_be64", `Quick, test_subview_containment_set_be64;
+  "test_subview_containment_set_le16", `Quick, test_subview_containment_set_le16;
+  "test_subview_containment_set_le32", `Quick, test_subview_containment_set_le32;
+  "test_subview_containment_set_le64", `Quick, test_subview_containment_set_le64;
+]
