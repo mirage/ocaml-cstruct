@@ -2,9 +2,10 @@
 
 (executables
  ((libraries (cstruct alcotest))
-  (names (tests bounds))))
+  (names     (tests bounds))))
 
 (alias
  ((name   runtest)
+  (package cstruct)
   (deps   (tests.exe))
   (action (run ${<}))))
