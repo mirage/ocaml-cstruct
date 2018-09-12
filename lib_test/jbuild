@@ -8,4 +8,4 @@
  ((name   runtest)
   (package cstruct)
   (deps   (tests.exe))
-  (action (run ${<}))))
+  (action (run ${<} -e))))
