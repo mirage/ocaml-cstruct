@@ -51,6 +51,16 @@ type hbar = {
 } [@@host_endian]
 ]
 *)
+
+[%%cstruct
+type bibar = {
+  a : uint8_t;
+  b : uint16_t;
+  c : uint32_t;
+  d : uint8_t [@len 8]
+} [@@bi_endian]
+]
+
 let tests () =
   (* Test basic set/get functions *)
   let be = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout sizeof_foo)) in
@@ -63,6 +73,16 @@ let tests () =
     set_foo_a le i;
     assert(get_foo_a le = i)
   done;
+  let bibe = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout BE.sizeof_bibar)) in
+  for i = 0 to 255 do
+    BE.set_bibar_a bibe i;
+    assert(BE.get_bibar_a bibe = i)
+  done;
+  let bile = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout LE.sizeof_bibar)) in
+  for i = 0 to 255 do
+    LE.set_bibar_a bile i;
+    assert(LE.get_bibar_a bile = i)
+  done;
   let be = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout sizeof_foo)) in
   for i = 0 to 65535 do
     set_bar_b be i;
@@ -73,6 +93,16 @@ let tests () =
     set_foo_b le i;
     assert(get_foo_b le = i)
   done;
+  let bibe = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout BE.sizeof_bibar)) in
+  for i = 0 to 65535 do
+    BE.set_bibar_a bibe i;
+    assert(BE.get_bibar_a bibe = i)
+  done;
+  let bile = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout LE.sizeof_bibar)) in
+  for i = 0 to 65535 do
+    LE.set_bibar_a bile i;
+    assert(LE.get_bibar_a bile = i)
+  done;
   let be = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout sizeof_foo)) in
   let rec fn = function
    |i when i < 0l -> ()
@@ -81,7 +111,6 @@ let tests () =
       assert(get_bar_c be = i);
       fn (Int32.sub i 0x10l)
   in fn 0xffffffff_l;
-  (* Get/set buffers and blits *)
   let le = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout sizeof_bar)) in
   let rec fn = function
    |i when i < 0l -> ()
@@ -90,6 +119,7 @@ let tests () =
       assert(get_foo_c le = i);
       fn (Int32.sub i 0x10l)
   in fn 0xffffffff_l;
+  (* Get/set buffers and blits *)
   let s1 = "deadbeef" in
   set_foo_d s1 0 be;
   assert(copy_foo_d be = s1);

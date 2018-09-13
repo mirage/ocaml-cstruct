@@ -26,7 +26,7 @@ open Ast_mapper
 module Loc = Location
 module Ast = Ast_convenience_404
 
-type mode = Big_endian | Little_endian | Host_endian
+type mode = Big_endian | Little_endian | Host_endian | Bi_endian
 
 type prim =
   | Char
@@ -106,7 +106,8 @@ let create_struct loc endian name fields =
     |"little_endian" -> Little_endian
     |"big_endian" -> Big_endian
     |"host_endian" -> Host_endian
-    |_ -> loc_err loc "unknown endian %s, should be little_endian, big_endian or host_endian" endian
+    |"bi_endian" -> Bi_endian
+    |_ -> loc_err loc "unknown endian %s, should be little_endian, big_endian, host_endian or bi_endian" endian
   in
   let len, fields =
     List.fold_left (fun (off,acc) field ->
@@ -124,6 +125,7 @@ let mode_mod s = function
   |Big_endian -> cstruct_id$."BE"$.s
   |Little_endian -> cstruct_id$."LE"$.s
   |Host_endian -> cstruct_id$."HE"$.s
+  |Bi_endian -> cstruct_id$."BL"$.s
 
 let mode_mod loc x s =
   Exp.ident ~loc {loc ; txt = mode_mod s x}
@@ -282,12 +284,28 @@ let output_hexdump_sig _loc s =
       (Val.mk (Loc.mkloc ("hexdump_"^s.name) _loc) [%type: Cstruct.t -> unit])
   ] [@metaloc _loc]
 
-let output_struct _loc s =
+let output_struct_one_endian _loc s =
   (* Generate functions of the form {get/set}_<struct>_<field> *)
   let expr = List.fold_left (fun a f ->
       a @ output_get _loc s f @ output_set _loc s f
     ) [output_sizeof _loc s] s.fields
   in expr @ output_hexdump _loc s
+
+let output_struct _loc s =
+  match s.endian with
+  | Bi_endian ->
+    (* In case of Bi-endian, create two modules - one for BE and one for LE *)
+    let expr_be = Mod.structure (output_struct_one_endian _loc {s with endian = Big_endian})
+    and expr_le = Mod.structure (output_struct_one_endian _loc {s with endian = Little_endian})
+
+    in [{pstr_desc = Pstr_module
+        {pmb_name = {txt = "BE"; loc = _loc}; pmb_expr = expr_be;
+        pmb_attributes = []; pmb_loc = _loc;}; pstr_loc = _loc;};
+        {pstr_desc = Pstr_module
+        {pmb_name = {txt = "LE"; loc = _loc}; pmb_expr = expr_le;
+        pmb_attributes = []; pmb_loc = _loc;}; pstr_loc = _loc;}
+        ]
+  | _ -> output_struct_one_endian _loc s
 
 let output_struct_sig _loc s =
   (* Generate signaturs of the form {get/set}_<struct>_<field> *)
