@@ -25,9 +25,9 @@ was v1.9.0.
 
 ### Local development
 
-You can build the library via [jbuilder](https://github.com/janestreet/jbuilder),
-using `make` or `jbuilder build` directly.  Since everything is built via jbuilder,
-you can also place this repository within a wider jbuilder workspace in order to
+You can build the library via [dune](https://github.com/ocaml/dune),
+using `make` or `dune build` directly.  Since everything is built via dune,
+you can also place this repository within a wider dune workspace in order to
 make local modifications across repositories. 
 
 ## Usage
