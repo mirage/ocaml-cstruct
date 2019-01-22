@@ -1,3 +1,22 @@
+v3.3.0 2019-01-22
+-----------------
+
+- Support for bi-endian cstructs that generate both sets of accessor
+  functions (#212 by @XVilka). This generates both `BE` and `LE`
+  modules to use as needed.
+
+- Modify `of_string` and `of_bytes` to have an option `?off`
+  offset argument into the source bytes. (#208 by @XVilka)
+
+- Improve tests to work on 32-bit architectures and handle
+  Gc better (@samoht)
+
+- Do not depend explicitly on deprecated `ppx_driver`. This was
+  primarily there for older compilers, and new uses should be
+  based around `ppxlib`. (#201 by @edwintorok).
+
+- Upgrade opam metadata to 2.0 format. (#217 by @XVilka)
+
 v3.2.1 2017-12-13
 -----------------
 
