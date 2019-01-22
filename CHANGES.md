@@ -17,7 +17,8 @@ v3.3.0 2019-01-22
 
 - Upgrade opam metadata to 2.0 format. (#217 by @XVilka @avsm)
 
-- Support dune-release instead of topkg (@avsm)
+- Upgrade to dune from jbuilder and support dune-release instead
+  of topkg (@avsm)
 
 v3.2.1 2017-12-13
 -----------------
