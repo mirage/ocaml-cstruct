@@ -7,23 +7,21 @@ homepage:     "https://github.com/mirage/ocaml-cstruct"
 license:      "ISC"
 dev-repo: "git+https://github.com/mirage/ocaml-cstruct.git"
 bug-reports:  "https://github.com/mirage/ocaml-cstruct/issues"
+doc: "https://mirage.githbu.io/ocaml-cstruct/"
 tags: [ "org:mirage" "org:ocamllabs" ]
 build: [
-  ["jbuilder" "subst" "-p" name "--name" name] {pinned}
-  ["jbuilder" "build" "-p" name "-j" jobs]
-  ["jbuilder" "runtest" "-p" name] {with-test}
+  ["dune" "subst"] {pinned}
+  ["dune" "build" "-p" name "-j" jobs]
+  ["dune" "runtest" "-p" name "-j" jobs] {with-test}
 ]
 depends: [
   "ocaml" {>= "4.03.0"}
-  "jbuilder" {build & >= "1.0+beta10"}
+  "dune" {build & >= "1.0"}
   "sexplib" {< "v0.12"}
-  "alcotest" {test}
+  "alcotest" {with-test}
 ]
 synopsis: "Access C-like structures directly from OCaml"
 description: """
 Cstruct is a library and syntax extension to make it easier to access C-like
 structures directly from OCaml.  It supports both reading and writing to these
 structures, and they are accessed via the `Bigarray` module."""
-url {
-  src: "git+https://github.com/mirage/ocaml-cstruct.git"
-}

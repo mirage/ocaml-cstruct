@@ -1,0 +1,4 @@
+(install
+ (section lib)
+ (files cstruct.js)
+ (package cstruct))

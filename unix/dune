@@ -1,0 +1,6 @@
+(library
+ (name cstruct_unix)
+ (wrapped false)
+ (public_name cstruct-unix)
+ (flags :standard -w -3)
+ (libraries cstruct unix))
