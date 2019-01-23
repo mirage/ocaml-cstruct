@@ -7,7 +7,7 @@ homepage:     "https://github.com/mirage/ocaml-cstruct"
 license:      "ISC"
 dev-repo: "git+https://github.com/mirage/ocaml-cstruct.git"
 bug-reports:  "https://github.com/mirage/ocaml-cstruct/issues"
-doc: "https://mirage.githbu.io/ocaml-cstruct/"
+doc: "https://mirage.github.io/ocaml-cstruct/"
 
 tags: [ "org:mirage" "org:ocamllabs" ]
 build: [

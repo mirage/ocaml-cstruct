@@ -8,7 +8,7 @@ license:      "ISC"
 dev-repo: "git+https://github.com/mirage/ocaml-cstruct.git"
 bug-reports:  "https://github.com/mirage/ocaml-cstruct/issues"
 tags: [ "org:mirage" "org:ocamllabs" ]
-doc: "https://mirage.githbu.io/ocaml-cstruct/"
+doc: "https://mirage.github.io/ocaml-cstruct/"
 build: [
   ["dune" "subst"] {pinned}
   ["dune" "build" "-p" name "-j" jobs]
