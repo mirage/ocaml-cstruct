@@ -1,3 +1,12 @@
+v3.4.0 2019-02-02
+-----------------
+
+- Remove old compatibility packages for `cstruct.lwt`, `cstruct.async`,
+  `cstruct.ppx` and `cstruct.unix`.  These were deprecated in
+  cstruct.3.0.0 in favour of counter part libraries with a dash
+  in the name (`cstruct-lwt`, `cstruct-async`, `cstruct.unix`)
+  or `ppx_cstruct` for the PPX extension. (@avsm)
+
 v3.3.0 2019-01-22
 -----------------
 
