@@ -420,10 +420,10 @@ let hexdump_pp fmt t =
   in
   let after fmt =
     function
-    | 15 -> Format.pp_force_newline fmt ()
+    | 15 -> Format.fprintf fmt "@;"
     |  _ -> ()
   in
-  Format.pp_open_box fmt 0 ;
+  Format.pp_open_vbox fmt 0 ;
   for i = 0 to len t - 1 do
     let column = i mod 16 in
     let c = Char.code (Bigarray.Array1.get t.buffer (t.off+i)) in
