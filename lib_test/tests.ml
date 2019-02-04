@@ -149,23 +149,23 @@ let hexdump_empty () =
 let hexdump_small () =
   test_hexdump
     (Cstruct.of_hex "00010203")
-    "00 01 02 03 "
+    "00 01 02 03"
 
 let hexdump_multiline () =
   test_hexdump
     (Cstruct.of_hex "000102030405060708090a0b0c0d0e0f101112")
-    ( "00 01 02 03 04 05 06 07  08 09 0a 0b 0c 0d 0e 0f \n"
-    ^ "10 11 12 ")
+    ( "00 01 02 03 04 05 06 07  08 09 0a 0b 0c 0d 0e 0f\n"
+    ^ "10 11 12")
 
 let hexdump_aligned () =
   test_hexdump
     (Cstruct.of_hex "000102030405060708090a0b0c0d0e0f")
-    "00 01 02 03 04 05 06 07  08 09 0a 0b 0c 0d 0e 0f \n"
+    "00 01 02 03 04 05 06 07  08 09 0a 0b 0c 0d 0e 0f\n"
 
 let hexdump_aligned_to_half () =
   test_hexdump
     (Cstruct.of_hex "0001020304050607")
-    "00 01 02 03 04 05 06 07  "
+    "00 01 02 03 04 05 06 07"
 
 let suite = [
   "fillv", [
