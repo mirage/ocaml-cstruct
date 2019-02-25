@@ -503,4 +503,5 @@ val concat: t list -> t
  * the result is a newly created [t] in the zero- and one-element cases. *)
 
 val rev: t -> t
-(** [rev t] is [t] in reverse order. *)
+(** [rev t] is [t] in reverse order. The return value is a freshly allocated
+    cstruct, and the argument is not modified. *)
