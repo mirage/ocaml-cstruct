@@ -149,6 +149,47 @@ let rev_len_5 () =
   let expected = Cstruct.of_string "edcba" in
   assert_cs_equal expected (Cstruct.rev cs)
 
+let test_hexdump ?(format=("%a" : _ format4)) cs expected =
+  let got = Format.asprintf format Cstruct.hexdump_pp cs in
+  Alcotest.(check string) "hexdump output" expected got
+
+let hexdump_empty () =
+  test_hexdump
+    Cstruct.empty
+    ""
+
+let hexdump_small () =
+  test_hexdump
+    (Cstruct.of_hex "00010203")
+    "00 01 02 03"
+
+let hex_multiline =
+  Cstruct.of_hex "000102030405060708090a0b0c0d0e0f101112"
+
+let hexdump_multiline () =
+  test_hexdump
+    hex_multiline
+    ( "00 01 02 03 04 05 06 07  08 09 0a 0b 0c 0d 0e 0f\n"
+    ^ "10 11 12")
+
+let hexdump_aligned () =
+  test_hexdump
+    (Cstruct.of_hex "000102030405060708090a0b0c0d0e0f")
+    "00 01 02 03 04 05 06 07  08 09 0a 0b 0c 0d 0e 0f\n"
+
+let hexdump_aligned_to_half () =
+  test_hexdump
+    (Cstruct.of_hex "0001020304050607")
+    "00 01 02 03 04 05 06 07"
+
+let hexdump_in_box () =
+  test_hexdump
+    ~format:"This is a box : %a"
+    hex_multiline
+    ( "This is a box : 00 01 02 03 04 05 06 07  08 09 0a 0b 0c 0d 0e 0f\n"
+    ^ "                10 11 12"
+    )
+
 let suite = [
   "fillv", [
     "fillv", `Quick, fillv
@@ -175,6 +216,13 @@ let suite = [
     "empty", `Quick, rev_empty;
     "len = 1", `Quick, rev_len_1;
     "len = 5", `Quick, rev_len_5;
+  "hexdump", [
+    "empty", `Quick, hexdump_empty;
+    "small", `Quick, hexdump_small;
+    "multiline", `Quick, hexdump_multiline;
+    "aligned", `Quick, hexdump_aligned;
+    "aligned to half", `Quick, hexdump_aligned_to_half;
+    "in box", `Quick, hexdump_in_box;
   ]
 ]
 
