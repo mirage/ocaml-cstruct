@@ -412,13 +412,22 @@ let of_hex str =
   | cs, i, _, _ -> sub cs 0 i
 
 let hexdump_pp fmt t =
-  Format.pp_open_box fmt 0 ;
-  for i = 0 to len t - 1 do
-    Format.fprintf fmt "%.2x@ " (Char.code (Bigarray.Array1.get t.buffer (t.off+i)));
-    match i mod 16 with
-    | 15 -> Format.pp_force_newline fmt ()
-    |  7 -> Format.pp_print_space fmt ()
+  let before fmt =
+    function
+    | 0 -> ()
+    | 8 -> Format.fprintf fmt "  ";
+    | _ -> Format.fprintf fmt " "
+  in
+  let after fmt =
+    function
+    | 15 -> Format.fprintf fmt "@;"
     |  _ -> ()
+  in
+  Format.pp_open_vbox fmt 0 ;
+  for i = 0 to len t - 1 do
+    let column = i mod 16 in
+    let c = Char.code (Bigarray.Array1.get t.buffer (t.off+i)) in
+    Format.fprintf fmt "%a%.2x%a" before column c after column
   done ;
   Format.pp_close_box fmt ()
 
