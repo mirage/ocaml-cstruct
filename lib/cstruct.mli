@@ -21,7 +21,7 @@ structures directly from OCaml.  It supports both reading and writing to these
 memory buffers, and they are accessed via the [Bigarray] module.
 
 The library interface below is intended to be used in conjunction with the
-ppx rewriter that is also supplied with this library (in the [cstruct.ppx]
+ppx rewriter that is also supplied with this library (in the [cstruct-ppx]
 ocamlfind package).
 
 An example description for the pcap packet format is:

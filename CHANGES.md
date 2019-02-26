@@ -1,3 +1,14 @@
+v3.5.0 2019-02-26
+-----------------
+
+- Remove trailing spaces in hexdump output (#219 @emillon)
+- Add `Cstruct.rev` to allocate a reversed cstruct (#221 @emillon)
+- `Cstruct_unix` now uses the post-OCaml 4.06 `Unix.map_file`
+  instead of the deprecated Bigarray `map_file` that was removed
+  in OCaml 4.08 (@avsm, see ocaml/ocaml#2263)
+- Remove unnecessary `(wrapped false)` in the build system (@avsm)
+- Correct ocamldoc to the right `cstruct-ppx` package pointer (@avsm)
+
 v3.4.0 2019-02-02
 -----------------
 

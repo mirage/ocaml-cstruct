@@ -216,6 +216,7 @@ let suite = [
     "empty", `Quick, rev_empty;
     "len = 1", `Quick, rev_len_1;
     "len = 5", `Quick, rev_len_5;
+  ];
   "hexdump", [
     "empty", `Quick, hexdump_empty;
     "small", `Quick, hexdump_small;
