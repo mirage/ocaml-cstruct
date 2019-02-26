@@ -9,6 +9,9 @@ clean:
 test:
 	dune runtest
 
+doc:
+	dune build @doc
+
 build-fuzz:
 	dune build fuzz/fuzz.exe
 
