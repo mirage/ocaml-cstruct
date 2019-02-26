@@ -491,6 +491,16 @@ let concat = function
       ignore @@ List.fold_left aux 0 css ;
       result
 
+let rev t =
+  let n = len t in
+  let out = create_unsafe n in
+  for i_src = 0 to n - 1 do
+    let byte = get_uint8 t i_src in
+    let i_dst = n - 1 - i_src in
+    set_uint8 out i_dst byte
+  done;
+  out
+
 open Sexplib
 
 let buffer_of_sexp b = Conv.bigstring_of_sexp b

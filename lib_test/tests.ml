@@ -137,6 +137,18 @@ let check_alignment_large () =
     try let _ = check () in Alcotest.fail "alignement should raise"
     with Invalid_argument _ -> ()
 
+let rev_empty () =
+  assert_cs_equal Cstruct.empty (Cstruct.rev Cstruct.empty)
+
+let rev_len_1 () =
+  let cs = Cstruct.of_string "a" in
+  assert_cs_equal cs (Cstruct.rev cs)
+
+let rev_len_5 () =
+  let cs = Cstruct.of_string "abcde" in
+  let expected = Cstruct.of_string "edcba" in
+  assert_cs_equal expected (Cstruct.rev cs)
+
 let test_hexdump ?(format=("%a" : _ format4)) cs expected =
   let got = Format.asprintf format Cstruct.hexdump_pp cs in
   Alcotest.(check string) "hexdump output" expected got
@@ -200,6 +212,10 @@ let suite = [
     "aligned to 0"    , `Quick, check_alignment_zero;
     "aligned to large", `Quick, check_alignment_large;
   ];
+  "rev", [
+    "empty", `Quick, rev_empty;
+    "len = 1", `Quick, rev_len_1;
+    "len = 5", `Quick, rev_len_5;
   "hexdump", [
     "empty", `Quick, hexdump_empty;
     "small", `Quick, hexdump_small;
