@@ -1,11 +1,9 @@
-(executables
+(executable
  (libraries cstruct alcotest)
- (names tests bounds))
+ (name tests))
 
 (alias
  (name runtest)
  (package cstruct)
- (deps
-  (:< tests.exe))
  (action
-  (run %{<} -e)))
+  (run ./tests.exe -e)))
