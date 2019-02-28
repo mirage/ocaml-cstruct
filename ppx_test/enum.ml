@@ -80,3 +80,5 @@ let tests () =
   assert(int_to_foo32 0xffffffffl = Some (THREE32));
   assert(string_to_foo16 "ONE16" = Some ONE16);
   assert(foo8_to_string ONE8 = "ONE8")
+
+let () = tests ()
