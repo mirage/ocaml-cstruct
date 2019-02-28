@@ -96,12 +96,12 @@ let tests () =
   let bibe = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout BE.sizeof_bibar)) in
   for i = 0 to 65535 do
     BE.set_bibar_a bibe i;
-    assert(BE.get_bibar_a bibe = i)
+    assert(BE.get_bibar_a bibe = i mod 256)
   done;
   let bile = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout LE.sizeof_bibar)) in
   for i = 0 to 65535 do
     LE.set_bibar_a bile i;
-    assert(LE.get_bibar_a bile = i)
+    assert(LE.get_bibar_a bile = i mod 256)
   done;
   let be = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout sizeof_foo)) in
   let rec fn = function
@@ -141,3 +141,5 @@ let tests () =
   assert(get_foo_a be = 7);
   hexdump_foo be;
   print_endline (Sexplib.Sexp.to_string_hum (Cstruct.sexp_of_t be))
+
+let () = tests ()
