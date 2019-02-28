@@ -61,6 +61,17 @@ type bibar = {
 } [@@bi_endian]
 ]
 
+(** This should not emit any warnings *)
+[%%cstruct
+type unused = {
+  a : uint8_t;
+  b : uint16_t;
+  c : uint32_t;
+  d : uint8_t;
+  e : uint8_t; [@len 16]
+} [@@big_endian]
+]
+
 let tests () =
   (* Test basic set/get functions *)
   let be = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout sizeof_foo)) in

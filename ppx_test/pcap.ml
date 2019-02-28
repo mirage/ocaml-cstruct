@@ -14,8 +14,6 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-[@@@ocaml.warning "-32"]
-
 [%%cstruct
 type pcap_header = {
   magic_number: uint32_t;   (* magic number *)
@@ -67,8 +65,6 @@ type tcpv4 = {
   checksum: uint16_t;
   urg: uint16_t;
 } [@@big_endian]]
-
-[@@@ocaml.warning "+32"]
 
 let mac_to_string buf =
   let i n = Cstruct.get_uint8 buf n in

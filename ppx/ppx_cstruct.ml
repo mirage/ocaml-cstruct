@@ -145,7 +145,7 @@ let output_get _loc s f =
         let [%p Ast.pvar (op_name "get" s f)] =
           fun src -> Cstruct.sub src [%e num f.off] [%e num len]];
       [%stri
-        let [%p Ast.pvar (op_name "copy" s f)] =
+        let[@ocaml.warning "-32"] [%p Ast.pvar (op_name "copy" s f)] =
           fun src -> Cstruct.copy src [%e num f.off] [%e num len]]
     ]
   |Prim prim ->
@@ -197,16 +197,16 @@ let output_set _loc s f =
     let len = width_of_field f in
     [
       [%stri
-        let [%p Ast.pvar (setter_name s f)] = fun src srcoff dst ->
+        let[@ocaml.warning "-32"] [%p Ast.pvar (setter_name s f)] = fun src srcoff dst ->
           Cstruct.blit_from_string src srcoff dst [%e num f.off] [%e num len]];
       [%stri
-        let [%p Ast.pvar (op_name "blit" s f)] = fun src srcoff dst ->
+        let[@ocaml.warning "-32"] [%p Ast.pvar (op_name "blit" s f)] = fun src srcoff dst ->
           Cstruct.blit src srcoff dst [%e num f.off] [%e num len]]
     ]
   |Prim prim ->
     [
       [%stri
-        let [%p Ast.pvar (setter_name s f)] = fun v x ->
+        let[@ocaml.warning "-32"] [%p Ast.pvar (setter_name s f)] = fun v x ->
           [%e match prim with
               |Char -> [%expr Cstruct.set_char v [%e num f.off] x]
               |UInt8 -> [%expr Cstruct.set_uint8 v [%e num f.off] x]
@@ -266,7 +266,7 @@ let output_hexdump _loc s =
       let [%p Ast.pvar ("hexdump_"^s.name^"_to_buffer")] = fun _buf v ->
         [%e hexdump]];
     [%stri
-      let [%p Ast.pvar ("hexdump_"^s.name)] = fun v ->
+      let[@ocaml.warning "-32"] [%p Ast.pvar ("hexdump_"^s.name)] = fun v ->
         let _buf = Buffer.create 128 in
         Buffer.add_string _buf [%e Ast.str (s.name ^ " = {\n")];
         [%e Ast.evar ("hexdump_"^s.name^"_to_buffer")] _buf v;
