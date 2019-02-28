@@ -130,9 +130,32 @@ let mode_mod s = function
 let mode_mod loc x s =
   Exp.ident ~loc {loc ; txt = mode_mod s x}
 
-let getter_name s f = sprintf "get_%s_%s" s.name f.field
-let setter_name s f = sprintf "set_%s_%s" s.name f.field
-let op_name op s f = sprintf "%s_%s_%s" op s.name f.field
+type op =
+  | Op_get of field
+  | Op_set of field
+  | Op_copy of field
+  | Op_blit of field
+  | Op_sizeof
+  | Op_hexdump
+  | Op_hexdump_to_buffer
+
+let op_name s op =
+  let parts =
+    match op with
+    | Op_get f -> ["get"; s.name; f.field]
+    | Op_set f -> ["set"; s.name; f.field]
+    | Op_copy f -> ["copy"; s.name; f.field]
+    | Op_blit f -> ["blit"; s.name; f.field]
+    | Op_sizeof -> ["sizeof"; s.name]
+    | Op_hexdump -> ["hexdump"; s.name]
+    | Op_hexdump_to_buffer -> ["hexdump"; s.name; "to_buffer"]
+  in
+  String.concat "_" parts
+
+let op_pvar s op = Ast.pvar (op_name s op)
+let op_evar s op = Ast.evar (op_name s op)
+let op_val_typ loc s op ty =
+  Sig.value (Val.mk (Loc.mkloc (op_name s op) loc) ty)
 
 let output_get _loc s f =
   let m = mode_mod _loc s.endian in
@@ -140,25 +163,22 @@ let output_get _loc s f =
   match f.ty with
   |Buffer (_, _) ->
     let len = width_of_field f in
-    [
-      [%stri
-        let [%p Ast.pvar (op_name "get" s f)] =
-          fun src -> Cstruct.sub src [%e num f.off] [%e num len]];
-      [%stri
-        let[@ocaml.warning "-32"] [%p Ast.pvar (op_name "copy" s f)] =
-          fun src -> Cstruct.copy src [%e num f.off] [%e num len]]
+    [%str
+      let [%p op_pvar s (Op_get f)] =
+        fun src -> Cstruct.sub src [%e num f.off] [%e num len]
+
+      let[@ocaml.warning "-32"] [%p op_pvar s (Op_copy f)] =
+        fun src -> Cstruct.copy src [%e num f.off] [%e num len]
     ]
   |Prim prim ->
-    [
-      [%stri
-        let [%p Ast.pvar (getter_name s f)] = fun v ->
-          [%e match prim with
-              |Char -> [%expr Cstruct.get_char v [%e num f.off]]
-              |UInt8 -> [%expr Cstruct.get_uint8 v [%e num f.off]]
-              |UInt16 -> [%expr [%e m "get_uint16"] v [%e num f.off]]
-              |UInt32 -> [%expr [%e m "get_uint32"] v [%e num f.off]]
-              |UInt64 -> [%expr [%e m "get_uint64"] v [%e num f.off]]]]
-    ]
+    [%str
+      let [%p op_pvar s (Op_get f)] = fun v ->
+        [%e match prim with
+            |Char -> [%expr Cstruct.get_char v [%e num f.off]]
+            |UInt8 -> [%expr Cstruct.get_uint8 v [%e num f.off]]
+            |UInt16 -> [%expr [%e m "get_uint16"] v [%e num f.off]]
+            |UInt32 -> [%expr [%e m "get_uint32"] v [%e num f.off]]
+            |UInt64 -> [%expr [%e m "get_uint64"] v [%e num f.off]]]]
 
 let output_get loc s f =
   (output_get loc s f) [@metaloc loc]
@@ -173,17 +193,17 @@ let type_of_int_field = function
 let type_of_int_field _loc x =
   type_of_int_field x [@metaloc loc]
 
-let output_get_sig _loc s f =
+let output_get_sig loc s f =
   match f.ty with
   |Buffer (_,_) ->
     [
-      Sig.value (Val.mk (Loc.mknoloc (op_name "get" s f)) [%type: Cstruct.t -> Cstruct.t]);
-      Sig.value (Val.mk (Loc.mknoloc (op_name "copy" s f)) [%type: Cstruct.t -> string])
+      op_val_typ loc s (Op_get f) [%type: Cstruct.t -> Cstruct.t];
+      op_val_typ loc s (Op_copy f) [%type: Cstruct.t -> string]
     ]
   |Prim prim ->
-    let retf = type_of_int_field _loc prim in
+    let retf = type_of_int_field loc prim in
     [
-      Sig.value (Val.mk (Loc.mknoloc (getter_name s f)) [%type: Cstruct.t -> [%t retf]])
+      op_val_typ loc s (Op_get f) [%type: Cstruct.t -> [%t retf]]
     ]
 
 let output_get_sig _loc s f =
@@ -195,94 +215,86 @@ let output_set _loc s f =
   match f.ty with
   |Buffer (_,_) ->
     let len = width_of_field f in
-    [
-      [%stri
-        let[@ocaml.warning "-32"] [%p Ast.pvar (setter_name s f)] = fun src srcoff dst ->
-          Cstruct.blit_from_string src srcoff dst [%e num f.off] [%e num len]];
-      [%stri
-        let[@ocaml.warning "-32"] [%p Ast.pvar (op_name "blit" s f)] = fun src srcoff dst ->
-          Cstruct.blit src srcoff dst [%e num f.off] [%e num len]]
-    ]
+    [%str
+      let[@ocaml.warning "-32"] [%p op_pvar s (Op_set f)] = fun src srcoff dst ->
+        Cstruct.blit_from_string src srcoff dst [%e num f.off] [%e num len]
+
+      let[@ocaml.warning "-32"] [%p op_pvar s (Op_blit f)] = fun src srcoff dst ->
+        Cstruct.blit src srcoff dst [%e num f.off] [%e num len]]
   |Prim prim ->
-    [
-      [%stri
-        let[@ocaml.warning "-32"] [%p Ast.pvar (setter_name s f)] = fun v x ->
-          [%e match prim with
-              |Char -> [%expr Cstruct.set_char v [%e num f.off] x]
-              |UInt8 -> [%expr Cstruct.set_uint8 v [%e num f.off] x]
-              |UInt16 -> [%expr [%e m "set_uint16"] v [%e num f.off] x]
-              |UInt32 -> [%expr [%e m "set_uint32"] v [%e num f.off] x]
-              |UInt64 -> [%expr [%e m "set_uint64"] v [%e num f.off] x]]]
-    ]
+    [%str
+      let[@ocaml.warning "-32"] [%p op_pvar s (Op_set f)] = fun v x ->
+        [%e match prim with
+            |Char -> [%expr Cstruct.set_char v [%e num f.off] x]
+            |UInt8 -> [%expr Cstruct.set_uint8 v [%e num f.off] x]
+            |UInt16 -> [%expr [%e m "set_uint16"] v [%e num f.off] x]
+            |UInt32 -> [%expr [%e m "set_uint32"] v [%e num f.off] x]
+            |UInt64 -> [%expr [%e m "set_uint64"] v [%e num f.off] x]]]
 
 let output_set _loc s f =
   output_set _loc s f [@metaloc _loc]
 
-let output_set_sig _loc s f =
+let output_set_sig loc s f =
   match f.ty with
   |Buffer (_,_) ->
     [
-      Sig.value (Val.mk (Loc.mkloc (setter_name s f) _loc)
-                   [%type: string -> int -> Cstruct.t -> unit]);
-      Sig.value (Val.mk (Loc.mkloc (op_name "blit" s f) _loc)
-                   [%type: Cstruct.t -> int -> Cstruct.t -> unit])
-    ] [@metaloc _loc]
+      op_val_typ loc s (Op_set f) [%type: string -> int -> Cstruct.t -> unit];
+      op_val_typ loc s (Op_blit f) [%type: Cstruct.t -> int -> Cstruct.t -> unit]
+    ] [@metaloc loc]
   |Prim prim ->
-    let retf = type_of_int_field _loc prim in
+    let retf = type_of_int_field loc prim in
     [
-      Sig.value (Val.mk (Loc.mkloc (setter_name s f) _loc) [%type: Cstruct.t -> [%t retf] -> unit])
-    ] [@metaloc _loc]
+      op_val_typ loc s (Op_set f) [%type: Cstruct.t -> [%t retf] -> unit]
+    ] [@metaloc loc]
 
 let output_sizeof _loc s =
   [%stri
-    let [%p Ast.pvar ("sizeof_"^s.name)] = [%e Ast.int s.len]] [@metaloc _loc]
+    let [%p op_pvar s Op_sizeof] = [%e Ast.int s.len]] [@metaloc _loc]
 
-let output_sizeof_sig _loc s =
-  Sig.value (Val.mk (Loc.mknoloc ("sizeof_"^s.name)) [%type: int]) [@metaloc _loc]
+let output_sizeof_sig loc s =
+  op_val_typ loc s Op_sizeof [%type: int]
 
 let output_hexdump _loc s =
   let hexdump =
     List.fold_left (fun a f ->
+        let get_f = op_evar s (Op_get f) in
         [%expr
           [%e a]; Buffer.add_string _buf [%e Ast.str ("  "^f.field^" = ")];
           [%e match f.ty with
               |Prim Char ->
-                [%expr Printf.bprintf _buf "%c\n" ([%e Ast.evar (getter_name s f)] v)]
+                [%expr Printf.bprintf _buf "%c\n" ([%e get_f] v)]
               |Prim (UInt8|UInt16) ->
-                [%expr Printf.bprintf _buf "0x%x\n" ([%e Ast.evar (getter_name s f)] v)]
+                [%expr Printf.bprintf _buf "0x%x\n" ([%e get_f] v)]
               |Prim UInt32 ->
-                [%expr Printf.bprintf _buf "0x%lx\n" ([%e Ast.evar (getter_name s f)] v)]
+                [%expr Printf.bprintf _buf "0x%lx\n" ([%e get_f] v)]
               |Prim UInt64 ->
-                [%expr Printf.bprintf _buf "0x%Lx\n" ([%e Ast.evar (getter_name s f)] v)]
+                [%expr Printf.bprintf _buf "0x%Lx\n" ([%e get_f] v)]
               |Buffer (_,_) ->
                 [%expr Printf.bprintf _buf "<buffer %s>"
                          [%e Ast.str (field_to_string f)];
-                         Cstruct.hexdump_to_buffer _buf ([%e Ast.evar (getter_name s f)] v)]
+                         Cstruct.hexdump_to_buffer _buf ([%e get_f] v)]
           ]]
       ) (Ast.unit ()) s.fields
   in
   [
     [%stri
-      let [%p Ast.pvar ("hexdump_"^s.name^"_to_buffer")] = fun _buf v ->
+      let [%p op_pvar s Op_hexdump_to_buffer] = fun _buf v ->
         [%e hexdump]];
     [%stri
-      let[@ocaml.warning "-32"] [%p Ast.pvar ("hexdump_"^s.name)] = fun v ->
+      let[@ocaml.warning "-32"] [%p op_pvar s Op_hexdump] = fun v ->
         let _buf = Buffer.create 128 in
         Buffer.add_string _buf [%e Ast.str (s.name ^ " = {\n")];
-        [%e Ast.evar ("hexdump_"^s.name^"_to_buffer")] _buf v;
+        [%e op_evar s Op_hexdump_to_buffer] _buf v;
         print_endline (Buffer.contents _buf);
         print_endline "}"
     ]
   ] [@metaloc _loc]
 
-let output_hexdump_sig _loc s =
+let output_hexdump_sig loc s =
   [
-    Sig.value
-      (Val.mk (Loc.mkloc ("hexdump_"^s.name^"_to_buffer") _loc)
-         [%type: Buffer.t -> Cstruct.t -> unit]);
-    Sig.value
-      (Val.mk (Loc.mkloc ("hexdump_"^s.name) _loc) [%type: Cstruct.t -> unit])
-  ] [@metaloc _loc]
+    op_val_typ loc s Op_hexdump_to_buffer [%type: Buffer.t -> Cstruct.t -> unit];
+    op_val_typ loc s Op_hexdump [%type: Cstruct.t -> unit];
+  ]
 
 let output_struct_one_endian _loc s =
   (* Generate functions of the form {get/set}_<struct>_<field> *)
