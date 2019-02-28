@@ -83,10 +83,6 @@ let field_to_string f =
   in
   sprintf "%s %s" (string f.ty) f.field
 
-let to_string t =
-  sprintf "cstruct[%d] %s { %s }" t.len t.name
-    (String.concat "; " (List.map field_to_string t.fields))
-
 let loc_err loc fmt = Location.raise_errorf ~loc ("ppx_cstruct error: " ^^ fmt)
 
 let parse_field loc field field_type sz =
