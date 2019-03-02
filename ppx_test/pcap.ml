@@ -166,4 +166,4 @@ let parse () =
   in
   printf "num_packets %d\n%!" num_packets
 
-let tests () = parse ()
+let () = parse ()
