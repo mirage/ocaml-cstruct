@@ -1,3 +1,14 @@
+v3.6.0 2019-03-01
+-----------------
+
+- A `[%%cstruct type ...]` declaration generates many values that
+  are potentially unused. The code generator in `ppx_cstruct` now
+  guarantees that there will be no more "unused value" (warning 32)
+  statements from use of the ppx form. (#228 @emillon)
+- Actually run the ppx tests instead of just building them.
+  (#227 @emillon to fix #226 from @XVilka)
+
+
 v3.5.0 2019-02-26
 -----------------
 
