@@ -362,13 +362,14 @@ let output_enum _loc name fields width ~sexp =
   let parse {txt = x; _} = sprintf "string_to_%s" x in
   let of_sexp {txt = x; _} = sprintf "%s_of_sexp" x in
   let to_sexp {txt = x; _} = sprintf "sexp_of_%s" x in
+  let declare name expr =
+    [%stri let[@ocaml.warning "-32"] [%p Ast.pvar name] = fun x -> [%e expr]]
+  in
   let output_sexp_struct =
-    [
-      [%stri
-        let [%p Ast.pvar (to_sexp name)] = fun x ->
-          Sexplib.Sexp.Atom ([%e Ast.evar (printer name)] x)];
-      [%stri
-        let [%p Ast.pvar (of_sexp name)] = fun x ->
+    [ declare (to_sexp name)
+        [%expr Sexplib.Sexp.Atom ([%e Ast.evar (printer name)] x) ]
+    ; declare (of_sexp name)
+        [%expr
           match x with
           | Sexplib.Sexp.List _ ->
             raise (Sexplib.Pre_sexp.Of_sexp_error (Failure "expected Atom, got List", x))
@@ -377,11 +378,8 @@ let output_enum _loc name fields width ~sexp =
             | None ->
               raise (Sexplib.Pre_sexp.Of_sexp_error (Failure "unable to parse enum string", x))
             | Some r -> r
-          ]
+        ]
       ] in
-  let declare name expr =
-    [%stri let[@ocaml.warning "-32"] [%p Ast.pvar name] = fun x -> [%e expr]]
-  in
   Str.type_ Recursive [Type.mk ~kind:(Ptype_variant decls) name] ::
   declare (getter name) (Exp.match_ [%expr x] getters) ::
   declare (setter name) (Exp.match_ [%expr x] setters) ::

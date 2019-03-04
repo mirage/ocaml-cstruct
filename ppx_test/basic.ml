@@ -93,7 +93,7 @@ type unused_cenum =
   | ERROR   [@id 0xffff]
   | OKAY    [@id 0]
   | NULL    [@id 1]
-  [@@int16_t]
+  [@@int16_t] [@@sexp]
 ]
 
 let tests () =
