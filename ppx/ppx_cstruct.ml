@@ -329,33 +329,33 @@ let output_struct_sig loc s =
             (op_typ op)))
     (ops_for s)
 
+let convert_integer f suffix =
+  (fun i -> Exp.constant (Pconst_integer(f i, suffix))),
+  (fun i -> Pat.constant (Pconst_integer(f i, suffix)))
+
 let output_enum _loc name fields width ~sexp =
   let intfn,pattfn = match ty_of_string width with
     |None -> loc_err _loc "enum: unknown width specifier %s" width
     |Some Char ->
-      (fun i -> Exp.constant (Pconst_char (Char.chr @@ Int64.to_int i))),
-      (fun i -> Pat.constant (Pconst_char (Char.chr @@ Int64.to_int i)))
-    |Some (UInt8 | UInt16) ->
-      (fun i -> Exp.constant (Pconst_integer(Int64.to_string i, None))),
-      (fun i -> Pat.constant (Pconst_integer(Int64.to_string i, None)))
-    |Some UInt32 ->
-      (fun i -> Exp.constant (Pconst_integer (Int32.to_string (Int64.to_int32 i), Some 'l'))),
-      (fun i -> Pat.constant (Pconst_integer (Int32.to_string (Int64.to_int32 i), Some 'l')))
-    |Some UInt64 ->
-      (fun i -> Exp.constant (Pconst_integer (Int64.to_string i, Some 'L'))),
-      (fun i -> Pat.constant (Pconst_integer (Int64.to_string i, Some 'L')))
+      (fun i -> Ast.char (Char.chr (Int64.to_int i))),
+      (fun i -> Ast.pchar (Char.chr (Int64.to_int i)))
+    |Some (UInt8 | UInt16) -> convert_integer Int64.to_string None
+    |Some UInt32 -> convert_integer (fun i -> Int32.to_string (Int64.to_int32 i)) (Some 'l')
+    |Some UInt64 -> convert_integer Int64.to_string (Some 'L')
   in
   let decls = List.map (fun (f,_) -> Type.constructor f) fields in
   let getters = (List.map (fun ({txt = f; _},i) ->
-      {pc_lhs = pattfn i; pc_guard = None; pc_rhs = Ast.constr "Some" [Ast.constr f []]}
-    ) fields) @ [{pc_lhs = Pat.any (); pc_guard = None; pc_rhs = Ast.constr "None" []}] in
+    Exp.case (pattfn i) [%expr Some [%e Ast.constr f []]]
+    ) fields) @ [Exp.case [%pat? _] [%expr None]] in
   let setters = List.map (fun ({txt = f; _},i) ->
-      {pc_lhs = Ast.pconstr f []; pc_guard = None; pc_rhs = intfn i}
+      Exp.case (Ast.pconstr f []) (intfn i)
     ) fields in
   let printers = List.map (fun ({txt = f; _},_) ->
-      {pc_lhs = Ast.pconstr f []; pc_guard = None; pc_rhs = Ast.str f}) fields in
+      Exp.case (Ast.pconstr f []) (Ast.str f)
+    ) fields in
   let parsers = List.map (fun ({txt = f; _},_) ->
-      {pc_lhs = Ast.pstr f; pc_guard = None; pc_rhs = Ast.constr "Some" [Ast.constr f []]}) fields in
+      Exp.case (Ast.pstr f) [%expr Some [%e Ast.constr f []]]
+    ) fields in
   let getter {txt = x; _} = sprintf "int_to_%s" x in
   let setter {txt = x; _} = sprintf "%s_to_int" x in
   let printer {txt = x; _} = sprintf "%s_to_string" x in
