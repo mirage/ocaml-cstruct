@@ -379,20 +379,17 @@ let output_enum _loc name fields width ~sexp =
             | Some r -> r
           ]
       ] in
+  let declare name expr =
+    [%stri let[@ocaml.warning "-32"] [%p Ast.pvar name] = fun x -> [%e expr]]
+  in
   Str.type_ Recursive [Type.mk ~kind:(Ptype_variant decls) name] ::
-  [%stri
-    let[@ocaml.warning "-32"] [%p Ast.pvar (getter name)] = fun x ->
-      [%e Exp.match_ [%expr x] getters]] ::
-  [%stri
-    let[@ocaml.warning "-32"] [%p Ast.pvar (setter name)] = fun x ->
-      [%e Exp.match_ [%expr x] setters]] ::
-  [%stri
-    let[@ocaml.warning "-32"] [%p Ast.pvar (printer name)] = fun x ->
-      [%e Exp.match_ [%expr x] printers]] ::
-  [%stri
-    let[@ocaml.warning "-32"] [%p Ast.pvar (parse name)] = fun x ->
-      [%e Exp.match_ [%expr x]
-            (parsers @ [{pc_lhs = Pat.any (); pc_guard = None; pc_rhs = Ast.constr "None" []}])]] ::
+  declare (getter name) (Exp.match_ [%expr x] getters) ::
+  declare (setter name) (Exp.match_ [%expr x] setters) ::
+  declare (printer name) (Exp.match_ [%expr x] printers) ::
+  declare (parse name)
+    (Exp.match_ [%expr x]
+       (parsers @ [Exp.case [%pat? _] [%expr None]])
+    ) ::
   if sexp then output_sexp_struct else []
 
 let output_enum_sig _loc name fields width ~sexp =
