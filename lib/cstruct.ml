@@ -241,12 +241,12 @@ let get_char t i =
   else Bigarray.Array1.get t.buffer (t.off+i)
 
 
-external ba_set_int16 : buffer -> int -> uint16 -> unit = "%caml_bigstring_set16"
-external ba_set_int32 : buffer -> int -> uint32 -> unit = "%caml_bigstring_set32"
-external ba_set_int64 : buffer -> int -> uint64 -> unit = "%caml_bigstring_set64"
-external ba_get_int16 : buffer -> int -> uint16 = "%caml_bigstring_get16"
-external ba_get_int32 : buffer -> int -> uint32 = "%caml_bigstring_get32"
-external ba_get_int64 : buffer -> int -> uint64 = "%caml_bigstring_get64"
+external ba_set_int16 : buffer -> int -> uint16 -> unit = "%caml_bigstring_set16u"
+external ba_set_int32 : buffer -> int -> uint32 -> unit = "%caml_bigstring_set32u"
+external ba_set_int64 : buffer -> int -> uint64 -> unit = "%caml_bigstring_set64u"
+external ba_get_int16 : buffer -> int -> uint16 = "%caml_bigstring_get16u"
+external ba_get_int32 : buffer -> int -> uint32 = "%caml_bigstring_get32u"
+external ba_get_int64 : buffer -> int -> uint64 = "%caml_bigstring_get64u"
 
 external swap16 : int -> int = "%bswap16"
 external swap32 : int32 -> int32 = "%bswap_int32"
