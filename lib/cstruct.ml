@@ -254,50 +254,50 @@ external swap64 : int64 -> int64 = "%bswap_int64"
 
 let set_uint16 swap p t i c =
   if (i+2) > t.len || i < 0 then err_invalid_bounds (p ^ ".set_uint16") t i 2
-  else ba_set_int16 t.buffer (t.off+i) (if swap then swap16 c else c)
+  else ba_set_int16 t.buffer (t.off+i) (if swap then swap16 c else c) [@@inline]
 
 let set_uint32 swap p t i c =
   if (i+4) > t.len || i < 0 then err_invalid_bounds (p ^ ".set_uint32") t i 4
-  else ba_set_int32 t.buffer (t.off+i) (if swap then swap32 c else c)
+  else ba_set_int32 t.buffer (t.off+i) (if swap then swap32 c else c) [@@inline]
 
 let set_uint64 swap p t i c =
   if (i+8) > t.len || i < 0 then err_invalid_bounds (p ^ ".set_uint64") t i 8
-  else ba_set_int64 t.buffer (t.off+i) (if swap then swap64 c else c)
+  else ba_set_int64 t.buffer (t.off+i) (if swap then swap64 c else c) [@@inline]
 
 let get_uint16 swap p t i =
   if (i+2) > t.len || i < 0 then err_invalid_bounds (p ^ ".get_uint16") t i 2
   else
     let r = ba_get_int16 t.buffer (t.off+i) in
-    if swap then swap16 r else r
+    if swap then swap16 r else r [@@inline]
 
 let get_uint32 swap p t i =
   if (i+4) > t.len || i < 0 then err_invalid_bounds (p ^ ".get_uint32") t i 4
   else
     let r = ba_get_int32 t.buffer (t.off+i) in
-    if swap then swap32 r else r
+    if swap then swap32 r else r [@@inline]
 
 let get_uint64 swap p t i =
   if (i+8) > t.len || i < 0 then err_invalid_bounds (p ^ ".get_uint64") t i 8
   else
     let r = ba_get_int64 t.buffer (t.off+i) in
-    if swap then swap64 r else r
+    if swap then swap64 r else r [@@inline]
 
 module BE = struct
-  let set_uint16 t i c = set_uint16 (not Sys.big_endian) "BE" t i c
-  let set_uint32 t i c = set_uint32 (not Sys.big_endian) "BE" t i c
-  let set_uint64 t i c = set_uint64 (not Sys.big_endian) "BE" t i c
-  let get_uint16 t i = get_uint16 (not Sys.big_endian) "BE" t i
-  let get_uint32 t i = get_uint32 (not Sys.big_endian) "BE" t i
-  let get_uint64 t i = get_uint64 (not Sys.big_endian) "BE" t i
+  let set_uint16 t i c = set_uint16 (not Sys.big_endian) "BE" t i c [@@inline]
+  let set_uint32 t i c = set_uint32 (not Sys.big_endian) "BE" t i c [@@inline]
+  let set_uint64 t i c = set_uint64 (not Sys.big_endian) "BE" t i c [@@inline]
+  let get_uint16 t i = get_uint16 (not Sys.big_endian) "BE" t i [@@inline]
+  let get_uint32 t i = get_uint32 (not Sys.big_endian) "BE" t i [@@inline]
+  let get_uint64 t i = get_uint64 (not Sys.big_endian) "BE" t i [@@inline]
 end
 
 module LE = struct
-  let set_uint16 t i c = set_uint16 Sys.big_endian "LE" t i c
-  let set_uint32 t i c = set_uint32 Sys.big_endian "LE" t i c
-  let set_uint64 t i c = set_uint64 Sys.big_endian "LE" t i c
-  let get_uint16 t i = get_uint16 Sys.big_endian "LE" t i
-  let get_uint32 t i = get_uint32 Sys.big_endian "LE" t i
-  let get_uint64 t i = get_uint64 Sys.big_endian "LE" t i
+  let set_uint16 t i c = set_uint16 Sys.big_endian "LE" t i c [@@inline]
+  let set_uint32 t i c = set_uint32 Sys.big_endian "LE" t i c [@@inline]
+  let set_uint64 t i c = set_uint64 Sys.big_endian "LE" t i c [@@inline]
+  let get_uint16 t i = get_uint16 Sys.big_endian "LE" t i [@@inline]
+  let get_uint32 t i = get_uint32 Sys.big_endian "LE" t i [@@inline]
+  let get_uint64 t i = get_uint64 Sys.big_endian "LE" t i [@@inline]
 end
 
 let len t =
