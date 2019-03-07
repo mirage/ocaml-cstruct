@@ -75,7 +75,7 @@ let err_blit_to_bytes_dst src dst=
   err "Cstruct.blit_to_bytes src=%a dst=%a dst-off=%d len=%d"
     pp_t src bytes_t dst
 let err_invalid_bounds f =
-  err "invalid bounds in Cstruct.%s %a off=%d len=%d" f pp_t
+  err "invalid bounds in Cstruct.%s %a off=%d len=%d" f pp_t [@@inline never]
 let err_split t = err "Cstruct.split %a start=%d off=%d" pp_t t
 let err_iter t = err "Cstruct.iter %a i=%d len=%d" pp_t t
 
