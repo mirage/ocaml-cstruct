@@ -277,7 +277,7 @@ let get_uint32 swap p t i =
     if swap then swap32 r else r
 
 let get_uint64 swap p t i =
-  if (i+8) > t.len || i < 0 then err_invalid_bounds (p ^ "uint64") t i 8
+  if (i+8) > t.len || i < 0 then err_invalid_bounds (p ^ ".get_uint64") t i 8
   else
     let r = ba_get_int64 t.buffer (t.off+i) in
     if swap then swap64 r else r
