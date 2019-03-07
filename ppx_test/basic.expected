@@ -8,3 +8,9 @@ foo = {
 
 }
 "\007\000,\000\000\190\239abcdefgh"
+with_ignored_field = {
+  a = 0x1
+  _b = 0x2
+  c = 0x3
+
+}
