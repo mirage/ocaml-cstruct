@@ -213,28 +213,27 @@ let hexdump_expr s =
   ]
 
 let hexdump_to_buffer_expr s =
-  let hexdump =
-    List.fold_left (fun a f ->
-        let get_f = op_evar s (Op_get f) in
-        [%expr
-          [%e a]; Buffer.add_string buf [%e Ast.str ("  "^f.field^" = ")];
-          [%e match f.ty with
-              |Prim Char ->
-                [%expr Printf.bprintf buf "%c\n" ([%e get_f] v)]
-              |Prim (UInt8|UInt16) ->
-                [%expr Printf.bprintf buf "0x%x\n" ([%e get_f] v)]
-              |Prim UInt32 ->
-                [%expr Printf.bprintf buf "0x%lx\n" ([%e get_f] v)]
-              |Prim UInt64 ->
-                [%expr Printf.bprintf buf "0x%Lx\n" ([%e get_f] v)]
-              |Buffer (_,_) ->
-                [%expr Printf.bprintf buf "<buffer %s>"
-                         [%e Ast.str (field_to_string f)];
-                         Cstruct.hexdump_to_buffer buf ([%e get_f] v)]
-          ]]
-      ) (Ast.unit ()) s.fields
+  let prim_format_string = function
+    | Char -> [%expr "%c\n"]
+    | UInt8 | UInt16 -> [%expr "0x%x\n"]
+    | UInt32 -> [%expr "0x%lx\n"]
+    | UInt64 -> [%expr "0x%Lx\n"]
   in
-  [%expr fun buf v -> [%e hexdump]]
+  let hexdump_field f =
+    let get_f = op_evar s (Op_get f) in
+    let expr =
+      match f.ty with
+      |Prim p ->
+        [%expr Printf.bprintf buf [%e prim_format_string p] ([%e get_f] v)]
+      |Buffer (_,_) ->
+        [%expr Printf.bprintf buf "<buffer %s>" [%e Ast.str (field_to_string f)];
+          Cstruct.hexdump_to_buffer buf ([%e get_f] v)]
+    in
+    [%expr
+      Printf.bprintf buf "  %s = " [%e Ast.str f.field];
+      [%e expr]]
+  in
+  [%expr fun buf v -> [%e Ast.sequence (List.map hexdump_field s.fields)]]
 
 let op_expr loc s = function
   | Op_sizeof -> Ast.int s.len
