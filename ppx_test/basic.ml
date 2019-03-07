@@ -84,7 +84,7 @@ type with_ignored_field = {
 } [@@little_endian]
 ]
 
-let _ : Cstruct.t -> int -> unit = set_with_ignored_field__b
+let _ : bool = set_with_ignored_field__b
 
 let tests () =
   (* Test basic set/get functions *)

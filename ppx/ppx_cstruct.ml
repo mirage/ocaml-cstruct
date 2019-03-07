@@ -45,6 +45,9 @@ type field = {
   off: int;
 }
 
+let field_is_ignored f =
+  String.get f.field 0 = '_'
+
 type t = {
   name: string;
   fields: field list;
@@ -220,14 +223,17 @@ let hexdump_to_buffer_expr s =
     | UInt64 -> [%expr "0x%Lx\n"]
   in
   let hexdump_field f =
-    let get_f = op_evar s (Op_get f) in
-    let expr =
-      match f.ty with
-      |Prim p ->
-        [%expr Printf.bprintf buf [%e prim_format_string p] ([%e get_f] v)]
-      |Buffer (_,_) ->
-        [%expr Printf.bprintf buf "<buffer %s>" [%e Ast.str (field_to_string f)];
-          Cstruct.hexdump_to_buffer buf ([%e get_f] v)]
+    if field_is_ignored f then
+      [%expr ()]
+    else
+      let get_f = op_evar s (Op_get f) in
+      let expr =
+        match f.ty with
+        |Prim p ->
+          [%expr Printf.bprintf buf [%e prim_format_string p] ([%e get_f] v)]
+        |Buffer (_,_) ->
+          [%expr Printf.bprintf buf "<buffer %s>" [%e Ast.str (field_to_string f)];
+            Cstruct.hexdump_to_buffer buf ([%e get_f] v)]
     in
     [%expr
       Printf.bprintf buf "  %s = " [%e Ast.str f.field];
@@ -249,26 +255,25 @@ let op_expr loc s = function
     [%expr fun src srcoff dst ->
       Cstruct.blit src srcoff dst [%e Ast.int f.off] [%e Ast.int len]]
 
+let field_ops_for f =
+  if field_is_ignored f then
+    []
+  else
+    let if_buffer x =
+      match f.ty with
+      |Buffer (_,_) -> [x]
+      |Prim _ -> []
+    in
+    List.concat
+      [ [Op_get f]
+      ; if_buffer (Op_copy f)
+      ; [Op_set f]
+      ; if_buffer (Op_blit f)
+      ]
+
 let ops_for s =
-  let field_ops =
-    List.concat (
-      List.map (fun f ->
-        let if_buffer x =
-          match f.ty with
-          |Buffer (_,_) -> [x]
-          |Prim _ -> []
-        in
-        List.concat
-          [ [Op_get f]
-          ; if_buffer (Op_copy f)
-          ; [Op_set f]
-          ; if_buffer (Op_blit f)
-          ]
-      ) s.fields
-    )
-  in
   ( [Op_sizeof]
-  @ field_ops
+  @ List.concat (List.map field_ops_for s.fields)
   @ [Op_hexdump_to_buffer;
      Op_hexdump;
     ])
