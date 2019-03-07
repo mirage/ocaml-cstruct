@@ -14,8 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-let read fd t =
-  Lwt_bytes.read fd t.Cstruct.buffer t.Cstruct.off t.Cstruct.len
+let read fd t = Lwt_bytes.read fd t.Cstruct.buffer t.Cstruct.off t.Cstruct.len
 
 let write fd t =
   Lwt_bytes.write fd t.Cstruct.buffer t.Cstruct.off t.Cstruct.len
@@ -25,11 +24,10 @@ let complete op t =
   let rec loop t =
     op t >>= fun n ->
     let t = Cstruct.shift t n in
-    if Cstruct.len t = 0
-    then return ()
-    else if n = 0
-    then fail End_of_file
-    else loop t in
+    if Cstruct.len t = 0 then return ()
+    else if n = 0 then fail End_of_file
+    else loop t
+  in
   loop t
 
 let sendto fd t flags dst =

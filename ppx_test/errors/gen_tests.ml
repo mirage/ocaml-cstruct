@@ -23,8 +23,5 @@ let is_test = function
   | e -> Filename.check_suffix e ".ml"
 
 let () =
-  Sys.readdir "."
-  |> Array.to_list
-  |> List.sort String.compare
-  |> List.filter is_test
-  |> List.iter output_stanzas
+  Sys.readdir "." |> Array.to_list |> List.sort String.compare
+  |> List.filter is_test |> List.iter output_stanzas

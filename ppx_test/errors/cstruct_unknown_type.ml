@@ -1,6 +1,1 @@
-[%%cstruct
-  type t =
-  { a : uint9_t
-  }
-[@@little_endian]
-]
+[%%cstruct type t = { a : uint9_t } [@@little_endian]]

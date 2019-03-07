@@ -15,38 +15,39 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type 'a rd = < rd: unit; .. > as 'a
 (** Type of read capability. *)
+type 'a rd = < rd : unit ; .. > as 'a
 
-type 'a wr = < wr: unit; .. > as 'a
 (** Type of write capability. *)
+type 'a wr = < wr : unit ; .. > as 'a
 
-type 'a t
 (** Type of cstruct with capabilities ['a]. *)
+type 'a t
 
-type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
 (** Type of buffer. A {!t} is composed of an underlying buffer. *)
+type buffer =
+  (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
 
-type rdwr =  < rd: unit; wr: unit; >
 (** Type of read-and-capability. *)
+type rdwr = < rd : unit ; wr : unit >
 
-type ro = < rd: unit; >
 (** Type of read-only capability. *)
+type ro = < rd : unit >
 
-type wo = < wr: unit; >
 (** Type of write-only capability. *)
+type wo = < wr : unit >
 
-type uint8 = int
 (** 8-bit unsigned integer. *)
+type uint8 = int
 
-type uint16 = int
 (** 16-bit unsigned integer. *)
+type uint16 = int
 
-type uint32 = int32
 (** 32-bit unsigned integer. *)
+type uint32 = int32
 
-type uint64 = int64
 (** 64-bit unsigned integer. *)
+type uint64 = int64
 
 val create : int -> rdwr t
 (** [create len] is a fresh read-and-write {!t} of size [len]. with an offset of
@@ -74,7 +75,9 @@ val of_string : ?off:int -> ?len:int -> string -> rdwr t
 (** [of_string ~off ~len s] is a fresh read-and-write {!t} of [s] sliced on
     [off] (default is [0]) and of [len] (default is [String.length s]) length. *)
 
-val of_bytes : ?off:int -> ?len:int -> bytes -> rdwr t val of_hex : string -> rdwr t
+val of_bytes : ?off:int -> ?len:int -> bytes -> rdwr t
+
+val of_hex : string -> rdwr t
 (** [of_bytes ~off ~len x] is a fresh read-and-write {!t} of [x] sliced on
     [off] (default is [0]) and of [len] (default is [Bytes.length x]) length. *)
 
@@ -178,7 +181,8 @@ val blit : 'a rd t -> src_off:int -> 'b wr t -> dst_off:int -> len:int -> unit
     @raise Invalid_argument if [src_off] and [len] do not designate a valid segment of [src],
     or if [dst_off] and [len] do not designate a valid segment of [dst]. *)
 
-val blit_from_string : string -> src_off:int -> 'a wr t -> dst_off:int -> len:int -> unit
+val blit_from_string :
+  string -> src_off:int -> 'a wr t -> dst_off:int -> len:int -> unit
 (** [blit_from_string src ~src_off dst ~dst_off ~len] copies [len] characters from [src],
     starting at index [src_off], to [dst], starting at index [dst_off]. This function
     uses [memcpy] internally.
@@ -189,7 +193,8 @@ val blit_from_string : string -> src_off:int -> 'a wr t -> dst_off:int -> len:in
     sub-string of [src], or if [dst_off] and [len] do not designate a valid
     segment of [dst]. *)
 
-val blit_from_bytes : bytes -> src_off:int -> 'a wr t -> dst_off:int -> len:int -> unit
+val blit_from_bytes :
+  bytes -> src_off:int -> 'a wr t -> dst_off:int -> len:int -> unit
 (** [blit_from_bytes src ~src_off dst ~dst_off ~len] copies [len] characters from [src],
     starting at index [src_off], to [dst], starting at index [dst_off]. This uses
     [memcpy] internally.
@@ -200,7 +205,8 @@ val blit_from_bytes : bytes -> src_off:int -> 'a wr t -> dst_off:int -> len:int 
     valid sub-sequence of [src], or if [dst_off] and [len] do no designate
     a valid segment of [dst]. *)
 
-val blit_to_bytes : 'a rd t -> src_off:int -> bytes -> dst_off:int -> len:int -> unit
+val blit_to_bytes :
+  'a rd t -> src_off:int -> bytes -> dst_off:int -> len:int -> unit
 (** [blit_to_bytes src ~src_off dst ~dst_off ~len] copies [len] characters
     from [src], starting at index [src_off], to sequences [dst], starting at index [dst_off].
     [blit_to_bytes] uses [memcpy] internally.
@@ -350,8 +356,8 @@ val fillv : src:'a rd t list -> dst:'b wr t -> int * 'a rd t list
     [dst] needs at least write-capability {!wr}. Each {!t} of [src] and dst don't
     share capabilities. *)
 
-type 'a iter = unit -> 'a option
 (** Type of iterator. *)
+type 'a iter = unit -> 'a option
 
 val iter : ('a rd t -> int option) -> ('a rd t -> 'v) -> 'a rd t -> 'v iter
 (** [iter lenf of_cstruct t] is an iterator over [t] that returns elements of

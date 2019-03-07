@@ -1,5 +1,1 @@
-[%%cenum
-  type t =
-    { x : uint8_t
-    }
-]
+[%%cenum type t = { x : uint8_t }]

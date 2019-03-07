@@ -19,19 +19,13 @@ open Async_unix
 open Async_kernel
 
 let to_bigsubstring t =
-  Bigsubstring.create 
-    ~pos:t.Cstruct.off 
-    ~len:t.Cstruct.len 
-    t.Cstruct.buffer
+  Bigsubstring.create ~pos:t.Cstruct.off ~len:t.Cstruct.len t.Cstruct.buffer
 
 let of_bigsubstring t =
-  Cstruct.of_bigarray
-    ~off:(Bigsubstring.pos t) 
-    ~len:(Bigsubstring.length t)
+  Cstruct.of_bigarray ~off:(Bigsubstring.pos t) ~len:(Bigsubstring.length t)
     (Bigsubstring.base t)
 
-let read rd t =
-  Reader.read_bigsubstring rd (to_bigsubstring t)
+let read rd t = Reader.read_bigsubstring rd (to_bigsubstring t)
 
 let schedule_write wr t =
   let open Cstruct in
@@ -40,13 +34,13 @@ let schedule_write wr t =
 module Pipe = struct
   let map_string rd wr =
     let rd = Pipe.map rd ~f:Cstruct.to_string in
-    let rd',wr' = Pipe.create () in
+    let rd', wr' = Pipe.create () in
     don't_wait_for (Pipe.transfer rd' wr ~f:Cstruct.of_string);
-    rd,wr'
+    (rd, wr')
 
   let map_bigsubstring rd wr =
     let rd = Pipe.map rd ~f:to_bigsubstring in
-    let rd',wr' = Pipe.create () in
+    let rd', wr' = Pipe.create () in
     don't_wait_for (Pipe.transfer rd' wr ~f:of_bigsubstring);
-    rd,wr'
+    (rd, wr')
 end

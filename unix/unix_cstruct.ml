@@ -15,5 +15,8 @@
  *)
 
 let of_fd fd =
-  let buffer = Bigarray.(array1_of_genarray (Unix.map_file fd char c_layout false [|-1|])) in
+  let buffer =
+    Bigarray.(
+      array1_of_genarray (Unix.map_file fd char c_layout false [| -1 |]))
+  in
   Cstruct.of_bigarray buffer

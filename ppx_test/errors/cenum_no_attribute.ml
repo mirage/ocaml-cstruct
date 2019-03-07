@@ -1,4 +1,1 @@
-[%%cenum
-  type t =
-    | A
-]
+[%%cenum type t = A]

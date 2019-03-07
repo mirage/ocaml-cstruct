@@ -19,19 +19,21 @@ open Async_unix
 open Async_kernel
 
 val to_bigsubstring : Cstruct.t -> Bigsubstring.t
+
 val of_bigsubstring : Bigsubstring.t -> Cstruct.t
 
-val read: Reader.t -> Cstruct.t -> int Reader.Read_result.t Deferred.t
-val schedule_write: Writer.t -> Cstruct.t -> unit
+val read : Reader.t -> Cstruct.t -> int Reader.Read_result.t Deferred.t
+
+val schedule_write : Writer.t -> Cstruct.t -> unit
 
 module Pipe : sig
   val map_string :
     Cstruct.t Pipe.Reader.t ->
     Cstruct.t Pipe.Writer.t ->
-    (string Pipe.Reader.t * string Pipe.Writer.t)
+    string Pipe.Reader.t * string Pipe.Writer.t
 
   val map_bigsubstring :
     Cstruct.t Pipe.Reader.t ->
     Cstruct.t Pipe.Writer.t ->
-    (Bigsubstring.t Pipe.Reader.t * Bigsubstring.t Pipe.Writer.t)
+    Bigsubstring.t Pipe.Reader.t * Bigsubstring.t Pipe.Writer.t
 end

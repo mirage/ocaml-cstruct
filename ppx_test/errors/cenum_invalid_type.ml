@@ -1,4 +1,1 @@
-[%%cenum
-  type t = A of int
-  [@@uint8_t]
-]
+[%%cenum type t = A of int [@@uint8_t]]

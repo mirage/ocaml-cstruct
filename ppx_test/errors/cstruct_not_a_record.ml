@@ -1,3 +1,1 @@
-[%%cstruct
-  type t = int
-]
+[%%cstruct type t = int]

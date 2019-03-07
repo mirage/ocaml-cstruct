@@ -1,5 +1,1 @@
-[%%cenum
-  type t =
-    | A
-  [@@uint9_t]
-]
+[%%cenum type t = A [@@uint9_t]]

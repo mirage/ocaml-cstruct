@@ -1,4 +1,1 @@
-[%%cenum
-  type t = A [@id ""]
-  [@@uint8_t]
-]
+[%%cenum type t = A [@id ""] [@@uint8_t]]
