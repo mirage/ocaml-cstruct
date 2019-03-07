@@ -186,25 +186,6 @@ let type_of_int_field = function
   |UInt32 -> [%type: Cstruct.uint32]
   |UInt64 -> [%type: Cstruct.uint64]
 
-let type_of_int_field _loc x =
-  type_of_int_field x [@metaloc loc]
-
-let output_get_sig loc s f =
-  match f.ty with
-  |Buffer (_,_) ->
-    [
-      op_val_typ loc s (Op_get f) [%type: Cstruct.t -> Cstruct.t];
-      op_val_typ loc s (Op_copy f) [%type: Cstruct.t -> string]
-    ]
-  |Prim prim ->
-    let retf = type_of_int_field loc prim in
-    [
-      op_val_typ loc s (Op_get f) [%type: Cstruct.t -> [%t retf]]
-    ]
-
-let output_get_sig _loc s f =
-  output_get_sig _loc s f [@metaloc _loc]
-
 let output_set _loc s f =
   let m = mode_mod _loc s.endian in
   let num x = Ast.int x in
@@ -230,25 +211,17 @@ let output_set _loc s f =
 let output_set _loc s f =
   output_set _loc s f [@metaloc _loc]
 
-let output_set_sig loc s f =
+let type_of_set f =
   match f.ty with
   |Buffer (_,_) ->
-    [
-      op_val_typ loc s (Op_set f) [%type: string -> int -> Cstruct.t -> unit];
-      op_val_typ loc s (Op_blit f) [%type: Cstruct.t -> int -> Cstruct.t -> unit]
-    ] [@metaloc loc]
+    [%type: string -> int -> Cstruct.t -> unit]
   |Prim prim ->
-    let retf = type_of_int_field loc prim in
-    [
-      op_val_typ loc s (Op_set f) [%type: Cstruct.t -> [%t retf] -> unit]
-    ] [@metaloc loc]
+    let retf = type_of_int_field prim in
+    [%type: Cstruct.t -> [%t retf] -> unit]
 
 let output_sizeof _loc s =
   [%stri
     let [%p op_pvar s Op_sizeof] = [%e Ast.int s.len]] [@metaloc _loc]
-
-let output_sizeof_sig loc s =
-  op_val_typ loc s Op_sizeof [%type: int]
 
 let output_hexdump _loc s =
   let hexdump =
@@ -286,12 +259,6 @@ let output_hexdump _loc s =
     ]
   ] [@metaloc _loc]
 
-let output_hexdump_sig loc s =
-  [
-    op_val_typ loc s Op_hexdump_to_buffer [%type: Buffer.t -> Cstruct.t -> unit];
-    op_val_typ loc s Op_hexdump [%type: Cstruct.t -> unit];
-  ]
-
 let output_struct_one_endian _loc s =
   (* Generate functions of the form {get/set}_<struct>_<field> *)
   let expr = List.fold_left (fun a f ->
@@ -315,12 +282,49 @@ let output_struct _loc s =
         ]
   | _ -> output_struct_one_endian _loc s
 
-let output_struct_sig _loc s =
-  (* Generate signaturs of the form {get/set}_<struct>_<field> *)
-  let expr = List.fold_left (fun a f ->
-      a @ output_get_sig _loc s f @ output_set_sig _loc s f
-    ) [output_sizeof_sig _loc s] s.fields
-  in expr @ output_hexdump_sig _loc s
+let type_of_get f =
+  match f.ty with
+  |Buffer (_,_) ->
+    [%type: Cstruct.t -> Cstruct.t]
+  |Prim prim ->
+    let retf = type_of_int_field prim in
+    [%type: Cstruct.t -> [%t retf]]
+
+let op_typ = function
+  | Op_sizeof -> [%type: int]
+  | Op_hexdump_to_buffer -> [%type: Buffer.t -> Cstruct.t -> unit]
+  | Op_hexdump -> [%type: Cstruct.t -> unit]
+  | Op_get f -> type_of_get f
+  | Op_set f -> type_of_set f
+  | Op_copy _ -> [%type: Cstruct.t -> string]
+  | Op_blit _ -> [%type: Cstruct.t -> int -> Cstruct.t -> unit]
+
+(** Generate signatures of the form {get/set}_<struct>_<field> *)
+let output_struct_sig loc s =
+  let field_ops =
+    List.concat (
+      List.map (fun f ->
+        let if_buffer x =
+          match f.ty with
+          |Buffer (_,_) -> [x]
+          |Prim _ -> []
+        in
+        List.concat
+          [ [Op_get f]
+          ; if_buffer (Op_copy f)
+          ; [Op_set f]
+          ; if_buffer (Op_blit f)
+          ]
+      ) s.fields
+    )
+  in
+  List.map
+    (fun op -> op_val_typ loc s op (op_typ op))
+    ( [Op_sizeof]
+    @ field_ops
+    @ [Op_hexdump_to_buffer;
+       Op_hexdump;
+      ])
 
 let output_enum _loc name fields width ~sexp =
   let intfn,pattfn = match ty_of_string width with
