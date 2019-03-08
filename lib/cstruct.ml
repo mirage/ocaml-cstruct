@@ -75,7 +75,7 @@ let err_blit_to_bytes_dst src dst=
   err "Cstruct.blit_to_bytes src=%a dst=%a dst-off=%d len=%d"
     pp_t src bytes_t dst
 let err_invalid_bounds f =
-  err "invalid bounds in Cstruct.%s %a off=%d len=%d" f pp_t
+  err "invalid bounds in Cstruct.%s %a off=%d len=%d" f pp_t [@@inline never]
 let err_split t = err "Cstruct.split %a start=%d off=%d" pp_t t
 let err_iter t = err "Cstruct.iter %a i=%d len=%d" pp_t t
 
@@ -241,12 +241,12 @@ let get_char t i =
   else Bigarray.Array1.get t.buffer (t.off+i)
 
 
-external ba_set_int16 : buffer -> int -> uint16 -> unit = "%caml_bigstring_set16"
-external ba_set_int32 : buffer -> int -> uint32 -> unit = "%caml_bigstring_set32"
-external ba_set_int64 : buffer -> int -> uint64 -> unit = "%caml_bigstring_set64"
-external ba_get_int16 : buffer -> int -> uint16 = "%caml_bigstring_get16"
-external ba_get_int32 : buffer -> int -> uint32 = "%caml_bigstring_get32"
-external ba_get_int64 : buffer -> int -> uint64 = "%caml_bigstring_get64"
+external ba_set_int16 : buffer -> int -> uint16 -> unit = "%caml_bigstring_set16u"
+external ba_set_int32 : buffer -> int -> uint32 -> unit = "%caml_bigstring_set32u"
+external ba_set_int64 : buffer -> int -> uint64 -> unit = "%caml_bigstring_set64u"
+external ba_get_int16 : buffer -> int -> uint16 = "%caml_bigstring_get16u"
+external ba_get_int32 : buffer -> int -> uint32 = "%caml_bigstring_get32u"
+external ba_get_int64 : buffer -> int -> uint64 = "%caml_bigstring_get64u"
 
 external swap16 : int -> int = "%bswap16"
 external swap32 : int32 -> int32 = "%bswap_int32"
@@ -254,50 +254,50 @@ external swap64 : int64 -> int64 = "%bswap_int64"
 
 let set_uint16 swap p t i c =
   if (i+2) > t.len || i < 0 then err_invalid_bounds (p ^ ".set_uint16") t i 2
-  else ba_set_int16 t.buffer (t.off+i) (if swap then swap16 c else c)
+  else ba_set_int16 t.buffer (t.off+i) (if swap then swap16 c else c) [@@inline]
 
 let set_uint32 swap p t i c =
   if (i+4) > t.len || i < 0 then err_invalid_bounds (p ^ ".set_uint32") t i 4
-  else ba_set_int32 t.buffer (t.off+i) (if swap then swap32 c else c)
+  else ba_set_int32 t.buffer (t.off+i) (if swap then swap32 c else c) [@@inline]
 
 let set_uint64 swap p t i c =
   if (i+8) > t.len || i < 0 then err_invalid_bounds (p ^ ".set_uint64") t i 8
-  else ba_set_int64 t.buffer (t.off+i) (if swap then swap64 c else c)
+  else ba_set_int64 t.buffer (t.off+i) (if swap then swap64 c else c) [@@inline]
 
 let get_uint16 swap p t i =
   if (i+2) > t.len || i < 0 then err_invalid_bounds (p ^ ".get_uint16") t i 2
   else
     let r = ba_get_int16 t.buffer (t.off+i) in
-    if swap then swap16 r else r
+    if swap then swap16 r else r [@@inline]
 
 let get_uint32 swap p t i =
   if (i+4) > t.len || i < 0 then err_invalid_bounds (p ^ ".get_uint32") t i 4
   else
     let r = ba_get_int32 t.buffer (t.off+i) in
-    if swap then swap32 r else r
+    if swap then swap32 r else r [@@inline]
 
 let get_uint64 swap p t i =
-  if (i+8) > t.len || i < 0 then err_invalid_bounds (p ^ "uint64") t i 8
+  if (i+8) > t.len || i < 0 then err_invalid_bounds (p ^ ".get_uint64") t i 8
   else
     let r = ba_get_int64 t.buffer (t.off+i) in
-    if swap then swap64 r else r
+    if swap then swap64 r else r [@@inline]
 
 module BE = struct
-  let set_uint16 t i c = set_uint16 (not Sys.big_endian) "BE" t i c
-  let set_uint32 t i c = set_uint32 (not Sys.big_endian) "BE" t i c
-  let set_uint64 t i c = set_uint64 (not Sys.big_endian) "BE" t i c
-  let get_uint16 t i = get_uint16 (not Sys.big_endian) "BE" t i
-  let get_uint32 t i = get_uint32 (not Sys.big_endian) "BE" t i
-  let get_uint64 t i = get_uint64 (not Sys.big_endian) "BE" t i
+  let set_uint16 t i c = set_uint16 (not Sys.big_endian) "BE" t i c [@@inline]
+  let set_uint32 t i c = set_uint32 (not Sys.big_endian) "BE" t i c [@@inline]
+  let set_uint64 t i c = set_uint64 (not Sys.big_endian) "BE" t i c [@@inline]
+  let get_uint16 t i = get_uint16 (not Sys.big_endian) "BE" t i [@@inline]
+  let get_uint32 t i = get_uint32 (not Sys.big_endian) "BE" t i [@@inline]
+  let get_uint64 t i = get_uint64 (not Sys.big_endian) "BE" t i [@@inline]
 end
 
 module LE = struct
-  let set_uint16 t i c = set_uint16 Sys.big_endian "LE" t i c
-  let set_uint32 t i c = set_uint32 Sys.big_endian "LE" t i c
-  let set_uint64 t i c = set_uint64 Sys.big_endian "LE" t i c
-  let get_uint16 t i = get_uint16 Sys.big_endian "LE" t i
-  let get_uint32 t i = get_uint32 Sys.big_endian "LE" t i
-  let get_uint64 t i = get_uint64 Sys.big_endian "LE" t i
+  let set_uint16 t i c = set_uint16 Sys.big_endian "LE" t i c [@@inline]
+  let set_uint32 t i c = set_uint32 Sys.big_endian "LE" t i c [@@inline]
+  let set_uint64 t i c = set_uint64 Sys.big_endian "LE" t i c [@@inline]
+  let get_uint16 t i = get_uint16 Sys.big_endian "LE" t i [@@inline]
+  let get_uint32 t i = get_uint32 Sys.big_endian "LE" t i [@@inline]
+  let get_uint64 t i = get_uint64 Sys.big_endian "LE" t i [@@inline]
 end
 
 let len t =
