@@ -72,6 +72,20 @@ type unused = {
 } [@@big_endian]
 ]
 
+let set_with_ignored_field__b = true
+
+let _ : bool = set_with_ignored_field__b
+
+[%%cstruct
+type with_ignored_field = {
+  a : uint8_t;
+  _b : uint8_t;
+  c : uint8_t;
+} [@@little_endian]
+]
+
+let _ : bool = set_with_ignored_field__b
+
 let tests () =
   (* Test basic set/get functions *)
   let be = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout sizeof_foo)) in
@@ -151,6 +165,7 @@ let tests () =
   assert(get_foo_b be = 44);
   assert(get_foo_a be = 7);
   hexdump_foo be;
-  print_endline (Sexplib.Sexp.to_string_hum (Cstruct.sexp_of_t be))
+  print_endline (Sexplib.Sexp.to_string_hum (Cstruct.sexp_of_t be));
+  hexdump_with_ignored_field (Cstruct.of_hex "010203")
 
 let () = tests ()
