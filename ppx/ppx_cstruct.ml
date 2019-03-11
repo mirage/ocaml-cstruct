@@ -343,7 +343,7 @@ let enum_print name =
 let enum_parse name =
   sprintf "string_to_%s" name.txt
 
-let declare_enum_name name = function
+let enum_op_name name = function
   | Enum_to_sexp -> sprintf "sexp_of_%s" name.txt
   | Enum_of_sexp -> sprintf "%s_of_sexp" name.txt
   | Enum_get _ -> sprintf "int_to_%s" name.txt
@@ -422,7 +422,7 @@ let output_enum _loc name fields width ~sexp =
   List.map
     (fun op ->
        [%stri
-         let[@ocaml.warning "-32"] [%p Ast.pvar (declare_enum_name name op)] = fun x -> [%e declare_enum_expr name op]
+         let[@ocaml.warning "-32"] [%p Ast.pvar (enum_op_name name op)] = fun x -> [%e declare_enum_expr name op]
        ])
     ( (Enum_get (prim, fields)) ::
       (Enum_set (prim, fields)) ::
@@ -430,35 +430,44 @@ let output_enum _loc name fields width ~sexp =
       (Enum_parse fields) ::
       if sexp then output_sexp_struct else [])
 
+let enum_op_type name =
+  let cty = Ast.tconstr name [] in
+  let oty prim = match prim with
+    | Char -> [%type: char]
+    | (UInt8|UInt16) -> [%type: int]
+    | UInt32 -> [%type: int32]
+    | UInt64 -> [%type: int64]
+  in
+  function
+  | Enum_get (prim, _) -> [%type: [%t oty prim] -> [%t cty] option]
+  | Enum_set (prim, _) -> [%type: [%t cty] -> [%t oty prim]]
+  | Enum_print _ -> [%type: [%t cty] -> string]
+  | Enum_parse _ -> [%type: string -> [%t cty] option]
+  | Enum_to_sexp -> [%type: [%t cty] -> Sexplib.Sexp.t]
+  | Enum_of_sexp -> [%type: Sexplib.Sexp.t -> [%t cty]]
+
 let output_enum_sig _loc name fields width ~sexp =
-  let oty = match ty_of_string width with
-    |None -> loc_err _loc "enum: unknown width specifier %s" width
-    |Some Char -> [%type: char]
-    |Some (UInt8|UInt16) -> [%type: int]
-    |Some UInt32 -> [%type: int32]
-    |Some UInt64 -> [%type: int64]
+  let prim = match ty_of_string width with
+    | None -> loc_err _loc "enum: unknown width specifier %s" width
+    | Some p -> p
   in
   let decls = List.map (fun (f,_) -> Type.constructor f) fields in
-  let getter {txt = x; _}  = sprintf "int_to_%s" x in
-  let setter {txt = x; _}  = sprintf "%s_to_int" x in
-  let printer {txt = x; _} = sprintf "%s_to_string" x in
-  let parse {txt = x; _}   = sprintf "string_to_%s" x in
-  let of_sexp {txt = x; _} = sprintf "%s_of_sexp" x in
-  let to_sexp {txt = x; _} = sprintf "sexp_of_%s" x in
-  let ctyo = [%type: [%t Ast.tconstr name.txt []] option] in
-  let cty = Ast.tconstr name.txt [] in
   let output_sexp_sig =
-    [
-      Sig.value (Val.mk (Loc.mkloc (to_sexp name) _loc) [%type: [%t cty] -> Sexplib.Sexp.t]);
-      Sig.value (Val.mk (Loc.mkloc (of_sexp name) _loc) [%type: Sexplib.Sexp.t -> [%t cty]])
+    [ Enum_to_sexp;
+      Enum_of_sexp
     ]
   in
   Sig.type_ Recursive [Type.mk ~kind:(Ptype_variant decls) name] ::
-  Sig.value (Val.mk (Loc.mkloc (getter name) _loc) [%type: [%t oty] -> [%t ctyo]]) ::
-  Sig.value (Val.mk (Loc.mkloc (setter name) _loc) [%type: [%t cty] -> [%t oty]]) ::
-  Sig.value (Val.mk (Loc.mkloc (printer name) _loc) [%type: [%t cty] -> string]) ::
-  Sig.value (Val.mk (Loc.mkloc (parse name) _loc) [%type: string -> [%t cty] option]) ::
-  if sexp then output_sexp_sig else []
+  List.map
+    (fun op ->
+       let name = enum_op_name name op in
+       let typ = enum_op_type name op in
+       Sig.value (Val.mk (Loc.mkloc name _loc) typ))
+    (Enum_get (prim, fields) ::
+     Enum_set (prim, fields) ::
+     Enum_print fields ::
+     Enum_parse fields ::
+     if sexp then output_sexp_sig else [])
 
 let constr_enum = function
   | {pcd_name = f; pcd_args = Pcstr_tuple []; pcd_attributes = attrs; _} ->
