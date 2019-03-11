@@ -407,28 +407,35 @@ let declare_enum_expr name = function
     Exp.match_ [%expr x]
       (parsers @ [Exp.case [%pat? _] [%expr None]])
 
-let output_enum _loc name fields width ~sexp =
+let enum_ops_for loc fields width ~sexp =
   let prim = match ty_of_string width with
-    | None -> loc_err _loc "enum: unknown width specifier %s" width
+    | None -> loc_err loc "enum: unknown width specifier %s" width
     | Some p -> p
   in
-  let decls = List.map (fun (f,_) -> Type.constructor f) fields in
   let output_sexp_struct =
     [ Enum_to_sexp
     ; Enum_of_sexp
     ]
   in
-  Str.type_ Recursive [Type.mk ~kind:(Ptype_variant decls) name] ::
+  (Enum_get (prim, fields)) ::
+  (Enum_set (prim, fields)) ::
+  (Enum_print fields) ::
+  (Enum_parse fields) ::
+  if sexp then output_sexp_struct else []
+
+let enum_type_decl name fields =
+  let decls = List.map (fun (f,_) -> Type.constructor f) fields in
+  Type.mk ~kind:(Ptype_variant decls) name
+
+let output_enum loc name fields width ~sexp =
+  Str.type_ Recursive [enum_type_decl name fields] ::
   List.map
     (fun op ->
        [%stri
-         let[@ocaml.warning "-32"] [%p Ast.pvar (enum_op_name name op)] = fun x -> [%e declare_enum_expr name op]
+         let[@ocaml.warning "-32"] [%p Ast.pvar (enum_op_name name op)] =
+           fun x -> [%e declare_enum_expr name op]
        ])
-    ( (Enum_get (prim, fields)) ::
-      (Enum_set (prim, fields)) ::
-      (Enum_print fields) ::
-      (Enum_parse fields) ::
-      if sexp then output_sexp_struct else [])
+    (enum_ops_for loc fields width ~sexp)
 
 let enum_op_type name =
   let cty = Ast.tconstr name [] in
@@ -446,28 +453,14 @@ let enum_op_type name =
   | Enum_to_sexp -> [%type: [%t cty] -> Sexplib.Sexp.t]
   | Enum_of_sexp -> [%type: Sexplib.Sexp.t -> [%t cty]]
 
-let output_enum_sig _loc name fields width ~sexp =
-  let prim = match ty_of_string width with
-    | None -> loc_err _loc "enum: unknown width specifier %s" width
-    | Some p -> p
-  in
-  let decls = List.map (fun (f,_) -> Type.constructor f) fields in
-  let output_sexp_sig =
-    [ Enum_to_sexp;
-      Enum_of_sexp
-    ]
-  in
-  Sig.type_ Recursive [Type.mk ~kind:(Ptype_variant decls) name] ::
+let output_enum_sig loc name fields width ~sexp =
+  Sig.type_ Recursive [enum_type_decl name fields] ::
   List.map
     (fun op ->
        let name = enum_op_name name op in
        let typ = enum_op_type name op in
-       Sig.value (Val.mk (Loc.mkloc name _loc) typ))
-    (Enum_get (prim, fields) ::
-     Enum_set (prim, fields) ::
-     Enum_print fields ::
-     Enum_parse fields ::
-     if sexp then output_sexp_sig else [])
+       Sig.value (Val.mk (Loc.mkloc name loc) typ))
+    (enum_ops_for loc fields width ~sexp)
 
 let constr_enum = function
   | {pcd_name = f; pcd_args = Pcstr_tuple []; pcd_attributes = attrs; _} ->
