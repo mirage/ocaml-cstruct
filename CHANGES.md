@@ -1,3 +1,14 @@
+v3.7.0 2019-03-10
+-----------------
+
+- Improve performance by not doing redundant bounds checks
+  in both the Bigarray and Cstruct level (#236 @Reperator @chambart)
+- Ignore fields starting wih `_` by skipping code generation
+  but still respecting the space usage of that field. This was
+  a convention before but is now enforced by the code generator
+  to save space in the output (#233 @emillon)
+- More warnings suppression for sizeof and enums (#231 @emillon)
+
 v3.6.0 2019-03-01
 -----------------
 
