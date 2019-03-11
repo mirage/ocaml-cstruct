@@ -86,6 +86,16 @@ type with_ignored_field = {
 
 let _ : bool = set_with_ignored_field__b
 
+(** This should not emit any warnings either *)
+[%%cenum
+type unused_cenum =
+  | DROPPED [@id 0xfffe]
+  | ERROR   [@id 0xffff]
+  | OKAY    [@id 0]
+  | NULL    [@id 1]
+  [@@int16_t] [@@sexp]
+]
+
 let tests () =
   (* Test basic set/get functions *)
   let be = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout sizeof_foo)) in
