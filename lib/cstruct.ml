@@ -500,23 +500,3 @@ let rev t =
     set_uint8 out i_dst byte
   done;
   out
-
-open Sexplib
-
-let buffer_of_sexp b = Conv.bigstring_of_sexp b
-let sexp_of_buffer b = Conv.sexp_of_bigstring b
-
-let t_of_sexp = function
-  | Sexp.Atom str ->
-      let n = String.length str in
-      let t = create_unsafe n in
-      blit_from_string str 0 t 0 n ;
-      t
-  | sexp -> Conv.of_sexp_error "Cstruct.t_of_sexp: atom needed" sexp
-
-let sexp_of_t t =
-  let n   = len t in
-  let str = Bytes.create n in
-  blit_to_bytes t 0 str 0 n ;
-  (* The following call is safe, since str is not visible elsewhere. *)
-  Sexp.Atom (Bytes.unsafe_to_string str)

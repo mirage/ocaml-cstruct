@@ -175,7 +175,7 @@ let tests () =
   assert(get_foo_b be = 44);
   assert(get_foo_a be = 7);
   hexdump_foo be;
-  print_endline (Sexplib.Sexp.to_string_hum (Cstruct.sexp_of_t be));
+  print_endline (Sexplib.Sexp.to_string_hum (Cstruct_sexp.sexp_of_t be));
   hexdump_with_ignored_field (Cstruct.of_hex "010203")
 
 let () = tests ()

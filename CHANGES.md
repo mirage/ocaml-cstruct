@@ -1,3 +1,25 @@
+v4.0.0
+------
+
+- Sexplib is now an optional library for the base `Cstruct` module.
+  A new `Cstruct_sexp` module has been introduced with the serialiser
+  functions, contained within the `cstruct-sexp` opam package.
+
+  To convert old code, simply use `Cstruct_sexp.t` instead of
+  `Cstruct.t` in a record type for which you are using `[@@deriving sexp]`.
+  This is a type alias to `Cstruct.t` but also has the right
+  sexp-conversion functions in scope.  There is an example of this
+  in the `ppx_test/with-sexp` directory in the source repo.
+
+  When you have converted and released your library, add an
+  opam constraint of `cstruct {>="4.0.0"}` to your own opam
+  packages to ensure that they pick up this version of the library.
+  (fixes #222, @avsm)
+
+- Use computed versions in opam files to ensure that dependent
+  opam packages such as cstruct-async get the same base version
+  of cstruct to avoid mismatches.
+
 v3.7.0 2019-03-10
 -----------------
 
