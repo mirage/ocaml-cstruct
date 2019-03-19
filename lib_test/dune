@@ -1,5 +1,5 @@
 (executable
- (libraries cstruct alcotest cstruct-sexp)
+ (libraries cstruct bigarray alcotest cstruct-sexp)
  (name tests))
 
 (alias

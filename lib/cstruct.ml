@@ -14,7 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
+type buffer = (char, Bigarray_compat.int8_unsigned_elt, Bigarray_compat.c_layout) Bigarray_compat.Array1.t
 
 (* Note:
  *
@@ -34,7 +34,7 @@ type t = {
 }
 
 let pp_t ppf t =
-  Format.fprintf ppf "[%d,%d](%d)" t.off t.len (Bigarray.Array1.dim t.buffer)
+  Format.fprintf ppf "[%d,%d](%d)" t.off t.len (Bigarray_compat.Array1.dim t.buffer)
 let string_t ppf str =
   Format.fprintf ppf "[%d]" (String.length str)
 let bytes_t ppf str =
@@ -80,7 +80,7 @@ let err_split t = err "Cstruct.split %a start=%d off=%d" pp_t t
 let err_iter t = err "Cstruct.iter %a i=%d len=%d" pp_t t
 
 let of_bigarray ?(off=0) ?len buffer =
-  let dim = Bigarray.Array1.dim buffer in
+  let dim = Bigarray_compat.Array1.dim buffer in
   let len =
     match len with
     | None     -> dim - off
@@ -89,14 +89,14 @@ let of_bigarray ?(off=0) ?len buffer =
   else { buffer; off; len }
 
 let to_bigarray buffer =
-  Bigarray.Array1.sub buffer.buffer buffer.off buffer.len
+  Bigarray_compat.Array1.sub buffer.buffer buffer.off buffer.len
 
 let create_unsafe len =
-  let buffer = Bigarray.(Array1.create char c_layout len) in
+  let buffer = Bigarray_compat.(Array1.create char c_layout len) in
   { buffer ; len ; off = 0 }
 
 let check_bounds t len =
-  len >= 0 && Bigarray.Array1.dim t.buffer >= len
+  len >= 0 && Bigarray_compat.Array1.dim t.buffer >= len
 
 let empty = create_unsafe 0
 
@@ -118,7 +118,7 @@ type uint32 = int32
 type uint64 = int64
 
 let debug t =
-  let max_len = Bigarray.Array1.dim t.buffer in
+  let max_len = Bigarray_compat.Array1.dim t.buffer in
   if t.off+t.len > max_len || t.len < 0 || t.off < 0 then (
     Format.printf "ERROR: t.off+t.len=%d %a\n%!" (t.off+t.len) pp_t t;
     assert false;
@@ -226,19 +226,19 @@ let create len =
 
 let set_uint8 t i c =
   if i >= t.len || i < 0 then err_invalid_bounds "set_uint8" t i 1
-  else Bigarray.Array1.set t.buffer (t.off+i) (Char.unsafe_chr c)
+  else Bigarray_compat.Array1.set t.buffer (t.off+i) (Char.unsafe_chr c)
 
 let set_char t i c =
   if i >= t.len || i < 0 then err_invalid_bounds "set_char" t i 1
-  else Bigarray.Array1.set t.buffer (t.off+i) c
+  else Bigarray_compat.Array1.set t.buffer (t.off+i) c
 
 let get_uint8 t i =
   if i >= t.len || i < 0 then err_invalid_bounds "get_uint8" t i 1
-  else Char.code (Bigarray.Array1.get t.buffer (t.off+i))
+  else Char.code (Bigarray_compat.Array1.get t.buffer (t.off+i))
 
 let get_char t i =
   if i >= t.len || i < 0 then err_invalid_bounds "get_char" t i 1
-  else Bigarray.Array1.get t.buffer (t.off+i)
+  else Bigarray_compat.Array1.get t.buffer (t.off+i)
 
 
 external ba_set_int16 : buffer -> int -> uint16 -> unit = "%caml_bigstring_set16u"
@@ -426,7 +426,7 @@ let hexdump_pp fmt t =
   Format.pp_open_vbox fmt 0 ;
   for i = 0 to len t - 1 do
     let column = i mod 16 in
-    let c = Char.code (Bigarray.Array1.get t.buffer (t.off+i)) in
+    let c = Char.code (Bigarray_compat.Array1.get t.buffer (t.off+i)) in
     Format.fprintf fmt "%a%.2x%a" before column c after column
   done ;
   Format.pp_close_box fmt ()

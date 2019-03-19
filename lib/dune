@@ -1,7 +1,7 @@
 (library
  (name cstruct)
  (public_name cstruct)
- (libraries bigarray)
+ (libraries bigarray-compat)
  (c_names cstruct_stubs)
  (js_of_ocaml (javascript_files cstruct.js))
  (modules cstruct))
