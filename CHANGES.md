@@ -18,7 +18,10 @@ v4.0.0
 
 - Use computed versions in opam files to ensure that dependent
   opam packages such as cstruct-async get the same base version
-  of cstruct to avoid mismatches.
+  of cstruct to avoid mismatches. (@avsm)
+
+- Add a ppx test suite to checks that all error paths in ppx
+  handling are reachable and have meaningful location info (#238 @emillon)
 
 v3.7.0 2019-03-10
 -----------------
