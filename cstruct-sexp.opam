@@ -19,7 +19,7 @@ depends: [
   "ocaml" {>= "4.03.0"}
   "dune" {build & >= "1.0"}
   "sexplib" {< "v0.12"}
-  "cstruct" {=version}
+  "cstruct" {>= "3.6.0"}
   "alcotest" {with-test}
 ]
 synopsis: "Sexp serialisers for C-like structures"
