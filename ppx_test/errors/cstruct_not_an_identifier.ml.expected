@@ -1,2 +1,2 @@
 File "cstruct_not_an_identifier.ml", line 3, characters 8-20:
-Error: ppx_cstruct error: type identifier expected
+Error: ppx_cstruct: type identifier expected
