@@ -39,14 +39,23 @@ type ty =
   | Prim of prim
   | Buffer of prim * int
 
-type field = {
-  field: string;
+type raw_field = {
+  name: string;
+  ty: ty;
+}
+
+type named_field = {
+  name: string;
   ty: ty;
   off: int;
 }
 
-let field_is_ignored f =
-  String.get f.field 0 = '_'
+type field =
+  | Named_field of named_field
+  | Ignored_field
+
+let field_is_ignored name =
+  String.get name 0 = '_'
 
 type t = {
   name: string;
@@ -64,16 +73,19 @@ let ty_of_string =
   |"uint64_t"|"uint64"|"int64"|"int64_t" -> Some UInt64
   |_ -> None
 
+let width_of_prim = function
+  | Char -> 1
+  | UInt8 -> 1
+  | UInt16 -> 2
+  | UInt32 -> 4
+  | UInt64 -> 8
+
+let width_of_ty = function
+  | Prim p -> width_of_prim p
+  | Buffer (p, len) -> width_of_prim p * len
+
 let width_of_field f =
-  let rec width = function
-    |Prim Char -> 1
-    |Prim UInt8 -> 1
-    |Prim UInt16 -> 2
-    |Prim UInt32 -> 4
-    |Prim UInt64 -> 8
-    |Buffer (prim, len) -> (width (Prim prim)) * len
-  in
-  width f.ty
+  width_of_ty f.ty
 
 let field_to_string f =
   let rec string = function
@@ -84,11 +96,11 @@ let field_to_string f =
     |Prim UInt64 -> "uint64_t"
     |Buffer (prim, len) -> sprintf "%s[%d]" (string (Prim prim)) len
   in
-  sprintf "%s %s" (string f.ty) f.field
+  sprintf "%s %s" (string f.ty) f.name
 
 let loc_err loc fmt = Location.raise_errorf ~loc ("ppx_cstruct error: " ^^ fmt)
 
-let parse_field loc field field_type sz =
+let parse_field loc name field_type sz =
   match ty_of_string field_type with
   |None -> loc_err loc "Unknown type %s" field_type
   |Some ty -> begin
@@ -96,19 +108,20 @@ let parse_field loc field field_type sz =
       |_,None -> Prim ty
       |prim,Some sz -> Buffer (prim, sz)
     in
-    let off = -1 in
-    { field; ty; off }
+    { name; ty }
   end
 
 let check_for_duplicates loc fields =
   let module StringSet = Set.Make(String) in
   let _ : StringSet.t =
     List.fold_left (fun seen f ->
-        let name = f.field in
-        if not (field_is_ignored f) && StringSet.mem name seen then
-          loc_err loc "field %s is present several times in this type" name
-        else
-          StringSet.add name seen
+        match f with
+        | Ignored_field -> seen
+        | Named_field {name; _} ->
+          if StringSet.mem name seen then
+            loc_err loc "field %s is present several times in this type" name
+          else
+            StringSet.add name seen
       )
       StringSet.empty
       fields
@@ -124,12 +137,17 @@ let create_struct loc endian name fields =
     |_ -> loc_err loc "unknown endian %s, should be little_endian, big_endian, host_endian or bi_endian" endian
   in
   let len, fields =
-    List.fold_left (fun (off,acc) field ->
-      let field = {field with off=off} in
-      let off = width_of_field field + off in
-      let acc = acc @ [field] in
-      (off, acc)
-    ) (0,[]) fields
+    List.fold_left (fun (off,acc) ({name; ty}:raw_field) ->
+        let field =
+          if field_is_ignored name then
+            Ignored_field
+          else
+            Named_field { name; ty; off }
+        in
+        let off = width_of_ty ty + off in
+        let acc = acc @ [field] in
+        (off, acc)
+      ) (0,[]) fields
   in
   check_for_duplicates loc fields;
   { fields; name = name.txt; len; endian }
@@ -146,10 +164,10 @@ let mode_mod loc x s =
   Exp.ident ~loc {loc ; txt = mode_mod s x}
 
 type op =
-  | Op_get of field
-  | Op_set of field
-  | Op_copy of field
-  | Op_blit of field
+  | Op_get of named_field
+  | Op_set of named_field
+  | Op_copy of named_field
+  | Op_blit of named_field
   | Op_sizeof
   | Op_hexdump
   | Op_hexdump_to_buffer
@@ -157,10 +175,10 @@ type op =
 let op_name s op =
   let parts =
     match op with
-    | Op_get f -> ["get"; s.name; f.field]
-    | Op_set f -> ["set"; s.name; f.field]
-    | Op_copy f -> ["copy"; s.name; f.field]
-    | Op_blit f -> ["blit"; s.name; f.field]
+    | Op_get f -> ["get"; s.name; f.name]
+    | Op_set f -> ["set"; s.name; f.name]
+    | Op_copy f -> ["copy"; s.name; f.name]
+    | Op_blit f -> ["blit"; s.name; f.name]
     | Op_sizeof -> ["sizeof"; s.name]
     | Op_hexdump -> ["hexdump"; s.name]
     | Op_hexdump_to_buffer -> ["hexdump"; s.name; "to_buffer"]
@@ -238,10 +256,10 @@ let hexdump_to_buffer_expr s =
     | UInt32 -> [%expr "0x%lx\n"]
     | UInt64 -> [%expr "0x%Lx\n"]
   in
-  let hexdump_field f =
-    if field_is_ignored f then
+  let hexdump_field = function
+    | Ignored_field ->
       [%expr ()]
-    else
+    | Named_field f ->
       let get_f = op_evar s (Op_get f) in
       let expr =
         match f.ty with
@@ -252,7 +270,7 @@ let hexdump_to_buffer_expr s =
             Cstruct.hexdump_to_buffer buf ([%e get_f] v)]
     in
     [%expr
-      Printf.bprintf buf "  %s = " [%e Ast.str f.field];
+      Printf.bprintf buf "  %s = " [%e Ast.str f.name];
       [%e expr]]
   in
   [%expr fun buf v -> [%e Ast.sequence (List.map hexdump_field s.fields)]]
@@ -271,10 +289,11 @@ let op_expr loc s = function
     [%expr fun src srcoff dst ->
       Cstruct.blit src srcoff dst [%e Ast.int f.off] [%e Ast.int len]]
 
-let field_ops_for f =
-  if field_is_ignored f then
+let field_ops_for =
+  function
+  | Ignored_field ->
     []
-  else
+  | Named_field f ->
     let if_buffer x =
       match f.ty with
       |Buffer (_,_) -> [x]
