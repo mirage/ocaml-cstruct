@@ -1,9 +1,9 @@
 (executable
- (libraries cstruct alcotest)
+ (libraries cstruct alcotest cstruct-sexp)
  (name tests))
 
 (alias
  (name runtest)
- (package cstruct)
+ (package cstruct-sexp)
  (action
   (run ./tests.exe -e)))

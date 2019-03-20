@@ -140,26 +140,12 @@ type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Arr
 (** Type of a buffer. A cstruct is composed of an underlying buffer
     and position/length within this buffer. *)
 
-val sexp_of_buffer : buffer -> Sexplib.Sexp.t
-(** [sexp_of_buffer b] returns the s-expression representation of the raw memory buffer [b] *)
-
-val buffer_of_sexp : Sexplib.Sexp.t -> buffer
-(** [buffer_of_sexp s] returns a fresh memory buffer from the s-expression [s].
-    [s] should have been constructed using {!sexp_of_buffer}. *)
-
 type t = private {
   buffer: buffer;
   off   : int;
   len   : int;
 }
 (** Type of a cstruct. *)
-
-val sexp_of_t : t -> Sexplib.Sexp.t
-(** [sexp_of_t t] returns the s-expression representation of the Cstruct [t] *)
-
-val t_of_sexp : Sexplib.Sexp.t -> t
-(** [t_of_sexp s] returns a fresh {!Cstruct.t} that represents the
-     s-expression previously serialised by {!sexp_of_t}. *)
 
 type byte = char
 (** A single byte type *)

@@ -1,5 +1,12 @@
 (library
  (name cstruct)
  (public_name cstruct)
- (libraries sexplib)
- (c_names cstruct_stubs))
+ (libraries bigarray)
+ (c_names cstruct_stubs)
+ (modules cstruct))
+
+(library
+ (name cstruct_sexp)
+ (public_name cstruct-sexp)
+ (modules cstruct_sexp)
+ (libraries cstruct sexplib))

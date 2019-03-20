@@ -6,10 +6,10 @@ let random_cs ?(len = Random.int 128) () =
   cs
 
 let to_string_as_sexp cs =
-  Sexplib.Sexp.to_string_mach (Cstruct.sexp_of_t cs)
+  Sexplib.Sexp.to_string_mach (Cstruct_sexp.sexp_of_t cs)
 
 let of_string_as_sexp str =
-  Cstruct.t_of_sexp (Sexplib.Sexp.of_string str)
+  Cstruct_sexp.t_of_sexp (Sexplib.Sexp.of_string str)
 
 let assert_cs_equal ?(msg="cstruct") cs1 cs2 =
   let cstruct =

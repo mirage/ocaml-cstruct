@@ -6,7 +6,7 @@ install: wget https://raw.githubusercontent.com/ocaml/ocaml-travisci-skeleton/ma
 script: bash -ex ./.travis-docker.sh
 env:
   global:
-  - PINS="cstruct:. cstruct-async:. cstruct-lwt:. cstruct-unix:. ppx_cstruct:."
+  - PINS="cstruct:. cstruct-sexp:. cstruct-async:. cstruct-lwt:. cstruct-unix:. ppx_cstruct:."
   matrix:
   - PACKAGE="cstruct"       DISTRO="alpine"   OCAML_VERSION="4.03"
   - PACKAGE="cstruct"       DISTRO="alpine"   OCAML_VERSION="4.04"
