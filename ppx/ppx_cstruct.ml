@@ -100,7 +100,7 @@ let field_to_string f =
   in
   sprintf "%s %s" (string f.ty) f.name
 
-let loc_err loc fmt = Location.raise_errorf ~loc ("ppx_cstruct error: " ^^ fmt)
+let loc_err loc fmt = Location.raise_errorf ~loc ("ppx_cstruct: " ^^ fmt)
 
 let parse_field loc name field_type sz =
   match ty_of_string field_type with
