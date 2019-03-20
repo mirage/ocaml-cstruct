@@ -42,11 +42,13 @@ type ty =
 type raw_field = {
   name: string;
   ty: ty;
+  definition_loc: loc;
 }
 
 type named_field = {
   name: string;
   ty: ty;
+  definition_loc: loc;
   off: int;
 }
 
@@ -108,18 +110,18 @@ let parse_field loc name field_type sz =
       |_,None -> Prim ty
       |prim,Some sz -> Buffer (prim, sz)
     in
-    { name; ty }
+    { name; ty; definition_loc = loc }
   end
 
-let check_for_duplicates loc fields =
+let check_for_duplicates fields =
   let module StringSet = Set.Make(String) in
   let _ : StringSet.t =
     List.fold_left (fun seen f ->
         match f with
         | Ignored_field -> seen
-        | Named_field {name; _} ->
+        | Named_field {name; definition_loc; _} ->
           if StringSet.mem name seen then
-            loc_err loc "field %s is present several times in this type" name
+            loc_err definition_loc "field %s is present several times in this type" name
           else
             StringSet.add name seen
       )
@@ -137,19 +139,19 @@ let create_struct loc endian name fields =
     |_ -> loc_err loc "unknown endian %s, should be little_endian, big_endian, host_endian or bi_endian" endian
   in
   let len, fields =
-    List.fold_left (fun (off,acc) ({name; ty}:raw_field) ->
+    List.fold_left (fun (off,acc) ({name; ty; definition_loc}:raw_field) ->
         let field =
           if field_is_ignored name then
             Ignored_field
           else
-            Named_field { name; ty; off }
+            Named_field { name; ty; off; definition_loc }
         in
         let off = width_of_ty ty + off in
         let acc = acc @ [field] in
         (off, acc)
       ) (0,[]) fields
   in
-  check_for_duplicates loc fields;
+  check_for_duplicates fields;
   { fields; name = name.txt; len; endian }
 
 let ($.) l x = Longident.Ldot (l, x)

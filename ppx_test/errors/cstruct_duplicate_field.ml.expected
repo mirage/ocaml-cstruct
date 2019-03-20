@@ -1,2 +1,2 @@
-File "cstruct_duplicate_field.ml", line 2, characters 0-77:
+File "cstruct_duplicate_field.ml", line 5, characters 2-14:
 Error: ppx_cstruct error: field x is present several times in this type
