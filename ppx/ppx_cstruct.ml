@@ -100,6 +100,21 @@ let parse_field loc field field_type sz =
     { field; ty; off }
   end
 
+let check_for_duplicates loc fields =
+  let module StringSet = Set.Make(String) in
+  let _ : StringSet.t =
+    List.fold_left (fun seen f ->
+        let name = f.field in
+        if StringSet.mem name seen then
+          loc_err loc "field %s is present several times in this type" name
+        else
+          StringSet.add name seen
+      )
+      StringSet.empty
+      fields
+  in
+  ()
+
 let create_struct loc endian name fields =
   let endian = match endian with
     |"little_endian" -> Little_endian
@@ -116,6 +131,7 @@ let create_struct loc endian name fields =
       (off, acc)
     ) (0,[]) fields
   in
+  check_for_duplicates loc fields;
   { fields; name = name.txt; len; endian }
 
 let ($.) l x = Longident.Ldot (l, x)

@@ -84,6 +84,20 @@
     (diff cstruct_attribute_payload.ml.expected cstruct_attribute_payload.ml.errors)))
 
 (rule
+  (deps pp.exe (:input cstruct_duplicate_field.ml))
+  (targets cstruct_duplicate_field.ml.errors)
+  (action
+    (with-stderr-to
+      %{targets}
+      (system "./pp.exe --impl %{input} || true"))))
+
+(alias
+  (name runtest)
+  (package ppx_cstruct)
+  (action
+    (diff cstruct_duplicate_field.ml.expected cstruct_duplicate_field.ml.errors)))
+
+(rule
   (deps pp.exe (:input cstruct_multiple_len.ml))
   (targets cstruct_multiple_len.ml.errors)
   (action
