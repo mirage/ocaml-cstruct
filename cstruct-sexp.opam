@@ -22,7 +22,7 @@ depends: [
   "cstruct" {>= "3.6.0"}
   "alcotest" {with-test}
 ]
-synopsis: "Sexp serialisers for C-like structures"
+synopsis: "S-expression serialisers for C-like structures"
 description: """
 Cstruct is a library and syntax extension to make it easier to access C-like
 structures directly from OCaml.  It supports both reading and writing to these
