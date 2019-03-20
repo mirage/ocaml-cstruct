@@ -96,6 +96,16 @@ type unused_cenum =
   [@@int16_t] [@@sexp]
 ]
 
+(** Duplicate _ fields are OK *)
+[%%cstruct
+type with_several_ignored =
+{ x : int8_t
+; _y : int8_t
+; z : int8_t
+; _y : int8_t
+} [@@little_endian]
+]
+
 let tests () =
   (* Test basic set/get functions *)
   let be = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout sizeof_foo)) in

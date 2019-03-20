@@ -105,7 +105,7 @@ let check_for_duplicates loc fields =
   let _ : StringSet.t =
     List.fold_left (fun seen f ->
         let name = f.field in
-        if StringSet.mem name seen then
+        if not (field_is_ignored f) && StringSet.mem name seen then
           loc_err loc "field %s is present several times in this type" name
         else
           StringSet.add name seen
