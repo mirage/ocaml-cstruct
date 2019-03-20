@@ -3,6 +3,7 @@
  (public_name cstruct)
  (libraries bigarray)
  (c_names cstruct_stubs)
+ (js_of_ocaml (javascript_files cstruct.js))
  (modules cstruct))
 
 (library
