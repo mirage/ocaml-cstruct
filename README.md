@@ -12,6 +12,8 @@ This repository provides several packages that can be installed via the
 [OPAM](https://opam.ocaml.org) package manager:
 
 - `cstruct`: the core Cstruct library
+- `cstruct-sexp`: serialisers into s-expression format of Cstructs
+- `cstruct-unix`: provide Unix variations of the read/write functions using file descriptors
 - `cstruct-async`: provide [Async](https://github.com/janestreet/async) Pipe and Bigstring support
 - `cstruct-lwt`: provide [Lwt](https://ocsigen.org/lwt) variants of read/write functions
 - `ppx_cstruct`: a [PPX](https://caml.inria.fr/pub/docs/manual-ocaml/extn.html#sec248) syntax extension (see below)
@@ -20,7 +22,7 @@ The libraries depend on OCaml version 4.02.3 and later, since it provides a
 [ppx](http://whitequark.org/blog/2014/04/16/a-guide-to-extension-points-in-ocaml/)
 extension point. The old
 [camlp4](http://caml.inria.fr/pub/docs/manual-camlp4/manual002.html)
-syntax extension is nolonger available; the last version which contained it
+syntax extension is nolonger available; the last cstruct release which contained it
 was v1.9.0.
 
 ### Local development
@@ -191,6 +193,10 @@ type foo64 =
 
 And `sexp_of_foo64` and `foo64_of_sexp` functions will also be available.
 The representation of the Sexp is the string representation of the enum.
+
+If you do use the sexp decorator, then you will also need to add
+`sexplib` to the dependency list for your package (both in the
+`dune` file and the `opam` file).
 
 Please see the `ppx_test/` directory for more in-depth examples.
 

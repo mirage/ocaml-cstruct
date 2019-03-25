@@ -1,5 +1,5 @@
-v4.0.0
-------
+v4.0.0 2019-03-25
+-----------------
 
 - Sexplib is now an optional library for the base `Cstruct` module.
   A new `Cstruct_sexp` module has been introduced with the serialiser
@@ -15,6 +15,9 @@ v4.0.0
   opam constraint of `cstruct {>="4.0.0"}` to your own opam
   packages to ensure that they pick up this version of the library.
   (fixes #222, @avsm)
+
+- JavaScript stubs are now installed using the jsoo mechanism
+  rather than a manual specification (#241 @jonludlam)
 
 - Use computed versions in opam files to ensure that dependent
   opam packages such as cstruct-async get the same base version
