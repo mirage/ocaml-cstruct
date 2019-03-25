@@ -4,7 +4,7 @@
  (libraries bigarray)
  (c_names cstruct_stubs)
  (js_of_ocaml (javascript_files cstruct.js))
- (modules cstruct))
+ (modules cstruct cstruct_core cstruct_cap))
 
 (library
  (name cstruct_sexp)
