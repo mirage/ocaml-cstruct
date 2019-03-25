@@ -426,6 +426,15 @@ let test_subview_containment_set_char,
   test LE.set_uint32 0xffffffffl,
   test LE.set_uint64 0xffffffffffffffffL
 
+let regression_244 () =
+  let whole = Cstruct.create 44943 in
+  let empty = Cstruct.sub whole 0 0 in
+  try
+    let _big = Cstruct.sub empty 0 204 in
+    Alcotest.fail "could get a bigger buffer via sub"
+  with Invalid_argument _ -> ()
+
+
 let suite = [
   "test empty cstruct", `Quick, test_empty_cstruct;
   "test anti cstruct", `Quick, test_anti_cstruct;
@@ -479,4 +488,5 @@ let suite = [
   "test_subview_containment_set_le16", `Quick, test_subview_containment_set_le16;
   "test_subview_containment_set_le32", `Quick, test_subview_containment_set_le32;
   "test_subview_containment_set_le64", `Quick, test_subview_containment_set_le64;
+  "regression 244", `Quick, regression_244;
 ]
