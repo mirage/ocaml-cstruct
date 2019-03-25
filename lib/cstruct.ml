@@ -127,9 +127,9 @@ let debug t =
 
 let sub t off0 len =
   let off = t.off + off0 in
-  let offlen = off + len in
+  let new_end = off + len in
   let old_end = t.off + t.len in
-  if offlen > old_end || off < off0 || offlen < off || off0 < 0 || len < 0 || not (check_bounds t (offlen)) then err_sub t off0 len
+  if new_end > old_end || off < off0 || new_end < off || off0 < 0 || len < 0 || not (check_bounds t new_end) then err_sub t off0 len
   else { t with off; len }
 
 let shift t amount =
