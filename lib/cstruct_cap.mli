@@ -1,6 +1,5 @@
 type 'a rd = < rd: unit; .. > as 'a
 type 'a wr = < wr: unit; .. > as 'a
-type 'a aligned = < aligned: unit; .. > as 'a
 
 type 'a t = private Cstruct_core.t
 
@@ -34,7 +33,8 @@ val set_uint8 : 'a wr t -> int -> uint8 -> unit
 
 val sub : 'a rd t -> int -> int -> 'a rd t
 val shift : 'a rd t -> int -> 'a rd t
-val copy : 'a rd t -> int -> int -> string
+val to_string : ?off:int -> ?len:int -> 'a rd t -> string
+val to_bytes : ?off:int -> ?len:int -> 'a rd t -> bytes
 
 val blit : 'a rd t -> int -> 'b wr t -> int -> int -> unit
 val blit_from_string : string -> int -> 'a wr t -> int -> int -> unit
@@ -43,19 +43,13 @@ val blit_to_bytes : 'a rd t -> int -> bytes -> int -> int -> unit
 
 val memset : 'a wr t -> int -> unit
 
-val len : 'a t -> int
+val len : 'a rd t -> int
 val set_len : 'a wr t -> int -> 'a wr t
 val add_len : 'a wr t -> int -> 'a wr t
 
 val split : ?start:int -> 'a t -> int -> 'a t * 'a t
 
-val to_string : 'a rd t -> string
-val to_bytes : 'a rd t -> bytes
-
-val hexdump : 'a rd t -> unit
-val hexdump_to_buffer : Buffer.t -> 'a rd t -> unit
-val hexdump_pp : Format.formatter -> 'a rd t -> unit
-val debug : 'a rd t -> string
+val pp : Format.formatter -> 'a rd t -> unit
 
 module BE : sig
   val get_uint16 : 'a rd t -> int -> uint16
