@@ -79,6 +79,9 @@ let tests () =
   assert(int_to_foo32 0xfffffffel = Some (TWO32));
   assert(int_to_foo32 0xffffffffl = Some (THREE32));
   assert(string_to_foo16 "ONE16" = Some ONE16);
-  assert(foo8_to_string ONE8 = "ONE8")
+  assert(foo8_to_string ONE8 = "ONE8");
+  assert(compare_foo8 ONE8 TWO8 = -1);
+  assert(compare_foo8 TWO8 ONE8 = 1);
+  assert(compare_foo8 TWO8 TWO8 = 0)
 
 let () = tests ()
