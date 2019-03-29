@@ -416,41 +416,41 @@ let enum_integer {prim; _} =
 
 let declare_enum_expr ({fields; _} as cenum) = function
   | Enum_to_sexp ->
-    [%expr Sexplib.Sexp.Atom ([%e Ast.evar (enum_op_name cenum Enum_print)] x) ]
+    [%expr fun x -> Sexplib.Sexp.Atom ([%e Ast.evar (enum_op_name cenum Enum_print)] x) ]
   | Enum_of_sexp ->
     [%expr
-      match x with
-      | Sexplib.Sexp.List _ ->
-        raise (Sexplib.Pre_sexp.Of_sexp_error (Failure "expected Atom, got List", x))
-      | Sexplib.Sexp.Atom v ->
-        match [%e Ast.evar (enum_op_name cenum Enum_parse)] v with
-        | None ->
-          raise (Sexplib.Pre_sexp.Of_sexp_error (Failure "unable to parse enum string", x))
-        | Some r -> r
+      fun x ->
+        match x with
+        | Sexplib.Sexp.List _ ->
+          raise (Sexplib.Pre_sexp.Of_sexp_error (Failure "expected Atom, got List", x))
+        | Sexplib.Sexp.Atom v ->
+          match [%e Ast.evar (enum_op_name cenum Enum_parse)] v with
+          | None ->
+            raise (Sexplib.Pre_sexp.Of_sexp_error (Failure "unable to parse enum string", x))
+          | Some r -> r
     ]
   | Enum_get ->
     let getters = (List.map (fun ({txt = f; _},i) ->
         Exp.case (enum_pattern cenum i) [%expr Some [%e Ast.constr f []]]
       ) fields) @ [Exp.case [%pat? _] [%expr None]]
     in
-    Exp.match_ [%expr x] getters
+    Exp.function_ getters
   | Enum_set ->
     let setters = List.map (fun ({txt = f; _},i) ->
         Exp.case (Ast.pconstr f []) (enum_integer cenum i)
       ) fields in
-    Exp.match_ [%expr x] setters
+    Exp.function_ setters
   | Enum_print ->
     let printers = List.map (fun ({txt = f; _},_) ->
         Exp.case (Ast.pconstr f []) (Ast.str f)
       ) fields in
-    Exp.match_ [%expr x] printers
+    Exp.function_ printers
   | Enum_parse ->
     let parsers = List.map (fun ({txt = f; _},_) ->
         Exp.case (Ast.pstr f) [%expr Some [%e Ast.constr f []]]
       ) fields in
-    Exp.match_ [%expr x]
-      (parsers @ [Exp.case [%pat? _] [%expr None]])
-  | Enum_compare -> [%expr fun y ->
+    Exp.function_ (parsers @ [Exp.case [%pat? _] [%expr None]])
+  | Enum_compare -> [%expr fun x y ->
     let to_int = [%e Ast.evar (enum_op_name cenum Enum_set)] in
     Pervasives.compare (to_int x) (to_int y)
   ]
@@ -478,7 +478,7 @@ let output_enum cenum =
     (fun op ->
        [%stri
          let[@ocaml.warning "-32"] [%p Ast.pvar (enum_op_name cenum op)] =
-           fun x -> [%e declare_enum_expr cenum op]
+           [%e declare_enum_expr cenum op]
        ])
     (enum_ops_for cenum)
 
