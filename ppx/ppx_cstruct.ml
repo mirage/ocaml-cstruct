@@ -450,12 +450,15 @@ let declare_enum_expr ({fields; _} as cenum) = function
       ) fields in
     Exp.match_ [%expr x]
       (parsers @ [Exp.case [%pat? _] [%expr None]])
-  | Enum_compare -> [%expr fun y -> Pervasives.compare x y]
+  | Enum_compare -> [%expr fun y ->
+    let to_int = [%e Ast.evar (enum_op_name cenum Enum_set)] in
+    Pervasives.compare (to_int x) (to_int y)
+  ]
 
 let enum_ops_for {sexp; _} =
-  Enum_compare ::
   Enum_get ::
   Enum_set ::
+  Enum_compare ::
   Enum_print ::
   Enum_parse ::
   if sexp then

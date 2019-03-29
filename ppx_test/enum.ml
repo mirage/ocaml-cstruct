@@ -63,6 +63,13 @@ type foo8 =
   [@@uint8_t]
 ]
 
+[%%cenum
+type reversed =
+  | ONE_R [@id 2]
+  | TWO_R [@id 1]
+  [@@uint8_t]
+]
+
 let tests () =
   ignore(int_to_foo64 2L);
   ignore(int_to_foo32 1l);
@@ -82,6 +89,7 @@ let tests () =
   assert(foo8_to_string ONE8 = "ONE8");
   assert(compare_foo8 ONE8 TWO8 = -1);
   assert(compare_foo8 TWO8 ONE8 = 1);
-  assert(compare_foo8 TWO8 TWO8 = 0)
+  assert(compare_foo8 TWO8 TWO8 = 0);
+  assert(compare_reversed ONE_R TWO_R = 1)
 
 let () = tests ()
