@@ -72,7 +72,7 @@ module LE : sig
   val set_uint64 : 'a wr t -> int -> uint64 -> unit
 end
 
-val lenv : 'a t list -> int
+val lenv : 'a rd t list -> int
 val copyv : 'a rd t list -> string
 val fillv : src:'a rd t list -> dst:'b wr t -> int * 'a rd t list
 
