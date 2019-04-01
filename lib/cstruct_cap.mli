@@ -16,8 +16,8 @@ val create : int -> rdwr t
 val ro : 'a rd t -> ro t
 val wo : 'a wr t -> wo t
 
-val of_string : ?allocator:(int -> rdwr t) -> ?off:int -> ?len:int -> string -> rdwr t
-val of_bytes : ?allocator:(int -> rdwr t) -> ?off:int -> ?len:int -> bytes -> rdwr t
+val of_string : ?off:int -> ?len:int -> string -> rdwr t
+val of_bytes : ?off:int -> ?len:int -> bytes -> rdwr t
 val of_hex : string -> rdwr t
 
 val equal : 'a rd t -> 'b rd t -> bool
