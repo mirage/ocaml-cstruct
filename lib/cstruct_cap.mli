@@ -1,7 +1,8 @@
 type 'a rd = < rd: unit; .. > as 'a
 type 'a wr = < wr: unit; .. > as 'a
 
-type 'a t = private Cstruct_core.t
+type 'a t
+type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
 
 type rdwr =  < rd: unit; wr: unit; >
 type ro = < rd: unit; >
@@ -21,6 +22,8 @@ val wo : 'a wr t -> wo t
 val of_string : ?off:int -> ?len:int -> string -> rdwr t
 val of_bytes : ?off:int -> ?len:int -> bytes -> rdwr t
 val of_hex : string -> rdwr t
+
+val to_bigarray : 'a t -> buffer
 
 val equal : 'a rd t -> 'b rd t -> bool
 val compare : 'a rd t -> 'b rd t -> int
