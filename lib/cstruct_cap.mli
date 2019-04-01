@@ -13,6 +13,8 @@ type uint32 = int32
 type uint64 = int64
 
 val create : int -> rdwr t
+val create_unsafe : int -> rdwr t
+
 val ro : 'a rd t -> ro t
 val wo : 'a wr t -> wo t
 
