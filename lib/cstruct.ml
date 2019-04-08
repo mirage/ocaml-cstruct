@@ -125,12 +125,46 @@ let debug t =
   ) else
     Format.asprintf "%a" pp_t t
 
-let sub t off0 len =
-  let off = t.off + off0 in
-  let new_end = off + len in
+let sub t off len =
+  (* from https://github.com/mirage/ocaml-cstruct/pull/245
+
+     Cstruct.sub should select what a programmer intuitively expects a
+     sub-cstruct to be. I imagine holding out my hands, with the left
+     representing the start offset and the right the end. I think of a
+     sub-cstruct as any span within this range. If I move my left hand only to
+     the right (new_start >= t.off), and my right hand only to the left
+     (new_end <= old_end), and they don't cross (new_start <= new_end), then I
+     feel sure the result will be a valid sub-cstruct. And if I violate any one
+     of these constraints (e.g. moving my left hand further left), then I feel
+     sure that the result wouldn't be something I'd consider to be a sub-cstruct.
+
+     Wrapping considerations in modular arithmetic:
+
+     Note that if x is non-negative, and x + y wraps, then x + y must be
+     negative. This is easy to see with modular arithmetic because if y is
+     negative then the two arguments will cancel to some degree the result
+     cannot be further from zero than one of the arguments. If y is positive
+     then x + y can wrap, but even max_int + max_int doesn't wrap all the way to
+     zero.
+
+     The three possibly-wrapping operations are:
+
+     new_start = t.off + off. t.off is non-negative so if this wraps then
+     new_start will be negative and will fail the new_start >= t.off test.
+
+     new_end = new_start + len. The above test ensures that new_start is
+     non-negative in any successful return. So if this wraps then new_end will
+     be negative and will fail the new_start <= new_end test.
+
+     old_end = t.off + t.len. This uses only the existing trusted values. It
+     could only wrap if the underlying bigarray had a negative length!  *)
+  let new_start = t.off + off in
+  let new_end = new_start + len in
   let old_end = t.off + t.len in
-  if new_end > old_end || off < off0 || new_end < off || off0 < 0 || len < 0 || not (check_bounds t new_end) then err_sub t off0 len
-  else { t with off; len }
+  if new_start >= t.off && new_end <= old_end && new_start <= new_end then
+    { t with off = new_start ; len }
+  else
+    err_sub t off len
 
 let shift t amount =
   let off = t.off + amount in
