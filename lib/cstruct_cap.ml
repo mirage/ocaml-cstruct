@@ -36,3 +36,23 @@ let to_bytes ?(off= 0) ?len t =
 let pp ppf t = Cstruct_core.hexdump_pp ppf t
 
 let length = Cstruct_core.len
+
+let blit src ~src_off dst ~dst_off ~len =
+  Cstruct_core.blit src src_off dst dst_off len
+[@@inline]
+
+let blit_from_string src ~src_off dst ~dst_off ~len =
+  Cstruct_core.blit_from_string src src_off dst dst_off len
+[@@inline]
+
+let blit_from_bytes src ~src_off dst ~dst_off ~len =
+  Cstruct_core.blit_from_bytes src src_off dst dst_off len
+[@@inline]
+
+let blit_to_bytes src ~src_off dst ~dst_off ~len =
+  Cstruct_core.blit_to_bytes src src_off dst dst_off len
+[@@inline]
+
+let sub t ~off ~len =
+  Cstruct_core.sub t off len
+[@@inline]

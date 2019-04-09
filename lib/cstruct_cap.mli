@@ -36,15 +36,15 @@ val get_uint8 : 'a rd t -> int -> uint8
 val set_char : 'a wr t -> int -> char -> unit
 val set_uint8 : 'a wr t -> int -> uint8 -> unit
 
-val sub : 'a rd t -> int -> int -> 'a rd t
+val sub : 'a rd t -> off:int -> len:int -> 'a rd t
 val shift : 'a rd t -> int -> 'a rd t
 val to_string : ?off:int -> ?len:int -> 'a rd t -> string
 val to_bytes : ?off:int -> ?len:int -> 'a rd t -> bytes
 
-val blit : 'a rd t -> int -> 'b wr t -> int -> int -> unit
-val blit_from_string : string -> int -> 'a wr t -> int -> int -> unit
-val blit_from_bytes : bytes -> int -> 'a wr t -> int -> int -> unit
-val blit_to_bytes : 'a rd t -> int -> bytes -> int -> int -> unit
+val blit : 'a rd t -> src_off:int -> 'b wr t -> dst_off:int -> len:int -> unit
+val blit_from_string : string -> src_off:int -> 'a wr t -> dst_off:int -> len:int -> unit
+val blit_from_bytes : bytes -> src_off:int -> 'a wr t -> dst_off:int -> len:int -> unit
+val blit_to_bytes : 'a rd t -> src_off:int -> bytes -> dst_off:int -> len:int -> unit
 
 val memset : 'a wr t -> int -> unit
 
