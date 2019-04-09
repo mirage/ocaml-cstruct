@@ -48,7 +48,7 @@ val blit_to_bytes : 'a rd t -> int -> bytes -> int -> int -> unit
 
 val memset : 'a wr t -> int -> unit
 
-val len : 'a rd t -> int
+val length : 'a rd t -> int
 
 val split : ?start:int -> 'a t -> int -> 'a t * 'a t
 

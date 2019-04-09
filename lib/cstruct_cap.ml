@@ -34,3 +34,5 @@ let to_bytes ?(off= 0) ?len t =
   Bytes.unsafe_of_string (Cstruct_core.copy t off len)
 
 let pp ppf t = Cstruct_core.hexdump_pp ppf t
+
+let length = Cstruct_core.len
