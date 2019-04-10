@@ -82,20 +82,6 @@ val compare : 'a rd t -> 'b rd t -> int
 (** [compare a b] gives an unspecified total ordering over {!t}. Both need at
     least read capability {!rd}. *)
 
-val check_bounds : 'a rd t -> int -> bool
-(** [check_bounds t len] is [true] if [len] is a non-negative integer and
-    underlying buffer size of [t] is greater or equal than [len], [false]
-    otherwise. [t] needs at least read capability {!rd}.
-
-    [len] can be upper than [length t]. See this example:
-
-    {[let u = Cstruct_cap.create 10 in
-      let v = Cstruct_cap.shift t 5 in
-      assert (Cstruct_cap.check_bounds v 8) ;]}
-
-    However, [check_bounds t x] does not assert operation [set_char t x] is safe!
-    [t] needs at least read capability {!rd}. *)
-
 val check_alignment : 'a rd t -> int -> bool
 (** [check_alignement t alignement] is [true] if the first byte stored
     within [t] is at a memory address where [address mod alignement = 0],
