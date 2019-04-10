@@ -56,3 +56,13 @@ let blit_to_bytes src ~src_off dst ~dst_off ~len =
 let sub t ~off ~len =
   Cstruct_core.sub t off len
 [@@inline]
+
+let concat vss =
+  let res = create_unsafe (Cstruct_core.sum_lengths ~caller:"Cstruct.Cap.concat" vss) in
+  let go off v =
+    let len = Cstruct_core.len v in
+    Cstruct_core.blit v 0 res off len ;
+    off + len in
+  let len = List.fold_left go 0 vss in
+  assert (len = Cstruct_core.len res) ;
+  res
