@@ -33,8 +33,6 @@ let of_string ?off ?len x =
 let of_bytes ?off ?len x =
   Cstruct_core.of_bytes ?off ?len x
 
-(* XXX(dinosaure): discard [?allocator] arguments (see discusion in #237). *)
-
 let to_string ?(off= 0) ?len t =
   let len = match len with
     | Some len -> len
