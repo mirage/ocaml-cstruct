@@ -189,7 +189,7 @@ val create : int -> t
     filled with zero bytes. *)
 
 val create_unsafe : int -> t
-(** [create len] is a cstruct of size [len] with an offset of 0.
+(** [create_unsafe len] is a cstruct of size [len] with an offset of 0.
 
     Note that the returned cstruct will contain arbitrary data,
     likely including the contents of previously-deallocated cstructs.
