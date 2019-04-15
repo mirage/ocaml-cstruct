@@ -491,5 +491,3 @@ val concat: t list -> t
 val rev: t -> t
 (** [rev t] is [t] in reverse order. The return value is a freshly allocated
     cstruct, and the argument is not modified. *)
-
-module Cap = Cstruct_cap

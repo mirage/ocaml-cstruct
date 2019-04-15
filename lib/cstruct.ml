@@ -14,6 +14,4 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-module Cap = Cstruct_cap
-
 include Cstruct_core

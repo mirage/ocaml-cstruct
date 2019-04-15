@@ -3,6 +3,7 @@
  (public_name cstruct)
  (libraries bigarray-compat)
  (c_names cstruct_stubs)
+ (wrapped false)
  (js_of_ocaml (javascript_files cstruct.js))
  (modules cstruct cstruct_core cstruct_cap))
 
