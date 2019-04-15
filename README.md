@@ -171,12 +171,16 @@ val int_to_foo32 : int32 -> foo32 option
 val foo32_to_int : foo32 -> int32
 val foo32_to_string : foo32 -> string
 val string_to_foo32 : string -> foo32 option
+val compare_foo32 : foo32 -> foo32 -> int
 type bar16 = | ONE | TWO | FOUR | FIVE
 val int_to_bar16 : int -> bar16 option
 val bar16_to_int : bar16 -> int
 val bar16_to_string : bar16 -> string
 val string_to_bar16 : string -> bar16 option
+val compare_bar16 : bar16 -> bar16 -> int
 ```
+
+Comparisons will be done relatively to the constructor ids.
 
 You can also add a `(sexp)` decorator to output s-expression convertors
 for use with the `sexplib` library.
