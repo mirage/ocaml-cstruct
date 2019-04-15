@@ -189,7 +189,7 @@ val create : int -> t
     filled with zero bytes. *)
 
 val create_unsafe : int -> t
-(** [create len] is a cstruct of size [len] with an offset of 0.
+(** [create_unsafe len] is a cstruct of size [len] with an offset of 0.
 
     Note that the returned cstruct will contain arbitrary data,
     likely including the contents of previously-deallocated cstructs.
@@ -491,3 +491,5 @@ val concat: t list -> t
 val rev: t -> t
 (** [rev t] is [t] in reverse order. The return value is a freshly allocated
     cstruct, and the argument is not modified. *)
+
+module Cap = Cstruct_cap
