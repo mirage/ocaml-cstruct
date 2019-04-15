@@ -311,18 +311,17 @@ val blit_from_bytes: bytes -> int -> t -> int -> int -> unit
     designate a valid segment of [dst]. *)
 
 val blit_to_bytes: t -> int -> bytes -> int -> int -> unit
-(** [blit_to_string src srcoff dst dstoff len] copies [len] characters
-    from cstruct [src], starting at index [srcoff], to string [dst],
+(** [blit_to_bytes src srcoff dst dstoff len] copies [len] characters
+    from cstruct [src], starting at index [srcoff], to the [dst] buffer,
     starting at index [dstoff].
 
     @raise Invalid_argument if [srcoff] and [len] do not designate a
     valid segment of [src], or if [dstoff] and [len] do not designate
-    a valid substring of [dst]. *)
+    a valid segment of [dst]. *)
 
 val blit_to_string: t -> int -> bytes -> int -> int -> unit
-(** [blit_to_string] is a deprecated alias of {!blit_to_bytes}.
-
-    @deprecated This is a deprecated alias of {!blit_to_bytes}. *)
+  [@@ocaml.deprecated "Use blit_to_bytes instead, blit_to_string will be removed in cstruct 5.0.0"]
+(** [blit_to_string] is a deprecated alias of {!blit_to_bytes}. *)
 
 val memset: t -> int -> unit
 (** [memset t x] sets all the bytes of [t] to [x land 0xff]. *)
@@ -333,11 +332,13 @@ val len: t -> int
     buffer, as the [sub] or [set_len] functions can construct a smaller view. *)
 
 val set_len : t -> int -> t
+  [@@ocaml.deprecated "This function will be removed in cstruct 5.0.0. If you need this function, discuss other ways in the issue tracker https://github.com/mirage/ocaml-cstruct."]
 (** [set_len t len] sets the length of the cstruct [t] to a new absolute
     value, and returns a fresh cstruct with these settings.
     @raise Invalid_argument if [len] exceeds the size of the buffer. *)
 
 val add_len : t -> int -> t
+  [@@ocaml.deprecated "This function will be removed in cstruct 5.0.0. If you need this function, discuss other ways in the issue tracker https://github.com/mirage/ocaml-cstruct."]
 (** [add_len t l] will add [l] bytes to the length of the buffer, and return
     a fresh cstruct with these settings.
     @raise Invalid_argument if [len] exceeds the size of the buffer. *)
