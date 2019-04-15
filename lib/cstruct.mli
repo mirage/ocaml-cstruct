@@ -136,7 +136,7 @@ val string_to_bar16 : string -> bar16 option
 
 (** {2 Base types } *)
 
-type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
+type buffer = (char, Bigarray_compat.int8_unsigned_elt, Bigarray_compat.c_layout) Bigarray_compat.Array1.t
 (** Type of a buffer. A cstruct is composed of an underlying buffer
     and position/length within this buffer. *)
 
@@ -179,7 +179,7 @@ val of_bigarray: ?off:int -> ?len:int -> buffer -> t
 (** [of_bigarray ~off ~len b] is the cstruct contained in [b] starting
     at [off], of length [len]. *)
 
-val to_bigarray: t -> buffer 
+val to_bigarray: t -> buffer
 (** [to_bigarray t] converts a {!t} into a {!buffer} Bigarray, using
     the Bigarray slicing to allocate a fresh array that preserves
     sharing of the underlying buffer. *)
@@ -320,7 +320,7 @@ val blit_to_bytes: t -> int -> bytes -> int -> int -> unit
     a valid substring of [dst]. *)
 
 val blit_to_string: t -> int -> bytes -> int -> int -> unit
-(** [blit_to_string] is a deprecated alias of {!blit_to_bytes}. 
+(** [blit_to_string] is a deprecated alias of {!blit_to_bytes}.
 
     @deprecated This is a deprecated alias of {!blit_to_bytes}. *)
 
@@ -371,7 +371,7 @@ val hexdump_to_buffer: Buffer.t -> t -> unit
 
 val hexdump_pp: Format.formatter -> t -> unit
 (** [hexdump_pp f c] pretty-prints a hexdump of [c] to [f]. *)
- 
+
 val debug: t -> string
 (** [debug t] will print out the internal details of a cstruct such
     as its base offset and the length, and raise an assertion failure
