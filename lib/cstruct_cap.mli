@@ -100,42 +100,41 @@ val compare : 'a rd t -> 'b rd t -> int
     least read capability {!rd}. *)
 
 val check_alignment : 'a rd t -> int -> bool
-(** [check_alignement t alignement] is [true] if the first byte stored
-    within [t] is at a memory address where [address mod alignement = 0],
-    [false] otherwise.
-
+(** [check_alignment t alignment] is [true] if the first byte stored
+    within [t] is at a memory address where [address mod alignment = 0],
+    [false] otherwise.  The [mod] used has the C/OCaml semantic (which differs
+    from Python).
     Typical uses are to check a buffer is aligned to a page or disk sector
     boundary. [t] needs at least read capability {!rd}.
 
-    @raise [Invalid_argument] if [alignement] is not a positive integer.
-    @note [mod] used has the C/OCaml semantic (which differs from Python). *)
+    @raise Invalid_argument if [alignment] is not a positive integer. *)
 
 val get_char : 'a rd t -> int -> char
 (** [get_char t off] returns the character contained in [t] at offset [off].
     [t] needs at least read capability {!rd}.
 
-    @raise [Invalid_argument] if the offset exceeds [t] length (which can differ
+    @raise Invalid_argument if the offset exceeds [t] length (which can differ
     from underlying buffer length). *)
 
 val get_uint8 : 'a rd t -> int -> uint8
 (** [get_uint8 t off] returns the byte contained in [t] at offset [off].
     [t] needs at least read capability {!rd}.
 
-    @raise [Invalid_argument] if the offset exceeds [t] length (which can differ
+    @raise Invalid_argument if the offset exceeds [t] length (which can differ
     from underlying buffer length). *)
 
 val set_char : 'a wr t -> int -> char -> unit
 (** [set_char t off c] sets the character contained in [t] at offset [off]
     to character [c]. [t] needs at least write capability {!wr}.
 
-    @raise [Invalid_argument] if the offset exceeds [t] length (which can differ
+    @raise Invalid_argument if the offset exceeds [t] length (which can differ
     from underlying buffer length). *)
 
 val set_uint8 : 'a wr t -> int -> uint8 -> unit
 (** [set_uint8 t off x] sets the byte contained in [t] at offset [off]
     to byte [x]. [t] needs at least write capability {!wr}.
 
-    @raise [Invalid_argument] if the offset exceeds [t] length (which can differ
+    @raise Invalid_argument if the offset exceeds [t] length (which can differ
     from underlying buffer length). *)
 
 val sub : 'a rd t -> off:int -> len:int -> 'a rd t
@@ -143,20 +142,20 @@ val sub : 'a rd t -> off:int -> len:int -> 'a rd t
     [t] sliced on [off] and of [len] length. New {!t} shares same capabilities
     than [t].
 
-    @raise [Invalid_argument] if the offset exceeds [t] length. *)
+    @raise Invalid_argument if the offset exceeds [t] length. *)
 
 val shift : 'a rd t -> int -> 'a rd t
 (** [shift t len] returns a fresh {!t} with the shared underlying buffer of [t]
     shifted to [len] bytes. New {!t} shares same capabilities than [t].
 
-    @raise [Invalid_argument] if the offset exceeds [t] length. *)
+    @raise Invalid_argument if the offset exceeds [t] length. *)
 
 val to_string : ?off:int -> ?len:int -> 'a rd t -> string
 (** [to_string ~off ~len t] is the string representation of the segment of [t]
     starting at [off] (default is [0]) of size [len] (default is [length t]).
     [t] needs at least read-capability {!rd}.
 
-    @raise [Invalid_argument] if [off] and [len] do not designate a valid
+    @raise Invalid_argument if [off] and [len] does not designate a valid
     segment of [t]. *)
 
 val to_bytes : ?off:int -> ?len:int -> 'a rd t -> bytes
@@ -164,52 +163,51 @@ val to_bytes : ?off:int -> ?len:int -> 'a rd t -> bytes
     starting at [off] (default is [0]) of size [len] (default is [length t]).
     [t] needs at least read-capability {!rd}.
 
-    @raise [Invalid_argument] if [off] and [len] do not designate a valid
+    @raise Invalid_argument if [off] and [len] do not designate a valid
     segment of [t]. *)
 
 val blit : 'a rd t -> src_off:int -> 'b wr t -> dst_off:int -> len:int -> unit
 (** [blit src ~src_off dst ~dst_off ~len] copies [len] characters from [src],
     starting at index [src_off], to [dst], starting at index [dst_off]. It works
     correctly even if [src] and [dst] have the same underlying {!buffer}, and the
-    [src] and [dst] intervals overlap.
+    [src] and [dst] intervals overlap.  This function uses [memmove] internally.
 
     [src] needs at least read-capability {!rd}. [dst] needs at least
     write-capability {!wr}. Both don't share capabilities.
 
-    @note [blit] uses [memmove] internaly.
-    @raise [Invalid_argument] if [src_off] and [len] do not designate a valid segment of [src],
+    @raise Invalid_argument if [src_off] and [len] do not designate a valid segment of [src],
     or if [dst_off] and [len] do not designate a valid segment of [dst]. *)
 
 val blit_from_string : string -> src_off:int -> 'a wr t -> dst_off:int -> len:int -> unit
 (** [blit_from_string src ~src_off dst ~dst_off ~len] copies [len] characters from [src],
-    starting at index [src_off], to [dst], starting at index [dst_off].
+    starting at index [src_off], to [dst], starting at index [dst_off]. This function
+    uses [memcpy] internally.
 
     [dst] needs at least write-capability {!wr}.
 
-    @note [blit_from_string] uses [memcpy] internaly.
-    @raise [Invalid_argument] if [src_off] and [len] do not designate a valid
+    @raise Invalid_argument if [src_off] and [len] do not designate a valid
     sub-string of [src], or if [dst_off] and [len] do not designate a valid
     segment of [dst]. *)
 
 val blit_from_bytes : bytes -> src_off:int -> 'a wr t -> dst_off:int -> len:int -> unit
 (** [blit_from_bytes src ~src_off dst ~dst_off ~len] copies [len] characters from [src],
-    starting at index [src_off], to [dst], starting at index [dst_off].
+    starting at index [src_off], to [dst], starting at index [dst_off]. This uses
+    [memcpy] internally.
 
     [dst] needs at least write-capability {!wr}.
 
-    @note [blit_from_string] uses [memcpy] internaly.
-    @raise [Invalid_argument] if [src_off] and [len] do not designate a
+    @raise Invalid_argument if [src_off] and [len] do not designate a
     valid sub-sequence of [src], or if [dst_off] and [len] do no designate
     a valid segment of [dst]. *)
 
 val blit_to_bytes : 'a rd t -> src_off:int -> bytes -> dst_off:int -> len:int -> unit
 (** [blit_to_bytes src ~src_off dst ~dst_off ~len] copies [len] characters
     from [src], starting at index [src_off], to sequences [dst], starting at index [dst_off].
+    [blit_to_bytes] uses [memcpy] internally.
 
     [src] needs at least read-capability {!rd}.
 
-    @note [blit_to_bytes] uses [memcpy] internaly.
-    @raise [Invalid_argument] if [src_off] and [len] do not designate a
+    @raise Invalid_argument if [src_off] and [len] do not designate a
     valid segment of [src], or if [dst_off] and [len] do not designate
     a valid sub-seuqnce of [dst]. *)
 
@@ -227,7 +225,7 @@ val split : ?start:int -> 'a t -> int -> 'a t * 'a t
     offset [start] (default is [0]) of length [len] as first element, and the
     rest of [t] as second element.
 
-    @raise [Invalid_argument] if [sart] exceeds the [t] length,
+    @raise Invalid_argument if [sart] exceeds the [t] length,
     or if there is a bounds violation of [t] via [len + start]. *)
 
 val pp : Format.formatter -> 'a rd t -> unit
@@ -247,40 +245,39 @@ module BE : sig
 
   val get_uint16 : 'a rd t -> int -> uint16
   (** [get_uint16 t i] returns the two bytes in [t] starting at offset [i],
-      interpreted as an {!uint16}.
+      interpreted as an {!uint16}.  Sign extension is not interpreted.
 
-      @raise [Invalid_argument] if [t] is too small.
-      @note sign extension is not interpreted. *)
+      @raise Invalid_argument if [t] is too small. *)
 
   val get_uint32 : 'a rd t -> int -> uint32
   (** [get_uint32 t i] returns the four bytes in [t] starting at offset [i].
       [t] needs at least read-capability {!rd}.
 
-      @raise [Invalid_argument] if [t] is too small. *)
+      @raise Invalid_argument if [t] is too small. *)
 
   val get_uint64 : 'a rd t -> int -> uint64
   (** [get_uint64 t i] returns the eight bytes in [t] starting at offset [i].
       [t] needs at least read-capability {!rd}.
 
-      @raise [Invalid_argument] if [t] is too small. *)
+      @raise Invalid_argument if [t] is too small. *)
 
   val set_uint16 : 'a wr t -> int -> uint16 -> unit
   (** [set_uint16 t i v] sets the two bytes in [t] starting at offset [i] to
       the value [v]. [t] needs at least write-capability {!wr}.
 
-      @raise [Invalid_argument] if [t] is too small. *)
+      @raise Invalid_argument if [t] is too small. *)
 
   val set_uint32 : 'a wr t -> int -> uint32 -> unit
   (** [set_uint32 t i v] sets the four bytes in [t] starting at offset [i] to
       the value [v]. [t] needs at least write-capability {!wr}.
 
-      @raise [Invalid_argument] if [t] is too small. *)
+      @raise Invalid_argument if [t] is too small. *)
 
   val set_uint64 : 'a wr t -> int -> uint64 -> unit
   (** [set_uint64 t i v] sets the eight bytes in [t] starting at offset [i] to
       the value [v]. [t] needs at least write-capability {!wr}.
 
-      @raise [Invalid_argument] if [t] is too small. *)
+      @raise Invalid_argument if [t] is too small. *)
 end
 
 module LE : sig
@@ -297,53 +294,52 @@ module LE : sig
 
   val get_uint16 : 'a rd t -> int -> uint16
   (** [get_uint16 t i] returns the two bytes in [t] starting at offset [i],
-      interpreted as an {!uint16}.
+      interpreted as an {!uint16}. Sign extension is not interpreted.
 
-      @raise [Invalid_argument] if [t] is too small.
-      @note sign extension is not interpreted. *)
+      @raise Invalid_argument if [t] is too small. *)
 
   val get_uint32 : 'a rd t -> int -> uint32
   (** [get_uint32 t i] returns the four bytes in [t] starting at offset [i].
       [t] needs at least read-capability {!rd}.
 
-      @raise [Invalid_argument] if [t] is too small. *)
+      @raise Invalid_argument if [t] is too small. *)
 
   val get_uint64 : 'a rd t -> int -> uint64
   (** [get_uint64 t i] returns the eight bytes in [t] starting at offset [i].
       [t] needs at least read-capability {!rd}.
 
-      @raise [Invalid_argument] if [t] is too small. *)
+      @raise Invalid_argument if [t] is too small. *)
 
   val set_uint16 : 'a wr t -> int -> uint16 -> unit
   (** [set_uint16 t i v] sets the two bytes in [t] starting at offset [i] to
       the value [v]. [t] needs at least write-capability {!wr}.
 
-      @raise [Invalid_argument] if [t] is too small. *)
+      @raise Invalid_argument if [t] is too small. *)
 
   val set_uint32 : 'a wr t -> int -> uint32 -> unit
   (** [set_uint32 t i v] sets the four bytes in [t] starting at offset [i] to
       the value [v]. [t] needs at least write-capability {!wr}.
 
-      @raise [Invalid_argument] if [t] is too small. *)
+      @raise Invalid_argument if [t] is too small. *)
 
   val set_uint64 : 'a wr t -> int -> uint64 -> unit
   (** [set_uint64 t i v] sets the eight bytes in [t] starting at offset [i] to
       the value [v]. [t] needs at least write-capability {!wr}.
 
-      @raise [Invalid_argument] if [t] is too small. *)
+      @raise Invalid_argument if [t] is too small. *)
 end
 
 val lenv : 'a rd t list -> int
 (** [lenv vs] is the combined length of all {!t} in [vs].
     Each {!t} need at least read-capability {!rd}.
 
-    @raise [Invalid_argument] if computing the sum overflows. *)
+    @raise Invalid_argument if computing the sum overflows. *)
 
 val copyv : 'a rd t list -> string
 (** [copy vs] is the string representation of the concatenation of all {!t} in
     [vss]. Each {!t} need at least read-capability {!rd}.
 
-    @raise [Invalid_argument] if the length of the result would exceed
+    @raise Invalid_argument if the length of the result would exceed
     {!Sys.max_string_length}. *)
 
 val fillv : src:'a rd t list -> dst:'b wr t -> int * 'a rd t list
@@ -373,8 +369,7 @@ val append : 'a rd t -> 'b rd t -> rdwr t
 val concat : 'a rd t list -> rdwr t
 (** [concat vss] is the concatenation of all {!t} in [vss]. Each {!t} of [vss] need
     at least read-capability {!rd}.
-
-    @note [concat] always create a fresh {!t}. *)
+    [concat] always creates a fresh {!t}. *)
 
 val rev : 'a rd t -> rdwr t
 (** [rev t] is [t] in reverse order. The return value is a freshly allocated
