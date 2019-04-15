@@ -288,31 +288,31 @@ external swap32 : int32 -> int32 = "%bswap_int32"
 external swap64 : int64 -> int64 = "%bswap_int64"
 
 let set_uint16 swap p t i c =
-  if (i+2) > t.len || i < 0 then err_invalid_bounds (p ^ ".set_uint16") t i 2
+  if i > t.len - 2 || i < 0 then err_invalid_bounds (p ^ ".set_uint16") t i 2
   else ba_set_int16 t.buffer (t.off+i) (if swap then swap16 c else c) [@@inline]
 
 let set_uint32 swap p t i c =
-  if (i+4) > t.len || i < 0 then err_invalid_bounds (p ^ ".set_uint32") t i 4
+  if i > t.len - 4 || i < 0 then err_invalid_bounds (p ^ ".set_uint32") t i 4
   else ba_set_int32 t.buffer (t.off+i) (if swap then swap32 c else c) [@@inline]
 
 let set_uint64 swap p t i c =
-  if (i+8) > t.len || i < 0 then err_invalid_bounds (p ^ ".set_uint64") t i 8
+  if i > t.len - 8 || i < 0 then err_invalid_bounds (p ^ ".set_uint64") t i 8
   else ba_set_int64 t.buffer (t.off+i) (if swap then swap64 c else c) [@@inline]
 
 let get_uint16 swap p t i =
-  if (i+2) > t.len || i < 0 then err_invalid_bounds (p ^ ".get_uint16") t i 2
+  if i > t.len - 2 || i < 0 then err_invalid_bounds (p ^ ".get_uint16") t i 2
   else
     let r = ba_get_int16 t.buffer (t.off+i) in
     if swap then swap16 r else r [@@inline]
 
 let get_uint32 swap p t i =
-  if (i+4) > t.len || i < 0 then err_invalid_bounds (p ^ ".get_uint32") t i 4
+  if i > t.len - 4 || i < 0 then err_invalid_bounds (p ^ ".get_uint32") t i 4
   else
     let r = ba_get_int32 t.buffer (t.off+i) in
     if swap then swap32 r else r [@@inline]
 
 let get_uint64 swap p t i =
-  if (i+8) > t.len || i < 0 then err_invalid_bounds (p ^ ".get_uint64") t i 8
+  if i > t.len - 8 || i < 0 then err_invalid_bounds (p ^ ".get_uint64") t i 8
   else
     let r = ba_get_int64 t.buffer (t.off+i) in
     if swap then swap64 r else r [@@inline]
