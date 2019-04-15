@@ -311,13 +311,13 @@ val blit_from_bytes: bytes -> int -> t -> int -> int -> unit
     designate a valid segment of [dst]. *)
 
 val blit_to_bytes: t -> int -> bytes -> int -> int -> unit
-(** [blit_to_string src srcoff dst dstoff len] copies [len] characters
-    from cstruct [src], starting at index [srcoff], to string [dst],
+(** [blit_to_bytes src srcoff dst dstoff len] copies [len] characters
+    from cstruct [src], starting at index [srcoff], to the [dst] buffer,
     starting at index [dstoff].
 
     @raise Invalid_argument if [srcoff] and [len] do not designate a
     valid segment of [src], or if [dstoff] and [len] do not designate
-    a valid substring of [dst]. *)
+    a valid segment of [dst]. *)
 
 val blit_to_string: t -> int -> bytes -> int -> int -> unit
   [@@ocaml.deprecated "Use blit_to_bytes instead, blit_to_string will be removed in cstruct 5.0.0"]
