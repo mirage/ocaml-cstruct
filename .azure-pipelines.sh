@@ -104,7 +104,7 @@ PACKAGES=`ls -1 *.opam|xargs -I% -n 1 basename % .opam`
 
 if [ "$SKIP_ASYNC_ON_WIN32" != "" ]; then
   echo Skipping Async on Windows
-  PACKAGES="echo $PACKAGES | sed -e 's/cstruct-async//g'"
+  PACKAGES=`echo $PACKAGES | sed -e 's/cstruct-async//g'`
 fi
 
 echo Processing $PACKAGES
