@@ -20,7 +20,7 @@ steps:
   - opam exec -- dune build fuzz/fuzz.exe
   - mkdir out && mkdir in && echo bactrian > in/test
   - opam pin add -y bun https://github.com/yomimono/ocaml-bun.git
-  - opam exec -- bun -i in -o out -- ./_build/default/fuzz/fuzz.exe
+  - dune build @fuzz
 ---
 kind: pipeline
 name: arm64
@@ -44,5 +44,5 @@ steps:
   - opam exec -- dune build fuzz/fuzz.exe
   - mkdir out && mkdir in && echo bactrian > in/test
   - opam pin add -y bun https://github.com/yomimono/ocaml-bun.git
-  - opam exec -- bun -i in -o out -- ./_build/default/fuzz/fuzz.exe
+  - dune build @fuzz
 
