@@ -492,3 +492,9 @@ val concat: t list -> t
 val rev: t -> t
 (** [rev t] is [t] in reverse order. The return value is a freshly allocated
     cstruct, and the argument is not modified. *)
+
+(**/**)
+val sum_lengths : caller:string -> t list -> int
+(** [sum_lengths ~caller acc l] is [acc] plus the sum of the lengths
+    of the elements of [l].  Raises [Invalid_argument caller] if
+    arithmetic overflows. *)

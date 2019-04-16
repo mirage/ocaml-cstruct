@@ -10,8 +10,8 @@ env:
   matrix:
   - PACKAGE="cstruct"       DISTRO="alpine"   OCAML_VERSION="4.03"
   - PACKAGE="cstruct"       DISTRO="alpine"   OCAML_VERSION="4.04"
-  - PACKAGE="cstruct"       DISTRO="alpine"   OCAML_VERSION="4.05"
-  - PACKAGE="cstruct"       DISTRO="alpine"   OCAML_VERSION="4.06"
+  - PACKAGE="cstruct-sexp"  DISTRO="alpine"   OCAML_VERSION="4.05"
+  - PACKAGE="cstruct-sexp"  DISTRO="alpine"   OCAML_VERSION="4.06"
   - PACKAGE="cstruct"       DISTRO="alpine"   OCAML_VERSION="4.07"
   - PACKAGE="cstruct-lwt"   DISTRO="debian-testing"  OCAML_VERSION="4.07"
   - PACKAGE="cstruct-async" DISTRO="centos"   OCAML_VERSION="4.07"
