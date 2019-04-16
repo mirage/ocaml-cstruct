@@ -116,7 +116,9 @@ case $TEST_CURRENT_SWITCH_ONLY in
 yes)
   echo Testing current switch only
   opam switch
-  dune build
+  # hack until async builds on windows in a few weeks
+  rm -rf async cstruct-async.opam
+  dune build 
   dune runtest
   ;;
 *)
