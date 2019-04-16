@@ -3,11 +3,9 @@
  (libraries cstruct bigarray cstruct-sexp crowbar fmt))
 
 (alias
- ((name fuzz)
-  (deps (fuzz.exe (files_recursively_in input)))
-  (action (run
-    "timeout" "--preserve-status" "25m"
-    "bun" "-v"
-    "--input=input"
-    "--output=output"
-    "--" ./fuzz.exe))))
+ (name fuzz)
+ (deps fuzz.exe (source_tree input))
+ (action (run
+    timeout --preserve-status 25m
+    bun -v --input=input --output=output
+    -- ./fuzz.exe)))
