@@ -16,11 +16,9 @@ steps:
   - opam pin add -n .
   - opam depext cstruct-async cstruct-lwt cstruct-unix cstruct ppx_cstruct
   - opam install -y .
-  - opam install -y crowbar fmt
-  - opam exec -- dune build fuzz/fuzz.exe
-  - mkdir out && mkdir in && echo bactrian > in/test
-  - opam pin add -y bun https://github.com/yomimono/ocaml-bun.git
-  - dune build @fuzz
+  - opam pin add -n bun https://github.com/yomimono/ocaml-bun.git
+  - opam install -y crowbar fmt bun
+  - opam exec -- dune build @fuzz
 ---
 kind: pipeline
 name: arm64
@@ -40,9 +38,7 @@ steps:
   - opam pin add -n .
   - opam depext cstruct-async cstruct-lwt cstruct-unix cstruct ppx_cstruct
   - opam install -y .
-  - opam install -y crowbar fmt
-  - opam exec -- dune build fuzz/fuzz.exe
-  - mkdir out && mkdir in && echo bactrian > in/test
-  - opam pin add -y bun https://github.com/yomimono/ocaml-bun.git
-  - dune build @fuzz
+  - opam pin add -n bun https://github.com/yomimono/ocaml-bun.git
+  - opam install -y crowbar fmt bun
+  - opam exec -- dune build @fuzz
 
