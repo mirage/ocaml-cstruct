@@ -2,3 +2,5 @@
 * text=auto
 
 .azure-pipelines.sh text eol=lf
+ppx_test/errors/dune.inc text eol=lf
+ppx_test/errors/gen_tests.ml text eol=lf
