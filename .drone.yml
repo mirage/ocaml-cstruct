@@ -16,6 +16,6 @@ steps:
   - opam pin add -n .
   - opam depext cstruct-async cstruct-lwt cstruct-unix cstruct ppx_cstruct
   - opam install -y .
-  - opam pin add -n bun https://github.com/yomimono/ocaml-bun.git
+  - opam pin add -n bun 'https://github.com/talex5/ocaml-bun.git#lwt'
   - opam install -y crowbar fmt bun
   - opam exec -- dune build @fuzz --no-buffer
