@@ -1,5 +1,7 @@
 open Crowbar
 
+[@@@warning "-3"]
+
 let create x =
   match Cstruct.create x with
   | c -> assert (x >= 0); c
