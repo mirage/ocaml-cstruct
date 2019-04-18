@@ -23,6 +23,10 @@ type buffer = (char, Bigarray_compat.int8_unsigned_elt, Bigarray_compat.c_layout
  * functions and the fact that the type is private, and used by various
  * functions that would otherwise be completely unsafe.
  *
+ * Furthermore, no operation on [t] is allowed to extend the view on the
+ * underlying Bigarray structure, only narrowing is allowed. The deprecated
+ * functions add_len and set_len violate this.
+ *
  * All well-intended souls are kindly invited to cross-check that the code
  * indeed maintains this invariant.
  *)
