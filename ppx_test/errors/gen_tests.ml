@@ -7,7 +7,7 @@ let output_stanzas name =
   (action
     (with-stderr-to
       %%{targets}
-      (system "./pp.exe --impl %%{input} || true"))))
+      (run ./pp.exe --impl %%{input}))))
 
 (alias
   (name runtest)

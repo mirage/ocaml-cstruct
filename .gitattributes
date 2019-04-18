@@ -2,4 +2,4 @@
 * text=auto
 
 .azure-pipelines.sh text eol=lf
-ppx_test/* text eol=lf
+ppx_test/errors/* text eol=lf
