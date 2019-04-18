@@ -115,7 +115,7 @@ let () =
       check (Cstruct.get_uint8 c i = x land 0xff)
     );
   add_test ~name:"set_len" [cstruct; int] (fun base len ->
-      match Cstruct.set_len base len with
+      match[@ocaml.warning "-3"] Cstruct.set_len base len with
       | x ->
         (* check_within ~base x; *)   (* Maybe deprecate set_len extending the allocation? *)
         check (Cstruct.len x >= 0);
@@ -124,7 +124,7 @@ let () =
       | exception Invalid_argument _ -> ()
     );
   add_test ~name:"add_len" [cstruct; int] (fun base len ->
-      match Cstruct.add_len base len with
+      match[@ocaml.warning "-3"] Cstruct.add_len base len with
       | x ->
         check (Cstruct.len x >= 0);
         check (Cstruct.len x <= Bigarray.Array1.dim (base.Cstruct.buffer));
