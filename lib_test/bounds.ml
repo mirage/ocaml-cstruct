@@ -164,28 +164,28 @@ let test_of_bigarray_large_length () =
 let test_set_len_too_big () =
   let x = Cstruct.create 0 in
   try
-    let y = Cstruct.set_len x 1 in
+    let[@ocaml.warning "-3"] y = Cstruct.set_len x 1 in
     failwith (Printf.sprintf "test_set_len_too_big: %s" (to_string y))
   with Invalid_argument _ -> ()
 
 let test_set_len_too_small () =
   let x = Cstruct.create 0 in
   try
-    let y = Cstruct.set_len x (-1) in
+    let[@ocaml.warning "-3"] y = Cstruct.set_len x (-1) in
     failwith (Printf.sprintf "test_set_len_too_small: %s" (to_string y))
   with Invalid_argument _ -> ()
 
 let test_add_len_too_big () =
   let x = Cstruct.create 0 in
   try
-    let y = Cstruct.add_len x 1 in
+    let[@ocaml.warning "-3"] y = Cstruct.add_len x 1 in
     failwith (Printf.sprintf "test_add_len_too_big: %s" (to_string y))
   with Invalid_argument _ -> ()
 
 let test_add_len_too_small () =
   let x = Cstruct.create 0 in
   try
-    let y = Cstruct.add_len x (-1) in
+    let[@ocaml.warning "-3"] y = Cstruct.add_len x (-1) in
     failwith (Printf.sprintf "test_add_len_too_small: %s" (to_string y))
   with Invalid_argument _ -> ()
 
