@@ -9,7 +9,7 @@ structures, and they are accessed via the `Bigarray` module.
 ## Installation
 
 This repository provides several packages that can be installed via the
-[OPAM](https://opam.ocaml.org) package manager:
+[opam](https://opam.ocaml.org) package manager:
 
 - `cstruct`: the core Cstruct library
 - `cstruct-sexp`: serialisers into s-expression format of Cstructs
@@ -18,7 +18,7 @@ This repository provides several packages that can be installed via the
 - `cstruct-lwt`: provide [Lwt](https://ocsigen.org/lwt) variants of read/write functions
 - `ppx_cstruct`: a [PPX](https://caml.inria.fr/pub/docs/manual-ocaml/extn.html#sec248) syntax extension (see below)
 
-The libraries depend on OCaml version 4.02.3 and later, since it provides a
+The libraries depend on OCaml version 4.03.0 and later, since it provides a
 [ppx](http://whitequark.org/blog/2014/04/16/a-guide-to-extension-points-in-ocaml/)
 extension point. The old
 [camlp4](http://caml.inria.fr/pub/docs/manual-camlp4/manual002.html)
