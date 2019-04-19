@@ -5,7 +5,7 @@
   (action
     (with-stderr-to
       %{targets}
-      (system "./pp.exe --impl %{input} || true"))))
+      (run ./pp.exe --impl %{input}))))
 
 (alias
   (name runtest)
@@ -19,7 +19,7 @@
   (action
     (with-stderr-to
       %{targets}
-      (system "./pp.exe --impl %{input} || true"))))
+      (run ./pp.exe --impl %{input}))))
 
 (alias
   (name runtest)
@@ -33,7 +33,7 @@
   (action
     (with-stderr-to
       %{targets}
-      (system "./pp.exe --impl %{input} || true"))))
+      (run ./pp.exe --impl %{input}))))
 
 (alias
   (name runtest)
@@ -47,7 +47,7 @@
   (action
     (with-stderr-to
       %{targets}
-      (system "./pp.exe --impl %{input} || true"))))
+      (run ./pp.exe --impl %{input}))))
 
 (alias
   (name runtest)
@@ -61,7 +61,7 @@
   (action
     (with-stderr-to
       %{targets}
-      (system "./pp.exe --impl %{input} || true"))))
+      (run ./pp.exe --impl %{input}))))
 
 (alias
   (name runtest)
@@ -75,7 +75,7 @@
   (action
     (with-stderr-to
       %{targets}
-      (system "./pp.exe --impl %{input} || true"))))
+      (run ./pp.exe --impl %{input}))))
 
 (alias
   (name runtest)
@@ -89,7 +89,7 @@
   (action
     (with-stderr-to
       %{targets}
-      (system "./pp.exe --impl %{input} || true"))))
+      (run ./pp.exe --impl %{input}))))
 
 (alias
   (name runtest)
@@ -103,7 +103,7 @@
   (action
     (with-stderr-to
       %{targets}
-      (system "./pp.exe --impl %{input} || true"))))
+      (run ./pp.exe --impl %{input}))))
 
 (alias
   (name runtest)
@@ -117,7 +117,7 @@
   (action
     (with-stderr-to
       %{targets}
-      (system "./pp.exe --impl %{input} || true"))))
+      (run ./pp.exe --impl %{input}))))
 
 (alias
   (name runtest)
@@ -131,7 +131,7 @@
   (action
     (with-stderr-to
       %{targets}
-      (system "./pp.exe --impl %{input} || true"))))
+      (run ./pp.exe --impl %{input}))))
 
 (alias
   (name runtest)
@@ -145,7 +145,7 @@
   (action
     (with-stderr-to
       %{targets}
-      (system "./pp.exe --impl %{input} || true"))))
+      (run ./pp.exe --impl %{input}))))
 
 (alias
   (name runtest)
@@ -159,7 +159,7 @@
   (action
     (with-stderr-to
       %{targets}
-      (system "./pp.exe --impl %{input} || true"))))
+      (run ./pp.exe --impl %{input}))))
 
 (alias
   (name runtest)
@@ -173,7 +173,7 @@
   (action
     (with-stderr-to
       %{targets}
-      (system "./pp.exe --impl %{input} || true"))))
+      (run ./pp.exe --impl %{input}))))
 
 (alias
   (name runtest)
