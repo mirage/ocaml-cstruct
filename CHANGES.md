@@ -1,3 +1,42 @@
+v5.0.0 2019-04-19
+-----------------
+
+**Security**: This release tightens bounds checks to ensure
+that data outside a given view (but still inside the underlying
+buffer) cannot be accessed.
+
+- `sub` does more checks (#244 #245 @hannesm @talex5 review by @dinosaure)
+- `add_len` and `set_len` are now deprecated and will be removed
+  in a future release. (#251 @hannesm)
+- do not add user-provided data for bounds checks 
+  (#253 @hannesm, report and review by @talex5)
+- improve CI to add fuzzing (#255 #252 @avsm @yomimono @talex5)
+
+**Remove Unix dependency**: cstruct now uses the new `bigarray-compat`
+library instead of Bigarray directly, to avoid a dependency on Unix
+when using OCaml compilers less than 4.06.0.  This will break downstream
+libraries that do not have a direct dependency on `Bigarray`.  Simply
+fix it in your library by adding a `bigarray` dependency in your dune
+file. (#247 @TheLortex)
+
+**Capability module**: To improve the safety of future code with stronger type
+checking, this release introduces a new `Cstruct_cap` module which makes the
+underlying Cstruct an abstract type instead of a record. In return for this
+extra abstraction, the module can enforce read-only, write only, and read/write
+buffers by tracking them as phantom type variables.  Although this library
+shares an implementation internally with classic `Cstruct`, it is a significant
+revision and so we will be gradually migrating to it.  Feedback on it is
+welcome! (#237 @dinosaure and many excited reviewers)
+
+**Ppx compare functions**: A new `compare_X` function is generated for
+`cenum` declarations. This respects custom ids supplied in the cenum
+declaration and so is more robust than polymorphic compare (#248 @emillon)
+
+The CI has also been switched over to both Azure Pipelines and Drone in
+addition to Travis, and as a result the tests all run on Windows, macOS,
+various Linux distributions, on x86 and arm64 machines, and runs AFL
+fuzz tests on the Drone cloud (#255 @avsm).
+
 v4.0.0 2019-03-25
 -----------------
 
