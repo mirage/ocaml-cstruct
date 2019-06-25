@@ -177,7 +177,8 @@ val empty : t
 
 val of_bigarray: ?off:int -> ?len:int -> buffer -> t
 (** [of_bigarray ~off ~len b] is the cstruct contained in [b] starting
-    at [off], of length [len]. *)
+    at offset [off] (default [0]) of length [len]
+    (default [Bigarray.Array1.dim b - off]). *)
 
 val to_bigarray: t -> buffer
 (** [to_bigarray t] converts a {!t} into a {!buffer} Bigarray, using
@@ -202,21 +203,23 @@ val create_unsafe : int -> t
 
 val of_string: ?allocator:(int -> t) -> ?off:int -> ?len:int -> string -> t
 (** [of_string ~allocator ~off ~len str] is the cstruct representation of [str]
-    slice located at [off] offset and of [len] length,
+    slice located at offset [off] (default [0]) and of length [len] (default
+    [String.length str - off]),
     with the underlying buffer allocated by [alloc]. If [allocator] is not
     provided, [create] is used. *)
 
 val of_bytes: ?allocator:(int -> t) -> ?off:int -> ?len:int -> bytes -> t
 (** [of_bytes ~allocator byt] is the cstruct representation of [byt]
-    slice located at [off] offset and of [len] length,
+    slice located at offset [off] (default [0]) and of length [len] (default
+    [Bytes.length byt - off]),
     with the underlying buffer allocated by [alloc]. If [allocator] is not
     provided, [create] is used. *)
 
-val of_hex: string -> t
-(** [of_hex str] is the cstruct [cs].  Every pair of hex-encoded characters in
-    [str] are converted to one byte in [cs].  Whitespaces (space, newline, tab,
-    carriage return) in [str] are skipped.  The resulting cstruct is exactly
-    half the size of the non-skipped characters of [str].
+val of_hex: ?off:int -> ?len:int -> string -> t
+(** [of_hex ~off ~len str] is the cstruct [cs].  Every pair of hex-encoded
+    characters in [str] starting at offset [off] (default [0]) of length [len]
+    (default [String.length str - off]) are converted to one byte in [cs].
+    Whitespaces (space, newline, tab, carriage return) in [str] are skipped.
 
     @raise Invalid_argument if the input string contains invalid characters or
     has an odd numbers of non-whitespace characters. *)
@@ -351,13 +354,15 @@ val split: ?start:int -> t -> int -> t * t
     @raise Invalid_argument if [start] exceeds the cstruct length,
     or if there is a bounds violation of the cstruct via [len+start]. *)
 
-val to_string: t -> string
-(** [to_string t] will allocate a fresh OCaml [string] and copy the
-    contents of the cstruct into it, and return that string copy. *)
+val to_string: ?off:int -> ?len:int -> t -> string
+(** [to_string ~off ~len t] will allocate a fresh OCaml [string] and copy the
+    contents of the cstruct starting at offset [off] (default [0]) of length
+    [len] (default [Cstruct.len t - off]) into it, and return that string. *)
 
-val to_bytes: t -> bytes
-(** [to_bytes t] will allocate a fresh OCaml [bytes] and copy the
-    contents of the cstruct into it, and return that byte copy. *)
+val to_bytes: ?off:int -> ?len:int -> t -> bytes
+(** [to_bytes ~off ~len t] will allocate a fresh OCaml [bytes] and copy the
+    contents of the cstruct starting at offset [off] (default [0]) of length
+    [len] (default [Cstruct.len t - off]) into it, and return that bytes. *)
 
 (** {2 Debugging } *)
 

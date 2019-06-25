@@ -384,22 +384,19 @@ let fillv ~src ~dst =
         ) in
   aux dst 0 src
 
-
-let to_bytes t =
-  let sz = len t in
-  let b = Bytes.create sz in
-  unsafe_blit_bigstring_to_bytes t.buffer t.off b 0 sz;
-  b
-
-let to_string t =
+let to_string ?(off=0) ?len:sz t =
+  let len = match sz with None -> len t - off | Some l -> l in
   (* The following call is safe, since this is the only reference to the
      freshly-created value built by [to_bytes t]. *)
-  Bytes.unsafe_to_string (to_bytes t)
+  copy t off len
 
-let of_data_abstract blitfun lenfun ?allocator ?(off=0) ?len buf =
+let to_bytes ?off ?len t =
+  Bytes.unsafe_of_string (to_string ?off ?len t)
+
+let [@inline always] of_data_abstract blitfun lenfun ?allocator ?(off=0) ?len buf =
   let buflen =
     match len with
-    | None -> lenfun buf
+    | None -> lenfun buf - off
     | Some len -> len in
   match allocator with
   | None ->
@@ -417,7 +414,11 @@ let of_string ?allocator ?off ?len buf =
 let of_bytes ?allocator ?off ?len buf =
   of_data_abstract blit_from_bytes Bytes.length ?allocator ?off ?len buf
 
-let of_hex str =
+let of_hex ?(off=0) ?len str =
+  let str =
+    let l = match len with None -> String.length str - off | Some l -> l in
+    String.sub str off l
+  in
   let string_fold ~f ~z str =
     let st = ref z in
     ( String.iter (fun c -> st := f !st c) str  ; !st )
