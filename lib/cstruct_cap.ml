@@ -56,6 +56,8 @@ let sub t ~off ~len =
   Cstruct.sub t off len
 [@@inline]
 
+let unsafe_to_bigarray = Cstruct.to_bigarray
+
 let concat vss =
   let res = create_unsafe (Cstruct.sum_lengths ~caller:"Cstruct.Cap.concat" vss) in
   let go off v =
