@@ -50,14 +50,14 @@ type 'a t
 type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
 (** Type of buffer. A {!t} is composed of an underlying buffer. *)
 
-type rdwr =  < rd: unit; wr: unit; >
-(** Type of read-and-write capability. *)
+type rdwr = < rd: unit; wr: unit; >
+(** Type of both read and write capability. *)
 
 type ro = < rd: unit; >
-(** Type of read-only capability. *)
+(** Type of only read capability. *)
 
 type wo = < wr: unit; >
-(** Type of write-only capability. *)
+(** Type of only write capability. *)
 
 type uint8 = int
 (** 8-bit unsigned integer. *)
