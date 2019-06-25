@@ -93,25 +93,23 @@ val compare : 'a rd t -> 'b rd t -> int
 val pp : Format.formatter -> 'a rd t -> unit
 (** [pp ppf t] pretty-prints [t] on [ppf]. [t] needs read capability {!rd}. *)
 
-val length : 'a rd t -> int
+val length : 'a t -> int
 (** [length t] return length of [t]. Note that this length is potentially
    smaller than the actual size of the underlying buffer, as functions such as
-   {!sub}, {!shift}, and {!split} can construct a smaller view. [t] needs at
-   least read capability {!rd}. *)
+   {!sub}, {!shift}, and {!split} can construct a smaller view. *)
 
-val check_alignment : 'a rd t -> int -> bool
+val check_alignment : 'a t -> int -> bool
 (** [check_alignment t alignment] is [true] if the first byte stored
     in the underlying buffer of [t] is at a memory address where
     [address mod alignment = 0], [false] otherwise. The [mod] used has the
     C/OCaml semantic (which differs from Python).
     Typical uses are to check a buffer is aligned to a page or disk sector
-    boundary. [t] needs at least read capability {!rd}.
+    boundary.
 
     @raise Invalid_argument if [alignment] is not a positive integer. *)
 
-val lenv : 'a rd t list -> int
+val lenv : 'a t list -> int
 (** [lenv vs] is the combined length of all {!t} in [vs].
-    Each {!t} need at least read capability {!rd}.
 
     @raise Invalid_argument if computing the sum overflows. *)
 
@@ -135,18 +133,17 @@ val create_unsafe : int -> rdwr t
 
 (** {2 Subviews} *)
 
-val sub : 'a rd t -> off:int -> len:int -> 'a rd t
+val sub : 'a t -> off:int -> len:int -> 'a t
 (** [sub t ~off ~len] returns a proxy which shares the underlying buffer of [t].
     It is sliced at offset [off] and of length [len]. The returned value has the
-    same capabilities as [t], at least the read capability {!rd} is required.
+    same capabilities as [t].
 
     @raise Invalid_argument if the offset exceeds [t] length. *)
 
-val shift : 'a rd t -> int -> 'a rd t
+val shift : 'a t -> int -> 'a t
 (** [shift t len] returns a proxy which shares the underlying buffer of [t]. The
     returned value starts [len] bytes later than the given [t]. The returned
-    value has the same capabilities as [t], at least the read capability {!rd}
-    is required.
+    value has the same capabilities as [t].
 
     @raise Invalid_argument if the offset exceeds [t] length. *)
 
