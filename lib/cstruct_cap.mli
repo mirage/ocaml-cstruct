@@ -74,9 +74,11 @@ val of_string : ?off:int -> ?len:int -> string -> rdwr t
 (** [of_string ~off ~len s] is a fresh read-and-write {!t} of [s] sliced on
     [off] (default is [0]) and of [len] (default is [String.length s]) length. *)
 
-val of_bytes : ?off:int -> ?len:int -> bytes -> rdwr t val of_hex : string -> rdwr t
+val of_bytes : ?off:int -> ?len:int -> bytes -> rdwr t
 (** [of_bytes ~off ~len x] is a fresh read-and-write {!t} of [x] sliced on
     [off] (default is [0]) and of [len] (default is [Bytes.length x]) length. *)
+
+val of_hex : ?off:int -> ?len:int -> string -> rdwr t
 
 val to_bigarray : 'a t -> buffer
 (** [to_bigarray t] converts {!t} into a {!buffer} Bigarray, using the Bigarray
