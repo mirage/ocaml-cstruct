@@ -18,23 +18,29 @@
 (** Raw memory buffers with capabilities
 
     [Cstruct_cap] wraps OCaml Stdlib's
-    {{:http://caml.inria.fr/pub/docs/manual-ocaml/libref/Bigarray.html}Bigarray}
-    module. Each [t] consists of a proxy (consisting of offset, length, and the
-    actual {!Bigarray.t} buffer). The goal of this module is two-fold: enable
-    zero-copy - the underlying buffer is shared by most of the functions - and
-    static checking of read and write capabilities to the underlying buffer
-    (using phantom types).
+   {{:http://caml.inria.fr/pub/docs/manual-ocaml/libref/Bigarray.html}Bigarray}
+   module. Each [t] consists of a proxy (consisting of offset, length, and the
+   actual {!Bigarray.t} buffer). The goal of this module is two-fold: enable
+   zero-copy - the underlying buffer is shared by most of the functions - and
+   static checking of read and write capabilities to the underlying buffer
+   (using phantom types).
 
-    Each ['a t] is parameterized by the available capabilities: read ([rd])
-    and write ([wr]): functions retrieving bytes require the [read] capability,
-    functions mutating the underlying buffer require the [write] capability.
-    Allocation of a buffer (via {!create}, ...) returns a [t] with read and
-    write capabilities. Capabilities can not be gained, but only be dropped:
-    {!ro} drops the write capability, {!wo} drops the read capability. The only
-    exception is {!unsafe_to_bigarray} that returns the underlying [Bigarray.t].
+    Each ['a t] is parameterized by the available capabilities: read ([rd]) and
+   write ([wr]): to access the contents of the buffer the [read] capability is
+   necessary, for modifying the content of the buffer the [write] capability is
+   necessary. Capabilities can only be dropped, never gained, to a buffer.  If
+   code only has read capability, this does not mean that there is no other code
+   fragment with write capability to the underlying buffer.
+
+    The functions that retrieve bytes ({!get_uint8} etc.) require a [read]
+   capability, functions mutating the underlying buffer ({!set_uint8} etc.)
+   require a [write] capability. Allocation of a buffer (via {!create}, ...)
+   returns a [t] with read and write capabilities. {!ro} drops the write
+   capability, {!wo} drops the read capability. The only exception is
+   {!unsafe_to_bigarray} that returns the underlying [Bigarray.t].
 
     Accessors and mutators for fixed size integers (8, 16, 32, 64 bit) are
-    provided for big-endian and little-endian encodings.  *)
+   provided for big-endian and little-endian encodings.  *)
 
 (** {2 Types} *)
 
