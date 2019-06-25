@@ -206,14 +206,21 @@ val of_string: ?allocator:(int -> t) -> ?off:int -> ?len:int -> string -> t
     slice located at offset [off] (default [0]) and of length [len] (default
     [String.length str - off]),
     with the underlying buffer allocated by [alloc]. If [allocator] is not
-    provided, [create] is used. *)
+    provided, [create] is used.
+
+    @raise Invalid_argument if [off] or [len] is negative, or
+    [String.length str - off] < [len].
+*)
 
 val of_bytes: ?allocator:(int -> t) -> ?off:int -> ?len:int -> bytes -> t
 (** [of_bytes ~allocator byt] is the cstruct representation of [byt]
     slice located at offset [off] (default [0]) and of length [len] (default
     [Bytes.length byt - off]),
     with the underlying buffer allocated by [alloc]. If [allocator] is not
-    provided, [create] is used. *)
+    provided, [create] is used.
+
+    @raise Invalid_argument if [off] or [len] is negative, or
+    [Bytes.length str - off] < [len]. *)
 
 val of_hex: ?off:int -> ?len:int -> string -> t
 (** [of_hex ~off ~len str] is the cstruct [cs].  Every pair of hex-encoded
@@ -222,7 +229,8 @@ val of_hex: ?off:int -> ?len:int -> string -> t
     Whitespaces (space, newline, tab, carriage return) in [str] are skipped.
 
     @raise Invalid_argument if the input string contains invalid characters or
-    has an odd numbers of non-whitespace characters. *)
+    has an odd numbers of non-whitespace characters, or if [off] or [len] are
+    negative, or [String.length str - off] < [len]. *)
 
 (** {2 Comparison } *)
 
@@ -357,12 +365,18 @@ val split: ?start:int -> t -> int -> t * t
 val to_string: ?off:int -> ?len:int -> t -> string
 (** [to_string ~off ~len t] will allocate a fresh OCaml [string] and copy the
     contents of the cstruct starting at offset [off] (default [0]) of length
-    [len] (default [Cstruct.len t - off]) into it, and return that string. *)
+    [len] (default [Cstruct.len t - off]) into it, and return that string.
+
+    @raise Invalid_argument if [off] or [len] is negative, or
+    [Cstruct.len str - off] < [len]. *)
 
 val to_bytes: ?off:int -> ?len:int -> t -> bytes
 (** [to_bytes ~off ~len t] will allocate a fresh OCaml [bytes] and copy the
     contents of the cstruct starting at offset [off] (default [0]) of length
-    [len] (default [Cstruct.len t - off]) into it, and return that bytes. *)
+    [len] (default [Cstruct.len t - off]) into it, and return that bytes.
+
+    @raise Invalid_argument if [off] or [len] is negative, or
+    [Cstruct.len str - off] < [len]. *)
 
 (** {2 Debugging } *)
 
