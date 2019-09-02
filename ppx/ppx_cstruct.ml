@@ -526,15 +526,20 @@ let constr_enum = function
   | {pcd_loc = loc; _} ->
     loc_err loc "invalid cenum variant"
 
+let get_len = function
+  | [ ({txt = "len"; _},
+       PStr
+         [{pstr_desc =
+             Pstr_eval ({pexp_desc = Pexp_constant (Pconst_integer (sz, None)); _}, _)
+          ; _}])] ->
+    Some (int_of_string sz)
+  | [{txt = "len"; loc}, _ ] ->
+    loc_err loc "[@len] argument should be an integer"
+  | _ ->
+    None
+
 let constr_field {pld_name = fname; pld_type = fty; pld_loc = loc; pld_attributes = att; _} =
-  let get = function
-    | [{txt = "len"; _}, PStr
-         [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_constant (Pconst_integer(sz, _)); _}, _); _}]] ->
-      Some (int_of_string sz)
-    | _ ->
-      None
-  in
-  let sz = match get fty.ptyp_attributes, get att with
+  let sz = match get_len fty.ptyp_attributes, get_len att with
   | Some sz, None
   | None, Some sz -> Some sz
   | Some _, Some _ -> loc_err loc "multiple field length attribute"
