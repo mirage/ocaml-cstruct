@@ -98,6 +98,48 @@
     (diff cstruct_duplicate_field.ml.expected cstruct_duplicate_field.ml.errors)))
 
 (rule
+  (deps pp.exe (:input cstruct_len_int32.ml))
+  (targets cstruct_len_int32.ml.errors)
+  (action
+    (with-stderr-to
+      %{targets}
+      (run ./pp.exe --impl %{input}))))
+
+(alias
+  (name runtest)
+  (package ppx_cstruct)
+  (action
+    (diff cstruct_len_int32.ml.expected cstruct_len_int32.ml.errors)))
+
+(rule
+  (deps pp.exe (:input cstruct_len_not_int.ml))
+  (targets cstruct_len_not_int.ml.errors)
+  (action
+    (with-stderr-to
+      %{targets}
+      (run ./pp.exe --impl %{input}))))
+
+(alias
+  (name runtest)
+  (package ppx_cstruct)
+  (action
+    (diff cstruct_len_not_int.ml.expected cstruct_len_not_int.ml.errors)))
+
+(rule
+  (deps pp.exe (:input cstruct_len_zero.ml))
+  (targets cstruct_len_zero.ml.errors)
+  (action
+    (with-stderr-to
+      %{targets}
+      (run ./pp.exe --impl %{input}))))
+
+(alias
+  (name runtest)
+  (package ppx_cstruct)
+  (action
+    (diff cstruct_len_zero.ml.expected cstruct_len_zero.ml.errors)))
+
+(rule
   (deps pp.exe (:input cstruct_multiple_len.ml))
   (targets cstruct_multiple_len.ml.errors)
   (action
