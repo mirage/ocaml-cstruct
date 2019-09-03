@@ -527,12 +527,17 @@ let constr_enum = function
     loc_err loc "invalid cenum variant"
 
 let get_len = function
-  | [ ({txt = "len"; _},
+  | [ ({txt = "len"; loc},
        PStr
          [{pstr_desc =
              Pstr_eval ({pexp_desc = Pexp_constant (Pconst_integer (sz, None)); _}, _)
-          ; _}])] ->
-    Some (int_of_string sz)
+          ; _}])]
+    ->
+    let n = int_of_string sz in
+    if n > 0 then
+      Some n
+    else
+      loc_err loc "[@len] argument should be > 0"
   | [{txt = "len"; loc}, _ ] ->
     loc_err loc "[@len] argument should be an integer"
   | _ ->
