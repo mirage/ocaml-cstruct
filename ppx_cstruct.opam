@@ -26,6 +26,7 @@ depends: [
   "sexplib" {< "v0.13"}
   "cstruct-sexp" {with-test}
   "cstruct-unix" {with-test & =version}
+  "stdlib-shims"
 ]
 synopsis: "Access C-like structures directly from OCaml"
 description: """
