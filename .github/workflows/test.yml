@@ -1,7 +1,7 @@
 name: Cstruct
 on: [push, pull_request]
 jobs:
-  run:
+  older:
     name: Older
     runs-on: ubuntu-latest
     strategy:
@@ -21,7 +21,7 @@ jobs:
       run: opam exec -- dune build -p cstruct
     - name: Test
       run: opam exec -- dune runtest -p cstruct
-  run:
+  latest:
     name: Latest
     runs-on: ${{ matrix.operating-system }}
     strategy:
