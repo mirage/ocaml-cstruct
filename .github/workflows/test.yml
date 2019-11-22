@@ -1,4 +1,4 @@
-name: Yaml
+name: Cstruct
 on: [push]
 jobs:
   run:
