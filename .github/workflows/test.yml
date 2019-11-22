@@ -1,0 +1,26 @@
+name: Yaml
+on: [push]
+jobs:
+  run:
+    name: T
+    runs-on: ${{ matrix.operating-system }}
+    strategy:
+      matrix:
+        operating-system: [macos-latest, ubuntu-latest, windows-latest]
+        ocaml-version: [ '4.08.1', '4.07.1', '4.06.1', '4.05.0', '4.04.0', '4.03.0' ]
+    steps:
+    - uses: actions/checkout@master
+    - uses: avsm/setup-ocaml@v1.0
+      with:
+        ocaml-version: ${{ matrix.ocaml-version }}
+    - run: opam pin add -n .
+    - name: Packages
+      run: opam depext -yt cstruct cstruct-sexp cstruct-unix cstruct-async cstruct-lwt
+    - name: Dependencies
+      run: opam install -t . --deps-only
+    - name: Build
+      run: opam exec -- dune build
+    - name: Test
+      run: opam exec -- dune runtest
+    - name: Install
+      run: opam install .
