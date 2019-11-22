@@ -16,9 +16,9 @@ build: [
 depends: [
   "ocaml" {>= "4.03.0"}
   "base-unix"
+  "dune"
   "lwt"
   "cstruct" {=version}
-  "dune" {build & >= "1.0"}
 ]
 synopsis: "Access C-like structures directly from OCaml"
 description: """

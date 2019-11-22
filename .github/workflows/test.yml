@@ -2,12 +2,32 @@ name: Cstruct
 on: [push]
 jobs:
   run:
-    name: T
+    name: Older
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        ocaml-version: [ '4.05.0', '4.04.2', '4.03.0' ]
+    steps:
+    - uses: actions/checkout@master
+    - uses: avsm/setup-ocaml@v1.0
+      with:
+        ocaml-version: ${{ matrix.ocaml-version }}
+    - run: opam pin add -n cstruct.dev .
+    - name: Packages
+      run: opam depext -yt cstruct
+    - name: Dependencies
+      run: opam install cstruct --deps-only
+    - name: Build
+      run: opam exec -- dune build -p cstruct
+    - name: Test
+      run: opam exec -- dune runtest -p cstruct
+  run:
+    name: Latest
     runs-on: ${{ matrix.operating-system }}
     strategy:
       matrix:
         operating-system: [macos-latest, ubuntu-latest, windows-latest]
-        ocaml-version: [ '4.08.1', '4.07.1', '4.06.1', '4.05.0', '4.04.0', '4.03.0' ]
+        ocaml-version: [ '4.08.1', '4.07.1', '4.06.1' ]
     steps:
     - uses: actions/checkout@master
     - uses: avsm/setup-ocaml@v1.0
