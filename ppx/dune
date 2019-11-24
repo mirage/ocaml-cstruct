@@ -3,7 +3,7 @@
  (public_name ppx_cstruct)
  (kind ppx_rewriter)
  (wrapped false)
- (ppx_runtime_libraries cstruct)
+ (ppx_runtime_libraries cstruct stdlib-shims)
  (preprocess
   (pps ppx_tools_versioned.metaquot_404))
  (libraries sexplib ocaml-migrate-parsetree ppx_tools_versioned

@@ -19,6 +19,7 @@ let output_stanzas name =
 
 let is_test = function
   | "pp.ml" -> false
+  | "pp.pp.ml" -> false
   | "gen_tests.ml" -> false
   | e -> Filename.check_suffix e ".ml"
 
