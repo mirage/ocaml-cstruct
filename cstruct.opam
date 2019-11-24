@@ -21,6 +21,7 @@ depends: [
   "bigarray-compat"
   "alcotest" {with-test}
 ]
+conflicts: [ "js_of_ocaml" {<"3.5.0"} ]
 synopsis: "Access C-like structures directly from OCaml"
 description: """
 Cstruct is a library and syntax extension to make it easier to access C-like
