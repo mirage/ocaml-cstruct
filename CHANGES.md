@@ -1,3 +1,12 @@
+v5.1.1 2019-11-23
+-----------------
+
+This is a point release to fix a regression in 5.1.0
+on compilers earlier than 4.07.
+
+The release also fixes the test suite and CI on compilers
+greater than 4.07.
+
 v5.1.0 2019-11-23
 -----------------
 
