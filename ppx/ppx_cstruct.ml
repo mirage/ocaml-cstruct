@@ -452,7 +452,7 @@ let declare_enum_expr ({fields; _} as cenum) = function
     Exp.function_ (parsers @ [Exp.case [%pat? _] [%expr None]])
   | Enum_compare -> [%expr fun x y ->
     let to_int = [%e Ast.evar (enum_op_name cenum Enum_set)] in
-    Pervasives.compare (to_int x) (to_int y)
+    Stdlib.compare (to_int x) (to_int y)
   ]
 
 let enum_ops_for {sexp; _} =
