@@ -1,3 +1,15 @@
+v5.1.0 2019-11-23
+-----------------
+
+- Do not issue deprecation warnings when using OCaml 4.08.0
+  and cstruct-ppx with enums due to `Pervasives` (#269 @cypheon @hannesm)
+
+- Tighten parsing of the `[@len]` attribute to ensure it is a
+  valid, positive integer (#265 @emillon)
+
+- Update JavaScript bindings to latest `Js_of_ocaml` 3.5.0
+  interfaces (@hhugo #268)
+
 v5.0.0 2019-04-19
 -----------------
 
