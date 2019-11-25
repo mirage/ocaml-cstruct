@@ -257,6 +257,7 @@ val get_uint8: t -> int -> uint8
     at offset [off].
     @raise Invalid_argument if the offset exceeds cstruct length. *)
 
+
 val set_char: t -> int -> char -> unit
 (** [set_char t off c] sets the byte contained in the cstruct
     at offset [off] to character [c].
@@ -413,6 +414,46 @@ module BE : sig
   (** [set_uint64 cstr off i] writes the 64 bit long big-endian
       unsigned integer [i] at offset [off] of [cstr].
       @raise Invalid_argument if the buffer is too small. *)
+
+  val set_bits_uint8: t -> int -> int -> uint8 -> unit
+  (** [set_bits_uint8 cstr off size val] writes the [val]
+      at bit offset [off] and of [size] bit size.
+      @raise Invalid_argument if the offset exceeds cstruct length. *)
+
+  val set_bits_uint16: t -> int -> int -> uint16 -> unit
+  (** [set_bits_uint16 cstr off size val] writes 16 bit long big-endian unsigned
+      integer stored in [cstr] at bit offset [off] and of [size] bits size.
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val set_bits_uint32: t -> int -> int -> uint32 -> unit
+  (** [set_bits_uint32 cstr off size val] writes 32 bit long big-endian unsigned
+      integer stored in [cstr] at offset [off] and of [size] bits size.
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val set_bits_uint64: t -> int -> int -> uint64 -> unit
+  (** [set_bits_uint64 cstr off size val] writes 64 bit long big-endian unsigned
+      integer stored in [cstr] at offset [off] and of [size] bits size.
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val get_bits_uint8: t -> int -> int -> uint8
+  (** [get_bits_uint8 cstr off size] returns the byte contained in the cstruct
+      at bit offset [off] and of [size] bit size.
+      @raise Invalid_argument if the offset exceeds cstruct length. *)
+
+  val get_bits_uint16: t -> int -> int -> uint16
+  (** [get_bits_uint16 cstr off size] is the 16 bit long big-endian unsigned
+      integer stored in [cstr] at bit offset [off] and of [size] bits size.
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val get_bits_uint32: t -> int -> int -> uint32
+  (** [get_bits_uint32 cstr off size] is the 32 bit long big-endian unsigned
+      integer stored in [cstr] at offset [off] and of [size] bits size.
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val get_bits_uint64: t -> int -> int -> uint64
+  (** [get_bits_uint64 cstr off size] is the 64 bit long big-endian unsigned
+      integer stored in [cstr] at offset [off] and of [size] bits size.
+      @raise Invalid_argument if the buffer is too small. *)
 end
 
 module LE : sig
@@ -449,6 +490,46 @@ module LE : sig
   val set_uint64: t -> int -> uint64 -> unit
   (** [set_uint64 cstr off i] writes the 64 bit long little-endian
       unsigned integer [i] at offset [off] of [cstr].
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val set_bits_uint8: t -> int -> int -> uint8 -> unit
+  (** [set_bits_uint8 cstr off size val] writes the [val]
+      at bit offset [off] and of [size] bit size.
+      @raise Invalid_argument if the offset exceeds cstruct length. *)
+
+  val set_bits_uint16: t -> int -> int -> uint16 -> unit
+  (** [set_bits_uint16 cstr off size val] writes 16 bit long little-endian unsigned
+      integer stored in [cstr] at bit offset [off] and of [size] bits size.
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val set_bits_uint32: t -> int -> int -> uint32 -> unit
+  (** [set_bits_uint32 cstr off size val] writes 32 bit long little-endian unsigned
+      integer stored in [cstr] at offset [off] and of [size] bits size.
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val set_bits_uint64: t -> int -> int -> uint64 -> unit
+  (** [set_bits_uint64 cstr off size val] writes 64 bit long little-endian unsigned
+      integer stored in [cstr] at offset [off] and of [size] bits size.
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val get_bits_uint8: t -> int -> int -> uint8
+  (** [get_bits_uint8 cstr off size] returns the byte contained in the cstruct
+      at bit offset [off] and of [size] bit size.
+      @raise Invalid_argument if the offset exceeds cstruct length. *)
+
+  val get_bits_uint16: t -> int -> int -> uint16
+  (** [get_bits_uint16 cstr off size] is the 16 bit long little-endian unsigned
+      integer stored in [cstr] at bit offset [off] and of [size] bits size.
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val get_bits_uint32: t -> int -> int -> uint32
+  (** [get_bits_uint32 cstr off size] is the 32 bit long little-endian unsigned
+      integer stored in [cstr] at offset [off] and of [size] bits size.
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val get_bits_uint64: t -> int -> int -> uint64
+  (** [get_bits_uint64 cstr off size] is the 64 bit long little-endian unsigned
+      integer stored in [cstr] at offset [off] and of [size] bits size.
       @raise Invalid_argument if the buffer is too small. *)
 
 end

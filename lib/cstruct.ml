@@ -31,6 +31,7 @@ type buffer = (char, Bigarray_compat.int8_unsigned_elt, Bigarray_compat.c_layout
  * indeed maintains this invariant.
  *)
 
+(* Note that offset is stored in both bits and bytes! *)
 type t = {
   buffer: buffer;
   off   : int;
@@ -256,7 +257,7 @@ let compare t1 t2 =
 let equal t1 t2 = compare t1 t2 = 0
 
 (* Note that this is only safe as long as all [t]s are coherent. *)
-let memset t x = unsafe_fill_bigstring t.buffer t.off t.len x
+let memset t x = unsafe_fill_bigstring t.buffer (t.off/8) t.len x
 
 let create len =
   let t = create_unsafe len in
@@ -321,6 +322,865 @@ let get_uint64 swap p t i =
     let r = ba_get_int64 t.buffer (t.off+i) in
     if swap then swap64 r else r [@@inline]
 
+(* o - bitoffset, i - count of bits *)
+(* It assumes we use __attribute__((packed)) with alignment = 1 byte *)
+(* Here we also assume there is no trailing padding at the end *)
+(* The offset and alignment rules depend on the "parent" type *)
+let align_bits = 8 (* bits, not bytes *)
+
+(* Count the granulas required to read/write - little endian *)
+let bitfield_granula_count_le align _ o i =
+    if o mod align = 0 then (
+        if i mod align = 0 then i / align
+        else i / align + 1
+    ) else (
+        if (i + o) mod align = 0 then i / align
+        else i / align + 1
+    )
+
+(* Count the granulas required to read/write - big endian *)
+let bitfield_granula_count_be align t o i =
+    let o' = t.len * 8 - o - i in
+    if o' mod align = 0 then (
+        if i mod align = 0 then i / align
+        else i / align + 1
+    ) else (
+        if (i + o') mod align = 0 then i / align
+        else i / align + 1
+    )
+
+
+(* These functions do not cross the boundary, and just add zeroes *)
+let get_uint16_chop_boundary swap p t i =
+    if i + 2 > t.len then
+        let part = get_uint8 t i in
+        if swap then part lsl 8 else part
+    else
+        get_uint16 swap p t i
+
+let get_uint32_chop_boundary swap p t i =
+    if i + 4 > t.len then
+        if i + 3 > t.len then
+            Int32.of_int (get_uint16_chop_boundary swap p t (i + 2))
+        else
+            let part1 = get_uint16 swap p t i in
+            let part2 = get_uint8 t (i + 2) in
+            let chunk =
+                if swap then part1 lsl 8 + part2 else part2 lsl 16 + part1
+            in
+            Int32.of_int (chunk lsl 8)
+    else
+        get_uint32 swap p t i
+
+let get_uint64_chop_boundary swap p t i =
+    if i + 8 > t.len then
+        if i + 7 > t.len then
+            if i + 6 > t.len then
+                if i + 5 > t.len then
+                    Int64.of_int32 (get_uint32_chop_boundary swap p t (i + 4))
+                else
+                    let part1 = Int64.of_int32 (get_uint32 swap p t i) in
+                    let part2 = Int64.of_int (get_uint8 t (i + 4)) in
+                    let chunk =
+                        if swap then
+                            Int64.add (Int64.shift_left part1 8) part2
+                        else
+                            Int64.add (Int64.shift_left part2 32) part1
+                    in
+                    Int64.shift_left chunk 24
+            else
+                let part1 = Int64.of_int32 (get_uint32 swap p t i) in
+                let part2 = Int64.of_int (get_uint16 swap p t (i + 4)) in
+                let chunk =
+                    if swap then
+                        Int64.add (Int64.shift_left part1 16) part2
+                    else
+                        Int64.add (Int64.shift_left part2 32) part1
+                in
+                Int64.shift_left chunk 16
+        else
+            let part1 = Int64.of_int32 (get_uint32 swap p t i) in
+            let part2 = Int64.of_int32 (get_uint32_chop_boundary swap p t (i + 4)) in
+            let chunk =
+                if swap then
+                    Int64.add (Int64.shift_left part1 32) part2
+                else
+                    Int64.add (Int64.shift_left part2 32) part1
+            in
+            chunk
+    else
+        get_uint64 swap p t i
+
+let get_bits_uint8_le_boundary_chop swap p t o i =
+  let byteoff = o / align_bits in
+  (* 6 cases total *)
+  (* When they start at granularity boundary *)
+  if o mod align_bits = 0 then
+    (* First case - when they are located near the granularity boundary,
+     * and lesser or equal than a granularity unit (byte) *)
+    if i <= align_bits then
+        let byte = get_uint8 t byteoff in
+        let mask = (1 lsl i) - 1 in
+        byte land mask
+    (* Second case - when they are located near the granularity boundary,
+     * and bigger than a granularity unit (byte) *)
+    else
+        (* Check if it crosses the boundary *)
+        if i mod align_bits = 0 then
+            (* TODO: Consider also the length of the buffer here *)
+            get_uint16_chop_boundary swap p t byteoff
+        else
+            (* Here mask is tricky - what to read there?
+             * Do we need to make swap before or after? *)
+            let mask = (1 lsl i) - 1 in
+            let raw = get_uint16_chop_boundary swap p t byteoff in
+            raw land mask
+  (* When they start not at granularity boundary *)
+  else
+      let bithead = o mod align_bits in
+      (* Third case - when they are located not at a granularity boundary,
+       * and lesser or equal than a tail of the granula (byte) *)
+      if i + bithead < align_bits then
+        let byte = get_uint8 t byteoff in
+        let mask = ((1 lsl i) - 1) lsl bithead in
+        (byte land mask) lsr bithead
+      (* Fouth case - when they are located not at a granularity boundary,
+       * and go further than next granularity boundary *)
+      else
+        (* Check if it crosses the boundary *)
+        if (i + o) mod align_bits = 0 then
+            (* Read these bytes, how to check the swap? *)
+            let mask = ((1 lsl i) - 1) lsl bithead in
+            let raw = get_uint16_chop_boundary swap p t byteoff in
+            (raw land mask) lsr bithead
+        else
+            (* Read these bytes, how to check the swap? *)
+            let mask = ((1 lsl i) - 1) lsl bithead in
+            let raw = get_uint16_chop_boundary swap p t byteoff in
+            (raw land mask) lsr bithead
+
+
+(* It also should always start from the most significant bit for big endian and least significant bit on little endian machine
+ * Basically on big endian machine we should read them in reversed order, bit by bit *)
+(* Currently it always starts from the least significant bit
+ * How to handle the byte-peeking then? *)
+let get_bits_uint8_le_no_boundary_chop _ _ t o i =
+  let byteoff = o / align_bits in
+  (* 6 cases total *)
+  (* When they start at granularity boundary *)
+  if o mod align_bits = 0 then
+    (* First case - when they are located near the granularity boundary,
+     * and lesser or equal than a granularity unit (byte) *)
+    if i <= align_bits then
+        let byte = get_uint8 t byteoff in
+        let mask = (1 lsl i) - 1 in
+        byte land mask
+    (* Second case - when they are located near the granularity boundary,
+     * and bigger than a granularity unit (byte) *)
+    else
+        err_invalid_bounds "get_bits_uint8" t i 2
+  (* When they start not at granularity boundary *)
+  else
+      let bithead = o mod align_bits in
+      (* Third case - when they are located not at a granularity boundary,
+       * and lesser or equal than a tail of the granula (byte) *)
+      if i + bithead < align_bits then
+        let byte = get_uint8 t byteoff in
+        let mask = ((1 lsl i) - 1) lsl bithead in
+        (byte land mask) lsr bithead
+      (* Fouth case - when they are located not at a granularity boundary,
+       * and go further than next granularity boundary *)
+      else
+        err_invalid_bounds "get_bits_uint8" t i 2
+
+let get_bits_uint8_le swap p t o i =
+  (* At first - check the boundary *)
+  if ((o + i) / align_bits) > t.len || o < 0 || i > 8 then
+    err_invalid_bounds "get_bits_uint8" t i 2
+  else
+    let count = bitfield_granula_count_le align_bits t o i in
+    if count <= 2 then
+        get_bits_uint8_le_boundary_chop swap p t o i
+    else
+        get_bits_uint8_le_no_boundary_chop swap p t o i
+
+let get_bits_uint16_le_boundary_chop swap p t (o:int) (i:int) =
+      let byteoff = o / align_bits in
+      (* 6 cases total *)
+      (* When they start at granularity boundary *)
+      if o mod align_bits = 0 then
+        (* First case - when they are located near the granularity boundary,
+         * and lesser or equal than a granularity unit (byte) *)
+        if i <= align_bits then
+            let byte = get_uint16_chop_boundary swap p t byteoff in
+            let mask = (1 lsl i) - 1 in
+            byte land mask
+        (* Second case - when they are located near the granularity boundary,
+         * and bigger than a granularity unit (byte) *)
+        else
+            (* Check if it crosses the boundary *)
+            if i mod align_bits = 0 then
+                let mask = (1 lsl i) - 1 in
+                let raw = get_uint16_chop_boundary swap p t byteoff in
+                raw land mask
+            else
+                let open Int32 in
+                let mask = sub (shift_left 1l i) 1l in
+                let raw = of_int (get_uint16_chop_boundary swap p t byteoff) in
+                Int32.to_int (logand raw mask)
+      (* When they start not at granularity boundary *)
+      else
+          let bithead = o mod align_bits in
+          (* Third case - when they are located not at a granularity boundary,
+           * and lesser or equal than a tail of the granula (byte) *)
+          if i + bithead < align_bits then
+            let short = get_uint16_chop_boundary swap p t byteoff in
+            let mask = ((1 lsl i) - 1) lsl bithead in
+            (short land mask) lsr bithead
+          (* Fouth case - when they are located not at a granularity boundary,
+           * and go further than next granularity boundary *)
+          else
+            (* Read these bytes, how to check the swap? *)
+            let mask = ((1 lsl i) - 1) lsl bithead in
+            let raw = get_uint16_chop_boundary swap p t byteoff in
+            (raw land mask) lsr bithead
+
+let get_bits_uint16_le_no_boundary_chop swap p t (o:int) (i:int) =
+      let byteoff = o / align_bits in
+      (* 6 cases total *)
+      (* When they start at granularity boundary *)
+      if o mod align_bits = 0 then
+        (* First case - when they are located near the granularity boundary,
+         * and lesser or equal than a granularity unit (byte) *)
+        if i <= align_bits then
+            let byte = get_uint16_chop_boundary swap p t byteoff in
+            let mask = (1 lsl i) - 1 in
+            byte land mask
+        (* Second case - when they are located near the granularity boundary,
+         * and bigger than a granularity unit (byte) *)
+        else
+            (* Check if it crosses the boundary *)
+            if i mod align_bits = 0 then
+                let count = i / align_bits in
+                if count <= 4 then
+                    let open Int32 in
+                    let mask = sub (shift_left 1l i) 1l in
+                    let raw = get_uint32 swap p t byteoff in
+                    let result = logand raw mask in
+                    (* Downcast to uint16 *)
+                    Int32.to_int result
+                else
+                    err_invalid_bounds (p ^ ".get_bits_uint16") t i 2
+            else
+                let count = i / align_bits + 1 in
+                let open Int32 in
+                let mask = sub (shift_left 1l i) 1l in
+                let raw =
+                    if count <= 4 then get_uint32 swap p t byteoff
+                    else
+                      err_invalid_bounds (p ^ ".get_bits_uint16") t i 2
+                in
+                Int32.to_int (logand raw mask)
+      (* When they start not at granularity boundary *)
+      else
+          let bithead = o mod align_bits in
+          (* Third case - when they are located not at a granularity boundary,
+           * and lesser or equal than a tail of the granula (byte) *)
+          if i + bithead < align_bits then
+            let short = get_uint16_chop_boundary swap p t byteoff in
+            let mask = ((1 lsl i) - 1) lsl bithead in
+            (short land mask) lsr bithead
+          (* Fouth case - when they are located not at a granularity boundary,
+           * and go further than next granularity boundary *)
+          else
+            err_invalid_bounds (p ^ ".get_bits_uint16") t i 2
+
+let get_bits_uint16_le swap p t o i =
+  (* At first - check the boundary *)
+  if ((o + i) / align_bits) > t.len || o < 0 || i > 16 then
+    err_invalid_bounds (p ^ ".get_bits_uint16") t i 2
+  else
+    let count = bitfield_granula_count_le align_bits t o i in
+    if count <= 2 then
+        get_bits_uint16_le_boundary_chop swap p t o i
+    else
+        get_bits_uint16_le_no_boundary_chop swap p t o i
+
+(* This function cannot read more than 32 bits *)
+let get_bits_uint32_le swap p t o i =
+  (* At first - check the boundary *)
+  if ((o + i) / align_bits) > t.len || o < 0 || i > 32 then
+    err_invalid_bounds (p ^ ".get_bits_uint32") t i 2
+  else
+      let byteoff = o / align_bits in
+      (* 6 cases total *)
+      (* When they start at granularity boundary *)
+      if o mod align_bits = 0 then
+        (* First and second case - when they are located near the granularity boundary,
+         * and lesser or equal than a granularity unit (byte) *)
+        if i <= align_bits then
+            let open Int32 in
+            let byte = get_uint32 swap p t byteoff in
+            let mask = sub (shift_left 1l i) 1l in
+            logand byte mask
+        (* Second case - when they are located near the granularity boundary,
+         * and bigger than a granularity unit (byte) *)
+        else
+            (* Check if it crosses the boundary *)
+            if i mod align_bits = 0 then
+                let count = i / align_bits in
+                let open Int32 in
+                if count <= 2 then
+                    let mask = sub (shift_left 1l i) 1l in
+                    let raw = get_uint16 swap p t byteoff in
+                    logand (of_int raw) mask
+                else if count <= 4 then
+                    let mask = sub (shift_left 1l i) 1l in
+                    let raw = get_uint32 swap p t byteoff in
+                    logand raw mask
+                else if count <= 8 then
+                    let open Int64 in
+                    let mask = sub (shift_left 1L i) 1L in
+                    let raw = get_uint64 swap p t byteoff in
+                    let raw' = logand raw mask in
+                    Int64.to_int32 raw'
+                else
+                    err_invalid_bounds (p ^ ".get_bits_uint32") t i 2
+            else
+                let count = i / align_bits + 1 in
+                let open Int64 in
+                let raw =
+                    if count <= 2 then Int64.of_int (get_uint16 swap p t byteoff)
+                    else if count <= 4 then Int64.of_int32 (get_uint32 swap p t byteoff)
+                    else if count <= 8 then get_uint64 swap p t o
+                    else
+                        err_invalid_bounds (p ^ ".get_bits_uint32") t i 2
+                in
+                let mask = sub (shift_left 1L i) 1L in
+                let raw' = logand raw mask in
+                Int64.to_int32 raw'
+      (* When they start not at granularity boundary *)
+      else
+          let bithead = o mod align_bits in
+          (* Third case - when they are located not at a granularity boundary,
+           * and lesser or equal than a tail of the granula (byte) *)
+          if i + bithead < align_bits then
+            let open Int32 in
+            let raw = get_uint32 swap p t byteoff in
+            let mask = shift_left (sub (shift_left 1l i) 1l) bithead in
+            shift_right_logical (logand raw mask) bithead
+          (* Fouth case - when they are located not at a granularity boundary,
+           * and go further than next granularity boundary *)
+          else
+            (* Check if it crosses the boundary *)
+            if (i + o) mod align_bits = 0 then
+                let count = i / align_bits in
+                let open Int32 in
+                let mask = shift_left (sub (shift_left 1l i) 1l) bithead in
+                let raw =
+                    if count <= 2 then of_int (get_uint16 swap p t byteoff)
+                    else if count <= 4 then get_uint32 swap p t byteoff
+                    else
+                        err_invalid_bounds (p ^ ".get_bits_uint32") t i 2
+                in
+                shift_right_logical (logand raw mask) bithead
+            else
+                let count = i / align_bits + 1 in
+                let open Int64 in
+                let mask = shift_left (sub (shift_left 1L i) 1L) bithead in
+                let raw =
+                    if count <= 2 then of_int (get_uint16 swap p t byteoff)
+                    else if count <= 4 then of_int32 (get_uint32 swap p t byteoff)
+                    else if count <= 8 then get_uint64 swap p t o
+                    else
+                        err_invalid_bounds (p ^ ".get_bits_uint32") t i 2
+                in
+                let raw' = shift_right_logical (logand raw mask) bithead in
+                Int64.to_int32 raw'
+
+(* This function cannot read more than 64 bits *)
+let get_bits_uint64_le swap p t o i =
+  (* At first - check the boundary *)
+  if ((o + i) / align_bits) > t.len || o < 0 || i > 64 then
+    err_invalid_bounds (p ^ ".get_bits_uint64") t i 2
+  else
+      let byteoff = o / align_bits in
+      (* 6 cases total *)
+      (* When they start at granularity boundary *)
+      if o mod align_bits = 0 then
+        (* First and second case - when they are located near the granularity boundary,
+         * and lesser or equal than a granularity unit (byte) *)
+        (* FIXME: Do not tie up itself to the byte as granularity unit *)
+        if i <= align_bits then
+            let open Int64 in
+            let raw = get_uint64 swap p t byteoff in
+            let mask = sub (shift_left 1L i) 1L in
+            logand raw mask
+        (* Second case - when they are located near the granularity boundary,
+         * and bigger than a granularity unit (byte) *)
+        else
+            (* Check if it crosses the boundary *)
+            if i mod align_bits = 0 then
+                let count = i / align_bits in
+                let open Int64 in
+                if count <= 2 then
+                    let mask = sub (shift_left 1L i) 1L in
+                    let raw = get_uint16 swap p t byteoff in
+                    logand (of_int raw) mask
+                else if count <= 4 then
+                    let mask = sub (shift_left 1L i) 1L in
+                    let raw = get_uint32 swap p t byteoff in
+                    logand (of_int32 raw) mask
+                else if count <= 8 then
+                    let mask = sub (shift_left 1L i) 1L in
+                    let raw = get_uint64 swap p t byteoff in
+                    logand raw mask
+                else
+                    err_invalid_bounds (p ^ ".get_bits_uint64") t i 2
+            else
+                let count = i / align_bits + 1 in
+                let open Int64 in
+                let raw =
+                    if count <= 2 then of_int (get_uint16 swap p t byteoff)
+                    else if count <= 4 then of_int32 (get_uint32 swap p t byteoff)
+                    else if count <= 8 then get_uint64 swap p t o
+                    else
+                        err_invalid_bounds (p ^ ".get_bits_uint64") t i 2
+                in
+                let mask = sub (shift_left 1L i) 1L in
+                logand raw mask
+      (* When they start not at granularity boundary *)
+      else
+          let bithead = o mod align_bits in
+          (* Third case - when they are located not at a granularity boundary,
+           * and lesser or equal than a tail of the granula (byte) *)
+          if i + bithead < align_bits then
+            let open Int64 in
+            let raw = get_uint64 swap p t byteoff in
+            let mask = shift_left (sub (shift_left 1L i) 1L) bithead in
+            shift_right_logical (logand raw mask) bithead
+          (* Fouth case - when they are located not at a granularity boundary,
+           * and go further than next granularity boundary *)
+          else
+            (* Check if it crosses the boundary *)
+            if (i + o) mod align_bits = 0 then
+                let count = i / align_bits in
+                let open Int64 in
+                let mask = shift_left (sub (shift_left 1L i) 1L) bithead in
+                let raw =
+                    if count <= 2 then of_int (get_uint16 swap p t byteoff)
+                    else if count <= 4 then of_int32 (get_uint32 swap p t byteoff)
+                    else if count <= 8 then get_uint64 swap p t byteoff
+                    else
+                        err_invalid_bounds (p ^ ".get_bits_uint64") t i 2
+                in
+                shift_right_logical (logand raw mask) bithead
+            else
+                let count = i / align_bits + 1 in
+                let open Int64 in
+                let mask = shift_left (sub (shift_left 1L i) 1L) bithead in
+                let raw =
+                    if count <= 2 then of_int (get_uint16 swap p t byteoff)
+                    else if count <= 4 then of_int32 (get_uint32 swap p t byteoff)
+                    else if count <= 8 then get_uint64 swap p t o
+                    else
+                        err_invalid_bounds (p ^ ".get_bits_uint64") t i 2
+                in
+                shift_right_logical (logand raw mask) bithead
+
+(* It also should always start from the most significant bit for big endian
+ * Basically on big endian machine we should read them in reversed order, bit by bit
+ * Currently it always starts from the least significant bit
+ * How to handle the byte-peeking then? *)
+let get_bits_uint8_be_boundary_chop swap p t o i =
+  let o' = t.len * 8 - o - i in
+  let byteoff = o' / align_bits in
+  (* 6 cases total *)
+  (* When they start at granularity boundary *)
+  if o' mod align_bits = 0 then
+    (* First case - when they are located near the granularity boundary,
+     * and lesser or equal than a granularity unit (byte) *)
+    if i <= align_bits then
+      let byte = get_uint8 t byteoff in
+      let mask = (1 lsl i) - 1 in
+      byte land mask
+    (* Second case - when they are located near the granularity boundary,
+     * and bigger than a granularity unit (byte) *)
+    else
+      (* Check if it crosses the boundary *)
+      if i mod align_bits = 0 then
+        (* TODO: Consider also the length of the buffer here *)
+        get_uint16_chop_boundary swap p t byteoff
+      else
+        (* Here mask is tricky - what to read there?
+         * Do we need to make swap before or after? *)
+        let mask = (1 lsl i) - 1 in
+        let raw = get_uint16_chop_boundary swap p t byteoff in
+        raw land mask
+  (* When they start not at granularity boundary *)
+  else
+      let bithead = byteoff * 8 in
+      (* Third case - when they are located not at a granularity boundary,
+       * and lesser or equal than a tail of the granula (byte) *)
+      if i + o' < align_bits then
+        let byte = get_uint8 t byteoff in
+        let mask = (((1 lsl i) - 1) lsl o') lsr  bithead in
+        (byte land mask) lsr (bithead + 1)
+      (* Fouth case - when they are located not at a granularity boundary,
+       * and go further than next granularity boundary *)
+      else
+        (* Check if it crosses the boundary *)
+        if (i + o') mod align_bits = 0 then
+          (* Read these bytes, how to check the swap? *)
+          let mask = ((1 lsl i) - 1) lsl bithead in
+          let raw = get_uint16_chop_boundary swap p t byteoff in
+          (raw land mask) lsr bithead
+        else
+          (* Read these bytes, how to check the swap? *)
+          let mask = (((1 lsl i) - 1) lsl o') lsl bithead in
+          let raw = get_uint16_chop_boundary swap p t byteoff in
+          ((raw land mask) lsr o') lsr bithead
+
+let get_bits_uint8_be_no_boundary_chop _ _ t o i =
+  let o' = t.len * 8 - o - i in
+  let byteoff = o' / align_bits in
+  (* 6 cases total *)
+  (* When they start at granularity boundary *)
+  if o' mod align_bits = 0 then
+    (* First case - when they are located near the granularity boundary,
+     * and lesser or equal than a granularity unit (byte) *)
+    if i <= align_bits then
+      let byte = get_uint8 t byteoff in
+      let mask = (1 lsl i) - 1 in
+      byte land mask
+    (* Second case - when they are located near the granularity boundary,
+     * and bigger than a granularity unit (byte) *)
+    else
+      err_invalid_bounds "get_bits_uint8" t i 2
+  (* When they start not at granularity boundary *)
+  else
+      let bithead = byteoff * 8 in
+      (* Third case - when they are located not at a granularity boundary,
+       * and lesser or equal than a tail of the granula (byte) *)
+      if i + o' < align_bits then
+        let byte = get_uint8 t byteoff in
+        let mask = (((1 lsl i) - 1) lsl o') lsr  bithead in
+        (byte land mask) lsr (bithead + 1)
+      (* Fouth case - when they are located not at a granularity boundary,
+       * and go further than next granularity boundary *)
+      else
+        err_invalid_bounds "get_bits_uint8" t i 2
+
+let get_bits_uint8_be swap p t o i =
+  (* At first - check the boundary *)
+  if ((o + i) / align_bits) > t.len || o < 0 || i > 8 then
+    err_invalid_bounds "get_bits_uint8" t i 2
+  else
+    let count = bitfield_granula_count_be align_bits t o i in
+    if count <= 2 then
+        get_bits_uint8_be_boundary_chop swap p t o i
+    else
+        get_bits_uint8_be_no_boundary_chop swap p t o i
+
+let get_bits_uint16_be_boundary_chop swap p t (o:int) (i:int) =
+  let o' = t.len * 8 - o - i in
+  let byteoff = o / align_bits in
+  let bithead = byteoff * 8 in
+  (* 6 cases total *)
+  (* When they start at granularity boundary *)
+  if o' mod align_bits = 0 then
+    (* First case - when they are located near the granularity boundary,
+     * and lesser or equal than a granularity unit (byte) *)
+    if i <= align_bits then
+        let short = get_uint16_chop_boundary swap p t byteoff in
+        let mask = (((1 lsl i) - 1) lsl o') lsl bithead in
+        ((short land mask) lsr o') lsr bithead
+    (* Second case - when they are located near the granularity boundary,
+     * and bigger than a granularity unit (byte) *)
+    else
+        (* Check if it crosses the boundary *)
+        if i mod align_bits = 0 then
+          let mask = (1 lsl i) - 1 in
+          let raw = get_uint16_chop_boundary swap p t byteoff in
+          raw land mask
+        else
+            let open Int32 in
+            let mask = sub (shift_left 1l i) 1l in
+            let raw = of_int (get_uint16_chop_boundary swap p t byteoff) in
+            Int32.to_int (logand raw mask)
+  (* When they start not at granularity boundary *)
+  else
+      let bithead = byteoff * 8 in
+      (* Third case - when they are located not at a granularity boundary,
+       * and lesser or equal than a tail of the granula (byte) *)
+      if i + o' < align_bits then
+        let short = get_uint16_chop_boundary swap p t byteoff in
+        let mask = (((1 lsl i) - 1) lsl o') lsl bithead in
+        (short land mask) lsr (bithead + 1)
+      (* Fouth case - when they are located not at a granularity boundary,
+       * and go further than next granularity boundary *)
+      else
+        (* Check if it crosses the boundary *)
+        if (i + o) mod align_bits = 0 then
+            (* Read these bytes, how to check the swap? *)
+            let mask = ((1 lsl i) - 1) lsl bithead in
+            let raw = get_uint16_chop_boundary swap p t byteoff in
+            (raw land mask) lsr bithead
+        else
+            (* Read these bytes, how to check the swap? *)
+            let mask = (((1 lsl i) - 1) lsl o') lsl bithead in
+            let raw = get_uint16_chop_boundary swap p t byteoff in
+            ((raw land mask) lsr o') lsr bithead
+
+let get_bits_uint16_be_no_boundary_chop swap p t (o:int) (i:int) =
+  let o' = t.len * 8 - o - i in
+  let byteoff = o / align_bits in
+  let bithead = byteoff * 8 in
+  (* 6 cases total *)
+  (* When they start at granularity boundary *)
+  if o' mod align_bits = 0 then
+    (* First case - when they are located near the granularity boundary,
+     * and lesser or equal than a granularity unit (byte) *)
+    if i <= align_bits then
+        let short = get_uint16_chop_boundary swap p t byteoff in
+        let mask = (((1 lsl i) - 1) lsl o') lsl bithead in
+        ((short land mask) lsr o') lsr bithead
+    (* Second case - when they are located near the granularity boundary,
+     * and bigger than a granularity unit (byte) *)
+    else
+        (* Check if it crosses the boundary *)
+        if i mod align_bits = 0 then
+            let count = i / align_bits in
+            if count <= 4 then
+                let open Int32 in
+                let mask = sub (shift_left 1l i) 1l in
+                let raw = get_uint32_chop_boundary swap p t byteoff in
+                let result = logand raw mask in
+                (* Downcast to uint16 *)
+                Int32.to_int result
+            else
+                err_invalid_bounds (p ^ ".get_bits_uint16") t i 2
+        else
+            let count = i / align_bits + 1 in
+            let open Int32 in
+            let mask = sub (shift_left 1l i) 1l in
+            let raw =
+                if count <= 4 then get_uint32_chop_boundary swap p t byteoff
+                else
+                    err_invalid_bounds (p ^ ".get_bits_uint16") t i 2
+            in
+            Int32.to_int (logand raw mask)
+  (* When they start not at granularity boundary *)
+  else
+      let bithead = byteoff * 8 in
+      (* Third case - when they are located not at a granularity boundary,
+       * and lesser or equal than a tail of the granula (byte) *)
+      if i + o' < align_bits then
+        let short = get_uint16_chop_boundary swap p t byteoff in
+        let mask = (((1 lsl i) - 1) lsl o') lsl bithead in
+        (short land mask) lsr (bithead + 1)
+      (* Fouth case - when they are located not at a granularity boundary,
+       * and go further than next granularity boundary *)
+      else
+        err_invalid_bounds (p ^ ".get_bits_uint16") t i 2
+
+let get_bits_uint16_be swap p t o i =
+  (* At first - check the boundary *)
+  if ((o + i) / align_bits) > t.len || o < 0 || i > 16 then
+    err_invalid_bounds (p ^ ".get_bits_uint16") t i 2
+  else
+    let count = bitfield_granula_count_be align_bits t o i in
+    if count <= 2 then
+        get_bits_uint16_be_boundary_chop swap p t o i
+    else
+        get_bits_uint16_be_no_boundary_chop swap p t o i
+
+(* This function cannot read more than 32 bits *)
+let get_bits_uint32_be swap p t o i =
+  (* At first - check the boundary *)
+  if ((o + i) / align_bits) > t.len || o < 0 || i > 32 then
+    err_invalid_bounds (p ^ ".get_bits_uint32") t i 2
+  else
+      let o' = t.len * 8 - o - i in
+      let byteoff = o / align_bits in
+      let bithead = byteoff * 8 in
+      (* 6 cases total *)
+      (* When they start at granularity boundary *)
+      if o' mod align_bits = 0 then
+        (* First and second case - when they are located near the granularity boundary,
+         * and lesser or equal than a granularity unit (byte) *)
+        if i <= align_bits then
+            let open Int32 in
+            let byte = get_uint32_chop_boundary swap p t byteoff in
+            let mask = shift_left (shift_left (sub (shift_left 1l i) 1l) o') bithead in
+            shift_right_logical (shift_right_logical (logand byte mask) o') bithead
+        (* Second case - when they are located near the granularity boundary,
+         * and bigger than a granularity unit (byte) *)
+        else
+            (* Check if it crosses the boundary *)
+            if i mod align_bits = 0 then
+                let count = i / align_bits in
+                let open Int32 in
+                if count <= 2 then
+                    let mask = sub (shift_left 1l i) 1l in
+                    let raw = get_uint16 swap p t byteoff in
+                    logand (of_int raw) mask
+                else if count <= 4 then
+                    let mask = sub (shift_left 1l i) 1l in
+                    let raw = get_uint32 swap p t byteoff in
+                    logand raw mask
+                else if count <= 8 then
+                    let open Int64 in
+                    let mask = sub (shift_left 1L i) 1L in
+                    let raw = get_uint64 swap p t byteoff in
+                    let raw' = logand raw mask in
+                    Int64.to_int32 raw'
+                else
+                    err_invalid_bounds (p ^ ".get_bits_uint32") t i 2
+            else
+                let count = i / align_bits + 1 in
+                let open Int64 in
+                let raw =
+                    if count <= 2 then Int64.of_int (get_uint16 swap p t byteoff)
+                    else if count <= 4 then Int64.of_int32 (get_uint32 swap p t byteoff)
+                    else if count <= 8 then get_uint64 swap p t o
+                    else
+                        err_invalid_bounds (p ^ ".get_bits_uint32") t i 2
+                in
+                let mask = sub (shift_left 1L i) 1L in
+                let raw' = logand raw mask in
+                Int64.to_int32 raw'
+      (* When they start not at granularity boundary *)
+      else
+          let bithead = byteoff * 8 in
+          (* Third case - when they are located not at a granularity boundary,
+           * and lesser or equal than a tail of the granula (byte) *)
+          if i + o' < align_bits then
+            let open Int32 in
+            let raw = get_uint32_chop_boundary swap p t byteoff in
+            let mask = shift_left (shift_left (sub (shift_left 1l i) 1l) o') bithead in
+            shift_right_logical (logand raw mask) (bithead + 1)
+          (* Fouth case - when they are located not at a granularity boundary,
+           * and go further than next granularity boundary *)
+          else
+            (* Check if it crosses the boundary *)
+            if (i + o) mod align_bits = 0 then
+                let count = i / align_bits in
+                let open Int32 in
+                let mask = shift_left (sub (shift_left 1l i) 1l) bithead in
+                let raw =
+                    if count <= 2 then of_int (get_uint16_chop_boundary swap p t byteoff)
+                    else if count <= 4 then get_uint32_chop_boundary swap p t byteoff
+                    else
+                        err_invalid_bounds (p ^ ".get_bits_uint32") t i 2
+                in
+                shift_right_logical (logand raw mask) bithead
+            else
+                let count = i / align_bits + 1 in
+                let open Int64 in
+                let mask = shift_left (sub (shift_left 1L i) 1L) bithead in
+                let raw =
+                    if count <= 2 then of_int (get_uint16_chop_boundary swap p t byteoff)
+                    else if count <= 4 then of_int32 (get_uint32_chop_boundary swap p t byteoff)
+                    else if count <= 8 then get_uint64_chop_boundary swap p t o
+                    else
+                        err_invalid_bounds (p ^ ".get_bits_uint32") t i 2
+                in
+                let raw' = shift_right_logical
+                    (shift_right_logical (logand raw mask) o') bithead in
+                Int64.to_int32 raw'
+
+(* This function cannot read more than 64 bits *)
+let get_bits_uint64_be swap p t o i =
+  (* At first - check the boundary *)
+  if ((o + i) / align_bits) > t.len || o < 0 || i > 64 then
+    err_invalid_bounds (p ^ ".get_bits_uint64") t i 2
+  else
+      let o' = t.len * 8 - o - i in
+      let byteoff = o / align_bits in
+      let bithead = byteoff * 8 in
+      (* 6 cases total *)
+      (* When they start at granularity boundary *)
+      if o' mod align_bits = 0 then
+        (* First and second case - when they are located near the granularity boundary,
+         * and lesser or equal than a granularity unit (byte) *)
+        if i <= align_bits then
+            let open Int64 in
+            let raw = get_uint64_chop_boundary swap p t byteoff in
+            let mask = shift_left (shift_left (sub (shift_left 1L i) 1L) o') bithead in
+            shift_right_logical (shift_right_logical (logand raw mask) o') bithead
+        (* Second case - when they are located near the granularity boundary,
+         * and bigger than a granularity unit (byte) *)
+        else
+            (* Check if it crosses the boundary *)
+            if i mod align_bits = 0 then
+                let count = i / align_bits in
+                let open Int64 in
+                if count <= 2 then
+                    let mask = sub (shift_left 1L i) 1L in
+                    let raw = get_uint16_chop_boundary swap p t byteoff in
+                    logand (of_int raw) mask
+                else if count <= 4 then
+                    let mask = sub (shift_left 1L i) 1L in
+                    let raw = get_uint32_chop_boundary swap p t byteoff in
+                    logand (of_int32 raw) mask
+                else if count <= 8 then
+                    let mask = sub (shift_left 1L i) 1L in
+                    let raw = get_uint64_chop_boundary swap p t byteoff in
+                    logand raw mask
+                else
+                    err_invalid_bounds (p ^ ".get_bits_uint64") t i 2
+            else
+                let count = i / align_bits + 1 in
+                let open Int64 in
+                let raw =
+                    if count <= 2 then of_int (get_uint16 swap p t byteoff)
+                    else if count <= 4 then of_int32 (get_uint32 swap p t byteoff)
+                    else if count <= 8 then get_uint64 swap p t o
+                    else
+                        err_invalid_bounds (p ^ ".get_bits_uint64") t i 2
+                in
+                let mask = sub (shift_left 1L i) 1L in
+                logand raw mask
+      (* When they start not at granularity boundary *)
+      else
+          let bithead = byteoff * 8 in
+          (* Third case - when they are located not at a granularity boundary,
+           * and lesser or equal than a tail of the granula (byte) *)
+          if i + o' < align_bits then
+            let open Int64 in
+            let raw = get_uint64_chop_boundary swap p t byteoff in
+            let mask = shift_left (shift_left (sub (shift_left 1L i) 1L) o') bithead in
+            shift_right_logical (logand raw mask) (bithead + 1)
+          (* Fouth case - when they are located not at a granularity boundary,
+           * and go further than next granularity boundary *)
+          else
+            (* Check if it crosses the boundary *)
+            if (i + o) mod align_bits = 0 then
+                let count = i / align_bits in
+                let open Int64 in
+                let mask = shift_left (sub (shift_left 1L i) 1L) bithead in
+                let raw =
+                    if count <= 2 then of_int (get_uint16_chop_boundary swap p t byteoff)
+                    else if count <= 4 then of_int32 (get_uint32_chop_boundary swap p t byteoff)
+                    else if count <= 8 then get_uint64_chop_boundary swap p t byteoff
+                    else
+                        err_invalid_bounds (p ^ ".get_bits_uint64") t i 2
+                in
+                shift_right_logical (logand raw mask) bithead
+            else
+                let count = i / align_bits + 1 in
+                let open Int64 in
+                let mask = shift_left (shift_left (sub (shift_left 1L i) 1L) o') bithead in
+                let raw =
+                    if count <= 2 then of_int (get_uint16_chop_boundary swap p t byteoff)
+                    else if count <= 4 then of_int32 (get_uint32_chop_boundary swap p t byteoff)
+                    else if count <= 8 then get_uint64_chop_boundary swap p t o
+                    else
+                        err_invalid_bounds (p ^ ".get_bits_uint64") t i 2
+                in
+                shift_right_logical (shift_right_logical (logand raw mask) o') bithead
+
 module BE = struct
   let set_uint16 t i c = set_uint16 (not Sys.big_endian) "BE" t i c [@@inline]
   let set_uint32 t i c = set_uint32 (not Sys.big_endian) "BE" t i c [@@inline]
@@ -328,6 +1188,14 @@ module BE = struct
   let get_uint16 t i = get_uint16 (not Sys.big_endian) "BE" t i [@@inline]
   let get_uint32 t i = get_uint32 (not Sys.big_endian) "BE" t i [@@inline]
   let get_uint64 t i = get_uint64 (not Sys.big_endian) "BE" t i [@@inline]
+  let set_bits_uint8 _t _o _i _c = ()
+  let set_bits_uint16 _t _o _i _c = ()
+  let set_bits_uint32 _t _o _i _c = ()
+  let set_bits_uint64 _t _o _i _c = ()
+  let get_bits_uint8 t o i = get_bits_uint8_be (not Sys.big_endian) "BE" t o i
+  let get_bits_uint16 t o i = get_bits_uint16_be (not Sys.big_endian) "BE" t o i
+  let get_bits_uint32 t o i = get_bits_uint32_be (not Sys.big_endian) "BE" t o i
+  let get_bits_uint64 t o i = get_bits_uint64_be (not Sys.big_endian) "BE" t o i
 end
 
 module LE = struct
@@ -337,6 +1205,14 @@ module LE = struct
   let get_uint16 t i = get_uint16 Sys.big_endian "LE" t i [@@inline]
   let get_uint32 t i = get_uint32 Sys.big_endian "LE" t i [@@inline]
   let get_uint64 t i = get_uint64 Sys.big_endian "LE" t i [@@inline]
+  let set_bits_uint8 _t _o _i _c = ()
+  let set_bits_uint16 _t _o _i _c = ()
+  let set_bits_uint32 _t _o _i _c = ()
+  let set_bits_uint64 _t _o _i _c = ()
+  let get_bits_uint8 t o i = get_bits_uint8_le Sys.big_endian "LE" t o i
+  let get_bits_uint16 t o i = get_bits_uint16_le Sys.big_endian "LE" t o i
+  let get_bits_uint32 t o i = get_bits_uint32_le Sys.big_endian "LE" t o i
+  let get_bits_uint64 t o i = get_bits_uint64_le Sys.big_endian "LE" t o i
 end
 
 let len t =

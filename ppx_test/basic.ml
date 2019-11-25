@@ -72,6 +72,44 @@ type unused = {
 } [@@big_endian]
 ]
 
+[%%cstruct
+type lebfbar1 = {
+  a : uint8_t [@bits 5];
+  b : uint16_t [@bits 3];
+  c : uint32_t;
+  d : uint8_t [@bits 45];
+} [@@little_endian]
+]
+
+[%%cstruct
+type lebfbar2 = {
+  a : uint16_t [@bits 1];
+  b : uint16_t [@bits 2];
+  c : uint16_t [@bits 3];
+  d : uint16_t [@bits 4];
+  e : uint16_t [@bits 5];
+} [@@little_endian]
+]
+
+[%%cstruct
+type bebfbar1 = {
+  a : uint8_t [@bits 5];
+  b : uint16_t [@bits 3];
+  c : uint32_t;
+  d : uint8_t [@bits 18];
+} [@@big_endian]
+]
+
+[%%cstruct
+type bebfbar2 = {
+  a : uint16_t [@bits 1];
+  b : uint16_t [@bits 2];
+  c : uint16_t [@bits 3];
+  d : uint16_t [@bits 4];
+  e : uint16_t [@bits 5];
+} [@@big_endian]
+]
+
 let set_with_ignored_field__b = true
 
 let _ : bool = set_with_ignored_field__b
@@ -128,6 +166,20 @@ let tests () =
     LE.set_bibar_a bile i;
     assert(LE.get_bibar_a bile = i)
   done;
+  let le = Cstruct.of_bigarray (Bigarray.(Array1.of_array char c_layout [|'\x1d'; '\x15'|])) in
+  assert(sizeof_lebfbar2 = 2);
+  assert(get_lebfbar2_a le = 1);
+  assert(get_lebfbar2_b le = 2);
+  assert(get_lebfbar2_c le = 3);
+  assert(get_lebfbar2_d le = 4);
+  assert(get_lebfbar2_e le = 5);
+  let be = Cstruct.of_bigarray (Bigarray.(Array1.of_array char c_layout [|'\xcd'; '\x0a'|])) in
+  assert(sizeof_lebfbar2 = 2);
+  assert(get_bebfbar2_a be = 1);
+  assert(get_bebfbar2_b be = 2);
+  assert(get_bebfbar2_c be = 3);
+  assert(get_bebfbar2_d be = 4);
+  assert(get_bebfbar2_e be = 5);
   let be = Cstruct.of_bigarray (Bigarray.(Array1.create char c_layout sizeof_foo)) in
   for i = 0 to 65535 do
     set_bar_b be i;

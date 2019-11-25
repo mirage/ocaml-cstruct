@@ -35,10 +35,14 @@ type prim =
   | UInt32
   | UInt64
 
+type length = Length | Bitsize
+
 type ty =
   | Prim of prim
   | Buffer of prim * int
+  | Bitfield of prim * int
 
+(* Store offset as bit offset *)
 type raw_field = {
   name: string;
   ty: ty;
@@ -59,6 +63,7 @@ type field =
 let field_is_ignored name =
   String.get name 0 = '_'
 
+(* Store length as bit length *)
 type t = {
   name: string;
   fields: field list;
@@ -76,15 +81,16 @@ let ty_of_string =
   |_ -> None
 
 let width_of_prim = function
-  | Char -> 1
-  | UInt8 -> 1
-  | UInt16 -> 2
-  | UInt32 -> 4
-  | UInt64 -> 8
+  | Char -> 1*8
+  | UInt8 -> 1*8
+  | UInt16 -> 2*8
+  | UInt32 -> 4*8
+  | UInt64 -> 8*8
 
 let width_of_ty = function
   | Prim p -> width_of_prim p
   | Buffer (p, len) -> width_of_prim p * len
+  | Bitfield (_, len) -> len
 
 let width_of_field f =
   width_of_ty f.ty
@@ -97,18 +103,20 @@ let field_to_string f =
     |Prim UInt32 -> "uint32_t"
     |Prim UInt64 -> "uint64_t"
     |Buffer (prim, len) -> sprintf "%s[%d]" (string (Prim prim)) len
+    |Bitfield (prim, len) -> sprintf "%s:%d" (string (Prim prim)) len
   in
   sprintf "%s %s" (string f.ty) f.name
 
 let loc_err loc fmt = Location.raise_errorf ~loc ("ppx_cstruct: " ^^ fmt)
 
-let parse_field loc name field_type sz =
+let parse_field loc name field_type param =
   match ty_of_string field_type with
   |None -> loc_err loc "Unknown type %s" field_type
   |Some ty -> begin
-    let ty = match ty,sz with
+    let ty = match ty,param with
       |_,None -> Prim ty
-      |prim,Some sz -> Buffer (prim, sz)
+      |prim,Some (Length,sz) -> Buffer (prim, sz)
+      |prim,Some (Bitsize,sz) -> Bitfield (prim, sz)
     in
     { name; ty; definition_loc = loc }
   end
@@ -138,18 +146,34 @@ let create_struct loc endian name fields =
     |"bi_endian" -> Bi_endian
     |_ -> loc_err loc "unknown endian %s, should be little_endian, big_endian, host_endian or bi_endian" endian
   in
-  let len, fields =
-    List.fold_left (fun (off,acc) ({name; ty; definition_loc}:raw_field) ->
+  let len, fields, _ =
+      List.fold_left (fun (off,acc,prevbf) ({name; ty; definition_loc}:raw_field) ->
         let field =
           if field_is_ignored name then
             Ignored_field
           else
             Named_field { name; ty; off; definition_loc }
         in
-        let off = width_of_ty ty + off in
+        (* Here we have a complex situation of computing the valid offset
+         * according to different bitfields packing rules,
+         * we should check if the next field is not bitfield, then we
+         * align its offset against the 1-byte boundary. *)
+        let bf = match ty with
+          |Bitfield (_, _) -> true
+          | _ -> false
+        in
+        let off =
+          if prevbf && not bf then
+            let align_bits = 8 in
+            let padding = (align_bits - (off mod align_bits)) mod align_bits in
+            let aligned = off + padding in
+              width_of_ty ty + aligned
+            else
+              width_of_ty ty + off
+        in
         let acc = acc @ [field] in
-        (off, acc)
-      ) (0,[]) fields
+        (off, acc, bf)
+    ) (0,[],false) fields
   in
   check_for_duplicates fields;
   { fields; name = name.txt; len; endian }
@@ -193,21 +217,55 @@ let op_evar s op = Ast.evar (op_name s op)
 let get_expr loc s f =
   let m = mode_mod loc s.endian in
   let num x = Ast.int x in
+  let off = f.off / 8 in
   match f.ty with
   |Buffer (_, _) ->
-    let len = width_of_field f in
-    [%expr
-      fun src -> Cstruct.sub src [%e num f.off] [%e num len]
-    ]
+    let len = (width_of_field f) / 8 in
+    [%expr fun src -> Cstruct.sub src [%e num off] [%e num len]]
+  |Bitfield (prim, len) ->
+    (* It depends on the actual bits count, so if the bits count
+     * lesser than primary type size - we still take primary type,
+     * but if it is bigger - we take the bigger unit then *)
+    if len > 0 && len <= 8 then
+    [%expr fun v ->
+          [%e match prim with
+              |Char |UInt8 ->
+                [%expr [%e m "get_bits_uint8"] v [%e num f.off] [%e num len]]
+              |UInt16 ->
+                [%expr [%e m "get_bits_uint16"] v [%e num f.off] [%e num len]]
+              |UInt32 ->
+                [%expr [%e m "get_bits_uint32"] v [%e num f.off] [%e num len]]
+              |UInt64 ->
+                      [%expr [%e m "get_bits_uint64"] v [%e num f.off] [%e num len]]]]
+    else if len > 8 && len <= 16 then
+    [%expr fun v ->
+          [%e match prim with
+              |Char |UInt8 | UInt16 ->
+                [%expr [%e m "get_bits_uint16"] v [%e num f.off] [%e num len]]
+              |UInt32 ->
+                [%expr [%e m "get_bits_uint32"] v [%e num f.off] [%e num len]]
+              |UInt64 ->
+                [%expr [%e m "get_bits_uint64"] v [%e num f.off] [%e num len]]]]
+    else if len > 16 && len <= 32 then
+    [%expr fun v ->
+          [%e match prim with
+              |Char |UInt8 |UInt16 |UInt32 ->
+                [%expr [%e m "get_bits_uint32"] v [%e num f.off] [%e num len]]
+              |UInt64 ->
+                [%expr [%e m "get_bits_uint64"] v [%e num f.off] [%e num len]]]]
+    else
+    [%expr fun v ->
+          [%e match prim with
+              |Char |UInt8 |UInt16 |UInt32 |UInt64 ->
+                [%expr [%e m "get_bits_uint64"] v [%e num f.off] [%e num len]]]]
   |Prim prim ->
-    [%expr
-      fun v ->
+    [%expr fun v ->
         [%e match prim with
-            |Char -> [%expr Cstruct.get_char v [%e num f.off]]
-            |UInt8 -> [%expr Cstruct.get_uint8 v [%e num f.off]]
-            |UInt16 -> [%expr [%e m "get_uint16"] v [%e num f.off]]
-            |UInt32 -> [%expr [%e m "get_uint32"] v [%e num f.off]]
-            |UInt64 -> [%expr [%e m "get_uint64"] v [%e num f.off]]]]
+            |Char -> [%expr Cstruct.get_char v [%e num off]]
+            |UInt8 -> [%expr Cstruct.get_uint8 v [%e num off]]
+            |UInt16 -> [%expr [%e m "get_uint16"] v [%e num off]]
+            |UInt32 -> [%expr [%e m "get_uint32"] v [%e num off]]
+            |UInt64 -> [%expr [%e m "get_uint64"] v [%e num off]]]]
 
 let type_of_int_field = function
   |Char -> [%type: char]
@@ -216,23 +274,79 @@ let type_of_int_field = function
   |UInt32 -> [%type: Cstruct.uint32]
   |UInt64 -> [%type: Cstruct.uint64]
 
+let type_of_bitfield prim len =
+  if len > 0 && len <= 8 then
+    match prim with
+    |Char |UInt8 -> [%type: Cstruct.uint8]
+    |UInt16 -> [%type: Cstruct.uint16]
+    |UInt32 -> [%type: Cstruct.uint32]
+    |UInt64 -> [%type: Cstruct.uint64]
+  else if len > 8 && len <= 16 then
+    match prim with
+    |Char |UInt8 |UInt16 -> [%type: Cstruct.uint16]
+    |UInt32 -> [%type: Cstruct.uint32]
+    |UInt64 -> [%type: Cstruct.uint64]
+  else if len > 16 && len <= 32 then
+    match prim with
+    |Char |UInt8 |UInt16 |UInt32 -> [%type: Cstruct.uint32]
+    |UInt64 -> [%type: Cstruct.uint64]
+  else
+    [%type: Cstruct.uint64]
+
 let set_expr loc s f =
   let m = mode_mod loc s.endian in
   let num x = Ast.int x in
+  let off = f.off / 8 in
   match f.ty with
   |Buffer (_,_) ->
-    let len = width_of_field f in
+    let len = (width_of_field f) / 8 in
     [%expr
       fun src srcoff dst ->
-        Cstruct.blit_from_string src srcoff dst [%e num f.off] [%e num len]]
+        Cstruct.blit_from_string src srcoff dst [%e num off] [%e num len]]
   |Prim prim ->
     [%expr fun v x ->
         [%e match prim with
-            |Char -> [%expr Cstruct.set_char v [%e num f.off] x]
-            |UInt8 -> [%expr Cstruct.set_uint8 v [%e num f.off] x]
-            |UInt16 -> [%expr [%e m "set_uint16"] v [%e num f.off] x]
-            |UInt32 -> [%expr [%e m "set_uint32"] v [%e num f.off] x]
-            |UInt64 -> [%expr [%e m "set_uint64"] v [%e num f.off] x]]]
+            |Char -> [%expr Cstruct.set_char v [%e num off] x]
+            |UInt8 -> [%expr Cstruct.set_uint8 v [%e num off] x]
+            |UInt16 -> [%expr [%e m "set_uint16"] v [%e num off] x]
+            |UInt32 -> [%expr [%e m "set_uint32"] v [%e num off] x]
+            |UInt64 -> [%expr [%e m "set_uint64"] v [%e num off] x]]]
+  |Bitfield (prim,len) ->
+    (* It depends on the actual bits count, so if the bits count
+     * lesser than primary type size - we still take primary type,
+     * but if it is bigger - we take the bigger unit then *)
+    if len > 0 && len <= 8 then
+    [%expr fun v x ->
+          [%e match prim with
+              |Char |UInt8 ->
+                [%expr [%e m "set_bits_uint8"] v [%e num f.off] [%e num len] x]
+              |UInt16 ->
+                [%expr [%e m "set_bits_uint16"] v [%e num f.off] [%e num len] x]
+              |UInt32 ->
+                [%expr [%e m "set_bits_uint32"] v [%e num f.off] [%e num len] x]
+              |UInt64 ->
+                [%expr [%e m "set_bits_uint64"] v [%e num f.off] [%e num len] x]]]
+    else if len > 8 && len <= 16 then
+    [%expr fun v x ->
+          [%e match prim with
+              |Char |UInt8 |UInt16 ->
+                [%expr [%e m "set_bits_uint16"] v [%e num f.off] [%e num len] x]
+              |UInt32 ->
+                [%expr [%e m "set_bits_uint32"] v [%e num f.off] [%e num len] x]
+              |UInt64 ->
+                [%expr [%e m "set_bits_uint64"] v [%e num f.off] [%e num len] x]]]
+    else if len > 16 && len <= 32 then
+    [%expr fun v x ->
+          [%e match prim with
+              |Char |UInt8 |UInt16 |UInt32 ->
+                [%expr [%e m "set_bits_uint32"] v [%e num f.off] [%e num len] x]
+              |UInt64 ->
+                [%expr [%e m "set_bits_uint64"] v [%e num f.off] [%e num len] x]]]
+    else
+    [%expr fun v x ->
+          [%e match prim with
+              |Char |UInt8 |UInt16 |UInt32 |UInt64 ->
+                [%expr [%e m "set_bits_uint64"] v [%e num f.off] [%e num len] x]]]
 
 let type_of_set f =
   match f.ty with
@@ -240,6 +354,9 @@ let type_of_set f =
     [%type: string -> int -> Cstruct.t -> unit]
   |Prim prim ->
     let retf = type_of_int_field prim in
+    [%type: Cstruct.t -> [%t retf] -> unit]
+  |Bitfield (prim,len) ->
+    let retf = type_of_bitfield prim len in
     [%type: Cstruct.t -> [%t retf] -> unit]
 
 let hexdump_expr s =
@@ -250,6 +367,25 @@ let hexdump_expr s =
     print_endline (Buffer.contents buf);
     print_endline "}"
   ]
+
+let format_of_bitfield prim len =
+    if len > 0 && len <= 8 then
+      match prim with
+      |Char -> "%c\n"
+      |UInt8 |UInt16 -> "0x%x\n"
+      |UInt32 -> "0x%lx\n"
+      |UInt64 -> "0x%Lx\n"
+    else if len > 8 && len <= 16 then
+      match prim with
+      |Char |UInt8 |UInt16 -> "0x%x\n"
+      |UInt32 -> "0x%lx\n"
+      |UInt64 -> "0x%Lx\n"
+    else if len > 16 && len <= 32 then
+      match prim with
+      |Char |UInt8 |UInt16 |UInt32 -> "0x%lx\n"
+      |UInt64 -> "0x%Lx\n"
+    else
+      "0x%Lx\n"
 
 let hexdump_to_buffer_expr s =
   let prim_format_string = function
@@ -267,6 +403,9 @@ let hexdump_to_buffer_expr s =
         match f.ty with
         |Prim p ->
           [%expr Printf.bprintf buf [%e prim_format_string p] ([%e get_f] v)]
+        |Bitfield (p,l) ->
+          let fmt = format_of_bitfield p l in
+          [%expr Printf.bprintf buf [%e Ast.str fmt] ([%e get_f] v)]
         |Buffer (_,_) ->
           [%expr Printf.bprintf buf "<buffer %s>" [%e Ast.str (field_to_string f)];
             Cstruct.hexdump_to_buffer buf ([%e get_f] v)]
@@ -277,19 +416,25 @@ let hexdump_to_buffer_expr s =
   in
   [%expr fun buf v -> [%e Ast.sequence (List.map hexdump_field s.fields)]]
 
+let (//) x y = if x > 0 then 1 + ((x - 1) / y) else 0 [@@inline]
+
 let op_expr loc s = function
-  | Op_sizeof -> Ast.int s.len
+  (* Since Cstruct stores the length as bits - divide by 8 first
+   * Also round up to the byte boundary *)
+  | Op_sizeof -> Ast.int (s.len // 8)
   | Op_hexdump -> hexdump_expr s
   | Op_hexdump_to_buffer -> hexdump_to_buffer_expr s
   | Op_get f -> get_expr loc s f
   | Op_set f -> set_expr loc s f
   | Op_copy f ->
-    let len = width_of_field f in
-    [%expr fun src -> Cstruct.copy src [%e Ast.int f.off] [%e Ast.int len] ]
+    let len = (width_of_field f) // 8 in
+    let off = f.off / 8 in
+    [%expr fun src -> Cstruct.copy src [%e Ast.int off] [%e Ast.int len] ]
   | Op_blit f ->
-    let len = width_of_field f in
+    let len = (width_of_field f) // 8 in
+    let off = f.off / 8 in
     [%expr fun src srcoff dst ->
-      Cstruct.blit src srcoff dst [%e Ast.int f.off] [%e Ast.int len]]
+      Cstruct.blit src srcoff dst [%e Ast.int off] [%e Ast.int len]]
 
 let field_ops_for =
   function
@@ -299,7 +444,7 @@ let field_ops_for =
     let if_buffer x =
       match f.ty with
       |Buffer (_,_) -> [x]
-      |Prim _ -> []
+      |Bitfield (_,_) |Prim _ -> []
     in
     List.concat
       [ [Op_get f]
@@ -345,6 +490,9 @@ let type_of_get f =
     [%type: Cstruct.t -> Cstruct.t]
   |Prim prim ->
     let retf = type_of_int_field prim in
+    [%type: Cstruct.t -> [%t retf]]
+  |Bitfield (prim,len) ->
+    let retf = type_of_bitfield prim len in
     [%type: Cstruct.t -> [%t retf]]
 
 let op_typ = function
@@ -526,7 +674,7 @@ let constr_enum = function
   | {pcd_loc = loc; _} ->
     loc_err loc "invalid cenum variant"
 
-let get_len = function
+let get_sz = function
   | [ ({txt = "len"; loc},
        PStr
          [{pstr_desc =
@@ -535,19 +683,32 @@ let get_len = function
     ->
     let n = int_of_string sz in
     if n > 0 then
-      Some n
+      Some (Length, n)
     else
       loc_err loc "[@len] argument should be > 0"
   | [{txt = "len"; loc}, _ ] ->
     loc_err loc "[@len] argument should be an integer"
+  | [ ({txt = "bits"; loc},
+       PStr
+         [{pstr_desc =
+             Pstr_eval ({pexp_desc = Pexp_constant (Pconst_integer (sz, None)); _}, _)
+          ; _}])]
+    ->
+    let n = int_of_string sz in
+    if n > 0 then
+      Some (Bitsize, n)
+    else
+      loc_err loc "[@bits] argument should be > 0"
+  | [{txt = "bits"; loc}, _ ] ->
+    loc_err loc "[@bits] argument should be an integer"
   | _ ->
     None
 
 let constr_field {pld_name = fname; pld_type = fty; pld_loc = loc; pld_attributes = att; _} =
-  let sz = match get_len fty.ptyp_attributes, get_len att with
-  | Some sz, None
-  | None, Some sz -> Some sz
-  | Some _, Some _ -> loc_err loc "multiple field length attribute"
+  let param = match get_sz fty.ptyp_attributes, get_sz att with
+  | Some (typ, sz), None
+  | None, Some (typ, sz) -> Some (typ, sz)
+  | Some _, Some _ -> loc_err loc "multiple field attributes"
   | None, None -> None
   in
   let fty = match fty.ptyp_desc with
@@ -555,7 +716,7 @@ let constr_field {pld_name = fname; pld_type = fty; pld_loc = loc; pld_attribute
     | _ ->
       loc_err fty.ptyp_loc "type identifier expected"
   in
-  parse_field loc fname.txt fty sz
+  parse_field loc fname.txt fty param
 
 let cstruct decl =
   let {ptype_name = name; ptype_kind = kind;
