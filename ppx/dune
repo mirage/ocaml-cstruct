@@ -5,6 +5,6 @@
  (wrapped false)
  (ppx_runtime_libraries cstruct stdlib-shims)
  (preprocess
-  (pps ppx_tools_versioned.metaquot_404))
+  (pps ppx_tools_versioned.metaquot_411))
  (libraries sexplib ocaml-migrate-parsetree ppx_tools_versioned
-   ppx_tools_versioned.metaquot_404 bigarray stdlib-shims))
+   ppx_tools_versioned.metaquot_411 bigarray stdlib-shims))

@@ -17,14 +17,14 @@
 open Migrate_parsetree
 open Printf
 
-open Ast_404
+open Ast_411
 open Longident
 open Asttypes
 open Parsetree
 open Ast_helper
 open Ast_mapper
 module Loc = Location
-module Ast = Ast_convenience_404
+module Ast = Ast_convenience_411
 
 type mode = Big_endian | Little_endian | Host_endian | Bi_endian
 
@@ -331,10 +331,10 @@ let output_struct _loc s =
     and expr_le = Mod.structure (output_struct_one_endian _loc {s with endian = Little_endian})
 
     in [{pstr_desc = Pstr_module
-        {pmb_name = {txt = "BE"; loc = _loc}; pmb_expr = expr_be;
+        {pmb_name = {txt = Some "BE"; loc = _loc}; pmb_expr = expr_be;
         pmb_attributes = []; pmb_loc = _loc;}; pstr_loc = _loc;};
         {pstr_desc = Pstr_module
-        {pmb_name = {txt = "LE"; loc = _loc}; pmb_expr = expr_le;
+        {pmb_name = {txt = Some "LE"; loc = _loc}; pmb_expr = expr_le;
         pmb_attributes = []; pmb_loc = _loc;}; pstr_loc = _loc;}
         ]
   | _ -> output_struct_one_endian _loc s
@@ -511,8 +511,11 @@ let output_enum_sig loc (cenum:cenum) =
 let constr_enum = function
   | {pcd_name = f; pcd_args = Pcstr_tuple []; pcd_attributes = attrs; _} ->
     let id = match attrs with
-      | [{txt = "id"; _}, PStr
-           [{pstr_desc = Pstr_eval ({pexp_desc = Pexp_constant cst; pexp_loc = loc; _}, _); _}]] ->
+      | [{attr_name = {txt = "id";_}; 
+          attr_payload = 
+            PStr [{ pstr_desc = 
+              Pstr_eval ({pexp_desc = Pexp_constant cst; pexp_loc = loc; _}, _); _}]
+          ;_ }] ->
         let cst = match cst with
           | Pconst_integer(i, _) -> Int64.of_string i
           | _ ->
@@ -527,18 +530,19 @@ let constr_enum = function
     loc_err loc "invalid cenum variant"
 
 let get_len = function
-  | [ ({txt = "len"; loc},
-       PStr
-         [{pstr_desc =
-             Pstr_eval ({pexp_desc = Pexp_constant (Pconst_integer (sz, None)); _}, _)
-          ; _}])]
+  | [{attr_name = {txt = "len"; loc};
+      attr_payload = PStr
+        [{pstr_desc =
+          Pstr_eval ({pexp_desc = Pexp_constant (Pconst_integer (sz, None)); _}, _);
+          _}]
+      ; _}]
     ->
     let n = int_of_string sz in
     if n > 0 then
       Some n
     else
       loc_err loc "[@len] argument should be > 0"
-  | [{txt = "len"; loc}, _ ] ->
+  | [{attr_name = {txt = "len"; loc}; _} ] ->
     loc_err loc "[@len] argument should be an integer"
   | _ ->
     None
@@ -565,8 +569,8 @@ let cstruct decl =
     | _ -> loc_err loc "record type declaration expected"
   in
   let endian = match attrs with
-    | [{txt = endian; _}, PStr []] -> endian
-    | [_, _] -> loc_err loc "no attribute payload expected"
+    | [{attr_name = {txt = endian; _}; attr_payload = PStr []; _}] -> endian
+    | [_] -> loc_err loc "no attribute payload expected"
     | _ -> loc_err loc "too many attributes"
   in
   create_struct loc endian name fields
@@ -581,9 +585,10 @@ let cenum decl =
   in
   let width, sexp =
     match attrs with
-    | ({txt = width; _}, PStr []) :: ({txt = "sexp"; _}, PStr []) :: [] ->
+    | ({attr_name = {txt = width; _};attr_payload= PStr [];_}) 
+      :: ({attr_name = {txt = "sexp"; _};attr_payload = PStr []; _}) :: [] ->
       width, true
-    | ({txt = width; _}, PStr []) :: [] ->
+    | ({attr_name = {txt = width; _};attr_payload= PStr [];_}) :: [] ->
       width, false
     | _ ->
       loc_err loc "invalid cenum attributes"
@@ -637,5 +642,5 @@ let structure mapper s =
   List.concat (List.map (structure_item' mapper) s)
 
 let () =
-  Driver.register ~name:"ppx_cstruct" Versions.ocaml_404
+  Driver.register ~name:"ppx_cstruct" Versions.ocaml_411
     (fun _config _cookies -> {default_mapper with structure; signature})

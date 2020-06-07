@@ -10,5 +10,5 @@ type foo64 =
   [@@uint64_t]
 ]
 
-let%lwt foo = Lwt.return ()
+let foo = Lwt_main.run (Lwt.return ())
 
