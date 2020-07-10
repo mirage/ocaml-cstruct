@@ -28,7 +28,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ocaml-version: [ '4.08.1', '4.07.1', '4.06.1' ]
+        ocaml-version: [ '4.10.0', '4.08.1', '4.07.1', '4.06.1' ]
         operating-system: [macos-latest, ubuntu-latest, windows-latest]
     steps:
     - uses: actions/checkout@v2
@@ -46,7 +46,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ocaml-version: [ '4.08.1', '4.07.1' ]
+        ocaml-version: [ '4.10.0', '4.08.1', '4.07.1' ]
         operating-system: [macos-latest, ubuntu-latest]
     steps:
     - uses: actions/checkout@v2

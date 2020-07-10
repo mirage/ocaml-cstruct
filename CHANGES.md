@@ -1,3 +1,15 @@
+v5.2.0 2020-06-10
+-----------------
+
+Upgrade the `ppx_cstruct` library to use the OCaml 4.11
+AST rather than than OCaml 4.04, which in turn should
+make it easier to port to ppxlib in the future and
+improve interoperability with other PPXs (@bikallem #275).
+
+Also upgrades build files to use dune 2.0 (@bikallem #275)
+and fixes the GitHub Actions versions (@smorimoto #273)
+and also test OCaml 4.10.0 (@avsm).
+
 v5.1.1 2019-11-23
 -----------------
 
