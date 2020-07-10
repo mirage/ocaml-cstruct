@@ -9,8 +9,8 @@ let output_stanzas name =
       %%{targets}
       (run ./pp.exe --impl %%{input}))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (package ppx_cstruct)
   (action
     (diff %s.expected %s.errors)))

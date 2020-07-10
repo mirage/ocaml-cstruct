@@ -2,8 +2,8 @@
  (libraries cstruct bigarray alcotest cstruct-sexp)
  (name tests))
 
-(alias
- (name runtest)
+(rule
+ (alias runtest)
  (package cstruct-sexp)
  (action
   (run ./tests.exe -e)))

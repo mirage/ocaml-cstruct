@@ -7,8 +7,8 @@
       %{targets}
       (run ./pp.exe --impl %{input}))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (package ppx_cstruct)
   (action
     (diff cenum_id_payload.ml.expected cenum_id_payload.ml.errors)))
@@ -21,8 +21,8 @@
       %{targets}
       (run ./pp.exe --impl %{input}))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (package ppx_cstruct)
   (action
     (diff cenum_invalid_type.ml.expected cenum_invalid_type.ml.errors)))
@@ -35,8 +35,8 @@
       %{targets}
       (run ./pp.exe --impl %{input}))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (package ppx_cstruct)
   (action
     (diff cenum_no_attribute.ml.expected cenum_no_attribute.ml.errors)))
@@ -49,8 +49,8 @@
       %{targets}
       (run ./pp.exe --impl %{input}))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (package ppx_cstruct)
   (action
     (diff cenum_not_a_variant.ml.expected cenum_not_a_variant.ml.errors)))
@@ -63,8 +63,8 @@
       %{targets}
       (run ./pp.exe --impl %{input}))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (package ppx_cstruct)
   (action
     (diff cenum_unknown_attribute.ml.expected cenum_unknown_attribute.ml.errors)))
@@ -77,8 +77,8 @@
       %{targets}
       (run ./pp.exe --impl %{input}))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (package ppx_cstruct)
   (action
     (diff cstruct_attribute_payload.ml.expected cstruct_attribute_payload.ml.errors)))
@@ -91,8 +91,8 @@
       %{targets}
       (run ./pp.exe --impl %{input}))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (package ppx_cstruct)
   (action
     (diff cstruct_duplicate_field.ml.expected cstruct_duplicate_field.ml.errors)))
@@ -105,8 +105,8 @@
       %{targets}
       (run ./pp.exe --impl %{input}))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (package ppx_cstruct)
   (action
     (diff cstruct_len_int32.ml.expected cstruct_len_int32.ml.errors)))
@@ -119,8 +119,8 @@
       %{targets}
       (run ./pp.exe --impl %{input}))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (package ppx_cstruct)
   (action
     (diff cstruct_len_not_int.ml.expected cstruct_len_not_int.ml.errors)))
@@ -133,8 +133,8 @@
       %{targets}
       (run ./pp.exe --impl %{input}))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (package ppx_cstruct)
   (action
     (diff cstruct_len_zero.ml.expected cstruct_len_zero.ml.errors)))
@@ -147,8 +147,8 @@
       %{targets}
       (run ./pp.exe --impl %{input}))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (package ppx_cstruct)
   (action
     (diff cstruct_multiple_len.ml.expected cstruct_multiple_len.ml.errors)))
@@ -161,8 +161,8 @@
       %{targets}
       (run ./pp.exe --impl %{input}))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (package ppx_cstruct)
   (action
     (diff cstruct_not_a_record.ml.expected cstruct_not_a_record.ml.errors)))
@@ -175,8 +175,8 @@
       %{targets}
       (run ./pp.exe --impl %{input}))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (package ppx_cstruct)
   (action
     (diff cstruct_not_an_identifier.ml.expected cstruct_not_an_identifier.ml.errors)))
@@ -189,8 +189,8 @@
       %{targets}
       (run ./pp.exe --impl %{input}))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (package ppx_cstruct)
   (action
     (diff cstruct_several_attributes.ml.expected cstruct_several_attributes.ml.errors)))
@@ -203,8 +203,8 @@
       %{targets}
       (run ./pp.exe --impl %{input}))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (package ppx_cstruct)
   (action
     (diff cstruct_unknown_endian.ml.expected cstruct_unknown_endian.ml.errors)))
@@ -217,8 +217,8 @@
       %{targets}
       (run ./pp.exe --impl %{input}))))
 
-(alias
-  (name runtest)
+(rule
+  (alias runtest)
   (package ppx_cstruct)
   (action
     (diff cstruct_unknown_type.ml.expected cstruct_unknown_type.ml.errors)))
