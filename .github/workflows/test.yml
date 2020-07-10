@@ -9,8 +9,8 @@ jobs:
       matrix:
         ocaml-version: [ '4.05.0', '4.04.2', '4.03.0' ]
     steps:
-    - uses: actions/checkout@master
-    - uses: avsm/setup-ocaml@v1.0
+    - uses: actions/checkout@v2
+    - uses: avsm/setup-ocaml@v1
       with:
         ocaml-version: ${{ matrix.ocaml-version }}
     - run: opam pin add -n cstruct.dev .
@@ -31,8 +31,8 @@ jobs:
         ocaml-version: [ '4.08.1', '4.07.1', '4.06.1' ]
         operating-system: [macos-latest, ubuntu-latest, windows-latest]
     steps:
-    - uses: actions/checkout@master
-    - uses: avsm/setup-ocaml@v1.0
+    - uses: actions/checkout@v2
+    - uses: avsm/setup-ocaml@v1
       with:
         ocaml-version: ${{ matrix.ocaml-version }}
     - run: opam pin add -n .
@@ -49,8 +49,8 @@ jobs:
         ocaml-version: [ '4.08.1', '4.07.1' ]
         operating-system: [macos-latest, ubuntu-latest]
     steps:
-    - uses: actions/checkout@master
-    - uses: avsm/setup-ocaml@v1.0
+    - uses: actions/checkout@v2
+    - uses: avsm/setup-ocaml@v1
       with:
         ocaml-version: ${{ matrix.ocaml-version }}
     - run: opam pin add -n .
