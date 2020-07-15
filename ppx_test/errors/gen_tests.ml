@@ -5,10 +5,10 @@ let output_stanzas name =
   (deps pp.exe (:input %s))
   (targets %s.errors)
   (action
-    (with-stderr-to
-      %%{targets}
-      (run ./pp.exe --impl %%{input}))))
-
+    (progn
+      (with-stderr-to %%{targets}
+        (run ./pp.exe --impl %%{input}))
+      (bash "sed -i.bak '1d' %%{targets}"))))
 (rule
   (alias runtest)
   (package ppx_cstruct)
