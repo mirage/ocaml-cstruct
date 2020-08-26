@@ -17,7 +17,7 @@ jobs:
     - name: Packages
       run: opam depext -yt cstruct
     - name: Dependencies
-      run: opam install cstruct --deps-only
+      run: opam install -t cstruct --deps-only
     - name: Build
       run: opam exec -- dune build -p cstruct
     - name: Test
