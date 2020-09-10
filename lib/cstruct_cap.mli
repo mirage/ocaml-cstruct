@@ -374,3 +374,193 @@ val concat : 'a rd t list -> rdwr t
 val rev : 'a rd t -> rdwr t
 (** [rev t] is [t] in reverse order. The return value is a freshly allocated
     {!t}, and [t] is not modified according {!rd} capability. *)
+
+(** {2 Helpers to parse with capabilities.}
+
+    As [Cstruct], capabilities interface provides helpers functions to help
+   the user to parse contents. *)
+
+val head : ?rev:bool -> 'a rd t -> char option
+(** [head cs] is [Some (get cs h)] with [h = 0] if [rev = false] (default) or [h
+   = length cs - 1] if [rev = true]. [None] is returned if [cs] is empty. *)
+
+val tail : ?rev:bool -> 'a rd t -> 'a rd t
+(** [tail cs] is [cs] without its first ([rev] is [false], default) or last
+   ([rev] is [true]) byte or [cs] is empty. *)
+
+val is_empty : 'a rd t -> bool
+(** [is_empty cs] is [length cs = 0]. *)
+
+val is_prefix : affix:'a rd t -> 'a rd t -> bool
+(** [is_prefix ~affix cs] is [true] iff [affix.[zidx] = cs.[zidx]] for all
+   indices [zidx] of [affix]. *)
+
+val is_suffix : affix:'a rd t -> 'a rd t -> bool
+(** [is_suffix ~affix cs] is [true] iff [affix.[n - zidx] = cs.[m - zidx]] for
+   all indices [zidx] of [affix] with [n = length affix - 1] and [m = length cs
+   - 1]. *)
+
+val is_infix : affix:'a rd t -> 'a rd t -> bool
+(** [is_infix ~affix cs] is [true] iff there exists an index [z] in [cs] such
+   that for all indices [zidx] of [affix] we have [affix.[zidx] = cs.[z +
+   zidx]]. *)
+
+val for_all : (char -> bool) -> 'a rd t -> bool
+(** [for_all p cs] is [true] iff for all indices [zidx] of [cs], [p cs.[zidx] =
+   true]. *)
+
+val exists : (char -> bool) -> 'a rd t -> bool
+(** [exists p cs] is [true] iff there exists an index [zidx] of [cs] with [p
+   cs.[zidx] = true]. *)
+
+val start : 'a rd t -> 'a rd t
+(** [start cs] is the empty sub-part at the start position of [cs]. *)
+
+val stop : 'a rd t -> 'a rd t
+(** [stop cs] is the empty sub-part at the stop position of [cs]. *)
+
+val trim : ?drop:(char -> bool) -> 'a rd t -> 'a rd t
+(** [trim ~drop cs] is [cs] with prefix and suffix bytes satisfying [drop] in
+   [cs] removed. [drop] defaults to [function ' ' | '\r' .. '\t' -> true | _ ->
+   false]. *)
+
+val span : ?rev:bool -> ?min:int -> ?max:int -> ?sat:(char -> bool) -> 'a rd t -> 'a rd t * 'a rd t
+(** [span ~rev ~min ~max ~sat cs] is [(l, r)] where:
+
+    {ul
+    {- if [rev] is [false] (default), [l] is at least [min] and at most
+       [max] consecutive [sat] satisfying initial bytes of [cs] or {!empty}
+       if there are no such bytes. [r] are the remaining bytes of [cs].}
+    {- if [rev] is [true], [r] is at least [min] and at most [max]
+       consecutive [sat] satisfying final bytes of [cs] or {!empty}
+       if there are no such bytes. [l] are the remaining bytes of [cs].}}
+
+    If [max] is unspecified the span is unlimited. If [min] is unspecified
+    it defaults to [0]. If [min > max] the condition can't be satisfied and
+    the left or right span, depending on [rev], is always empty. [sat]
+    defaults to [(fun _ -> true)].
+
+    The invariant [l ^ r = s] holds.
+
+    For instance, the {i ABNF} expression:
+
+{v
+  time := 1*10DIGIT
+v}
+
+    can be translated to:
+
+    {[
+      let (time, _) = span ~min:1 ~max:10 is_digit cs in
+    ]}
+
+    @raise Invalid_argument if [max] or [min] is negative. *)
+
+val take : ?rev:bool -> ?min:int -> ?max:int -> ?sat:(char -> bool) -> 'a rd t -> 'a rd t
+(** [take ~rev ~min ~max ~sat cs] is the matching span of {!span} without the remaining one.
+    In other words:
+
+    {[(if rev then snd else fst) @@ span ~rev ~min ~max ~sat cs]} *)
+
+val drop : ?rev:bool -> ?min:int -> ?max:int -> ?sat:(char -> bool) -> 'a rd t -> 'a rd t
+(** [drop ~rev ~min ~max ~sat cs] is the remaining span of {!span} without the matching one.
+    In other words:
+
+    {[(if rev then fst else snd) @@ span ~rev ~min ~max ~sat cs]} *)
+
+val cut : ?rev:bool -> sep:'a rd t -> 'a rd t -> ('a rd t * 'a rd t) option
+(** [cut ~sep cs] is either the pair [Some (l, r)] of the two
+    (possibly empty) sub-buffers of [cs] that are delimited by the first
+    match of the non empty separator string [sep] or [None] if [sep] can't
+    be matched in [cs]. Matching starts from the beginning of [cs] ([rev] is
+    [false], default) or the end ([rev] is [true]).
+
+    The invariant [l ^ sep ^ r = s] holds.
+
+    For instance, the {i ABNF} expression:
+
+{v
+  field_name := *PRINT
+  field_value := *ASCII
+  field := field_name ":" field_value
+v}
+
+    can be translated to:
+
+    {[
+      match cut ~sep:":" value with
+      | Some (field_name, field_value) -> ...
+      | None -> invalid_arg "invalid field"
+    ]}
+
+    @raise Invalid_argument if [sep] is the empty buffer. *)
+
+val cuts : ?rev:bool -> ?empty:bool -> sep:'a rd t -> 'a rd t -> 'a rd t list
+(** [cuts ~sep cs] is the list of all sub-buffers of [cs] that are
+    delimited by matches of the non empty separator [sep]. Empty sub-buffers are
+    omitted in the list if [empty] is [false] (default to [true]).
+
+    Matching separators in [cs] starts from the beginning of [cs]
+    ([rev] is [false], default) or the end ([rev] is [true]). Once
+    one is found, the separator is skipped and matching starts again,
+    that is separator matches can't overlap. If there is no separator
+    match in [cs], the list [[cs]] is returned.
+
+    The following invariants hold:
+    {ul
+    {- [concat ~sep (cuts ~empty:true ~sep cs) = cs]}
+    {- [cuts ~empty:true ~sep cs <> []]}}
+
+    For instance, the {i ABNF} expression:
+
+{v
+  arg := *(ASCII / ",") ; any characters exclude ","
+  args := arg *("," arg)
+v}
+
+    can be translated to:
+
+    {[
+      let args = cuts ~sep:"," buffer in
+    ]}
+
+    @raise Invalid_argument if [sep] is the empty buffer. *)
+
+val fields : ?empty:bool -> ?is_sep:(char -> bool) -> 'a rd t -> 'a rd t list
+(** [fields ~empty ~is_sep cs] is the list of (possibly empty)
+    sub-buffers that are delimited by bytes for which [is_sep] is
+    [true]. Empty sub-buffers are omitted in the list if [empty] is
+    [false] (defaults to [true]). [is_sep c] if it's not define by the
+    user is [true] iff [c] is an US-ASCII white space character,
+    that is one of space [' '] ([0x20]), tab ['\t'] ([0x09]), newline
+    ['\n'] ([0x0a]), vertical tab ([0x0b]), form feed ([0x0c]), carriage
+    return ['\r'] ([0x0d]). *)
+
+val find : ?rev:bool -> (char -> bool) -> 'a rd t -> 'a rd t option
+(** [find ~rev sat cs] is the sub-buffer of [cs] (if any) that spans
+    the first byte that satisfies [sat] in [cs] after position [start cs]
+    ([rev] is [false], default) or before [stop cs] ([rev] is [true]).
+    [None] is returned if there is no matching byte in [s]. *)
+
+val find_sub : ?rev:bool -> sub:'a rd t -> 'a rd t -> 'a rd t option
+(** [find_sub ~rev ~sub cs] is the sub-buffer of [cs] (if any) that spans
+    the first match of [sub] in [cs] after position [start cs]
+    ([rev] is [false], default) or before [stop cs] ([rev] is [true]).
+    Only bytes are compared and [sub] can be on a different base buffer.
+    [None] is returned if there is no match of [sub] in [s]. *)
+
+val filter : (char -> bool) -> 'a rd t -> 'a rd t
+(** [filter sat cs] is the buffer made of the bytes of [cs] that satisfy [sat],
+    in the same order. *)
+
+val filter_map : (char -> char option) -> 'a rd t -> rdwr t
+(** [filter_map f cs] is the buffer made of the bytes of [cs] as mapped by
+    [f], in the same order. *)
+
+val map : (char -> char) -> 'a rd t -> rdwr t
+(** [map f cs] is [cs'] with [cs'.[i] = f cs.[i]] for all indices [i]
+    of [cs]. [f] is invoked in increasing index order. *)
+
+val mapi : (int -> char -> char) -> 'a rd t -> rdwr t
+(** [map f cs] is [cs'] with [cs'.[i] = f i cs.[i]] for all indices [i]
+    of [cs]. [f] is invoked in increasing index order. *)
