@@ -3,7 +3,7 @@ v5.3.0 2020-09-10
 
 Add useful functions to be able to parse some contents
 with `Cstruct.t` like the `astring` library (#227,
-@dinosaure, @avsm, @samoth, @hannesm).
+@dinosaure, @avsm, @samoht, @hannesm).
 
 v5.2.0 2020-06-10
 -----------------
