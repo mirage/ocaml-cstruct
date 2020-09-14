@@ -585,9 +585,6 @@ val start_pos : t -> int
 val stop_pos : t -> int
 (** [stop_pos cs] is [cs]'s stop position in the base {!Cstruct.buffer}. *)
 
-val length : t -> int
-(** [length cs] is the number of bytes in [cs]. *)
-
 val head : ?rev:bool -> t -> char option
 (** [head cs] is [Some (get cs h)] with [h = 0] if [rev = false] (default) or [h
    = length cs - 1] if [rev = true]. [None] is returned if [cs] is empty. *)

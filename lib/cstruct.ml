@@ -569,7 +569,6 @@ let buffer ?(off= 0) ?len buffer =
   if off < 0 || len < 0 || off + len > buffer_len then invalid_arg "index out of bounds" ;
   of_bigarray ~off ~len buffer
 
-let length cs = len cs
 let start_pos { off; _ } = off
 let stop_pos { off; len; _ } = off + len
 

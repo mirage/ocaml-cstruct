@@ -27,7 +27,7 @@ let misc =
   let sub = string ~off:2 ~len:1 "abc" in
   Alcotest.(check int) "start_pos" (start_pos sub) 2 ;
   Alcotest.(check int) "stop_pos"  (stop_pos sub)  3 ;
-  Alcotest.(check int) "length"    (length sub)    1 ;
+  Alcotest.(check int) "length"    (len sub)    1 ;
   let index_out_of_bounds = Invalid_argument "index out of bounds" in
   Alcotest.check_raises "get" index_out_of_bounds @@ fun () -> ignore @@ get sub 3 ;
   Alcotest.check_raises "get" index_out_of_bounds @@ fun () -> ignore @@ get sub 2 ;
@@ -50,7 +50,7 @@ let head =
 let start =
   Alcotest.test_case "start" `Quick @@ fun () ->
   let empty_pos cs pos =
-    Alcotest.(check int) "length" (length cs) 0 ;
+    Alcotest.(check int) "length" (len cs) 0 ;
     Alcotest.(check int) "start_pos" (start_pos cs) pos in
   let { Cstruct.buffer= abc; _ } = Cstruct.of_string "abc" in
   empty_pos (start @@ string "") 0 ;
@@ -69,7 +69,7 @@ let start =
 let stop =
   Alcotest.test_case "stop" `Quick @@ fun () ->
   let empty_pos cs pos =
-    Alcotest.(check int) "length" (length cs) 0 ;
+    Alcotest.(check int) "length" (len cs) 0 ;
     Alcotest.(check int) "start_pos" (start_pos cs) pos in
   let { Cstruct.buffer= abc; _ } = Cstruct.of_string "abc" in
   empty_pos (stop @@ string "") 0 ;
@@ -88,7 +88,7 @@ let stop =
 let tail =
   Alcotest.test_case "tail" `Quick @@ fun () ->
   let empty_pos cs pos =
-    Alcotest.(check int) "length" (length cs) 0 ;
+    Alcotest.(check int) "length" (len cs) 0 ;
     Alcotest.(check int) "start_pos" (start_pos cs) pos in
   let { Cstruct.buffer= abc; _ } = Cstruct.of_string "abc" in
   empty_pos (tail @@ string "") 0 ;
@@ -315,7 +315,7 @@ let trim =
   Alcotest.(check cstruct) "trim" (trim ~drop:drop_a aaaabcd) (Cstruct.of_string "bcd") ;
   Alcotest.(check cstruct) "trim" (trim ~drop:drop_a bcdaaaa) (Cstruct.of_string "bcd") ;
   let empty_pos cs pos =
-    Alcotest.(check int) "length" (length cs) 0 ;
+    Alcotest.(check int) "length" (len cs) 0 ;
     Alcotest.(check int) "start_pos" (start_pos cs) pos in
   empty_pos (trim ~drop:drop_a aaaa) 4 ;
   empty_pos (trim (string "    ")) 2 ;
