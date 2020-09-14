@@ -37,20 +37,20 @@ let of_bytes ?off ?len x =
 let to_string ?(off= 0) ?len t =
   let len = match len with
     | Some len -> len
-    | None -> Cstruct.len t - off in
+    | None -> Cstruct.length t - off in
   Cstruct.copy t off len
 
 let to_bytes ?(off= 0) ?len t =
   let len = match len with
     | Some len -> len
-    | None -> Cstruct.len t - off in
+    | None -> Cstruct.length t - off in
   (* XXX(dinosaure): this is safe when [copy] allocates itself [bytes]
      and uses [Bytes.unsafe_to_string]. *)
   Bytes.unsafe_of_string (Cstruct.copy t off len)
 
 let pp ppf t = Cstruct.hexdump_pp ppf t
 
-let length = Cstruct.len
+let length = Cstruct.length
 
 let blit src ~src_off dst ~dst_off ~len =
   Cstruct.blit src src_off dst dst_off len
@@ -75,9 +75,9 @@ let sub t ~off ~len =
 let concat vss =
   let res = create_unsafe (Cstruct.sum_lengths ~caller:"Cstruct.Cap.concat" vss) in
   let go off v =
-    let len = Cstruct.len v in
+    let len = Cstruct.length v in
     Cstruct.blit v 0 res off len ;
     off + len in
   let len = List.fold_left go 0 vss in
-  assert (len = Cstruct.len res) ;
+  assert (len = Cstruct.length res) ;
   res
