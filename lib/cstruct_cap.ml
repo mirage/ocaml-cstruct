@@ -32,20 +32,6 @@ external wo : 'a wr t -> wo t = "%identity"
 let of_string = Cstruct.of_string ?allocator:None
 let of_bytes = Cstruct.of_bytes ?allocator:None
 
-let to_string ?(off= 0) ?len t =
-  let len = match len with
-    | Some len -> len
-    | None -> Cstruct.length t - off in
-  Cstruct.copy t off len
-
-let to_bytes ?(off= 0) ?len t =
-  let len = match len with
-    | Some len -> len
-    | None -> Cstruct.length t - off in
-  (* XXX(dinosaure): this is safe when [copy] allocates itself [bytes]
-     and uses [Bytes.unsafe_to_string]. *)
-  Bytes.unsafe_of_string (Cstruct.copy t off len)
-
 let pp ppf t = Cstruct.hexdump_pp ppf t
 
 let length = Cstruct.length
