@@ -605,7 +605,9 @@ val stop_pos : t -> int
 (** [stop_pos cs] is [cs]'s stop position in the base {!Cstruct.buffer}. *)
 
 val length : t -> int
-(** [length cs] is the number of bytes in [cs]. *)
+(** Returns the length of the current cstruct view.  Note that this
+    length is potentially smaller than the actual size of the underlying
+    buffer, as the [sub] or [set_len] functions can construct a smaller view. *)
 
 val head : ?rev:bool -> t -> char option
 (** [head cs] is [Some (get cs h)] with [h = 0] if [rev = false] (default) or [h
