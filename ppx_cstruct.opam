@@ -27,6 +27,8 @@ depends: [
   "cppo" {with-test}
   "cstruct-unix" {with-test & =version}
   "stdlib-shims"
+  "ocaml-migrate-parsetree" {>= "2.1.0" & with-test}
+  "lwt_ppx" {>= "2.0.2" & with-test}
 ]
 synopsis: "Access C-like structures directly from OCaml"
 description: """
