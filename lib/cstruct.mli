@@ -489,6 +489,13 @@ val fillv: src:t list -> dst:t -> int * t list
     Returns the number of bytes copied and the remaining data from [src], if any.
     This is useful if you want buffer data into fixed-sized chunks. *)
 
+val shiftv: t list -> int -> t list
+(** [shiftv ts n] is [ts] without the first [n] bytes.
+    It has the property that [equal (concat (shiftv ts n)) (shift (concat ts) n)].
+    This operation is fairly fast, as it will share the tail of the list.
+    The first item in the returned list is never an empty cstruct,
+    so you'll get [[]] if and only if [lenv ts = n]. *)
+
 (** {2 Iterations} *)
 
 type 'a iter = unit -> 'a option
