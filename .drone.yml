@@ -7,15 +7,12 @@ platform:
 
 steps:
   - name: build
-    image: ocaml/opam2:4.08
+    image: ocaml/opam:debian-ocaml-4.12-afl
     commands:
-      - sudo apt-get update && sudo apt-get -y install afl
       - sudo chown -R opam .
-      - git -C /home/opam/opam-repository pull origin && opam update
-      - opam switch 4.08+afl
+      - git -C /home/opam/opam-repository pull origin 1ce065bc0cbef7bc06effcd3865af0d430c6273b && opam update
       - opam pin add -n .
       - opam depext -u cstruct-async cstruct-lwt cstruct-unix cstruct ppx_cstruct
       - opam install -y .
-      - opam pin bun https://github.com/talex5/ocaml-bun.git#dune2
-      - opam install -y dune crowbar fmt bun
+      - opam install -y dune crowbar fmt 'bun>=0.3.4'
       - opam exec -- dune build @fuzz --no-buffer
