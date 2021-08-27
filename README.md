@@ -1,6 +1,5 @@
-Cstruct -- access C-like structures directly from OCaml
--------------------------------------------------------
-%%VERSION%%
+Cstruct - access C-like structures directly from OCaml
+------------------------------------------------------
 
 Cstruct is a library and syntax extension to make it easier to access C-like
 structures directly from OCaml.  It supports both reading and writing to these
@@ -30,7 +29,11 @@ was v1.9.0.
 You can build the library via [dune](https://github.com/ocaml/dune),
 using `make` or `dune build` directly.  Since everything is built via dune,
 you can also place this repository within a wider dune workspace in order to
-make local modifications across repositories. 
+make local modifications across repositories.
+
+### Documentation
+
+A documentation of the last version of `cstruct` is available [here](https://mirage.github.io/ocaml-cstruct).
 
 ## Usage
 
@@ -203,5 +206,3 @@ If you do use the sexp decorator, then you will also need to add
 `dune` file and the `opam` file).
 
 Please see the `ppx_test/` directory for more in-depth examples.
-
-[![Build Status](https://travis-ci.org/mirage/ocaml-cstruct.svg)](https://travis-ci.org/mirage/ocaml-cstruct)
