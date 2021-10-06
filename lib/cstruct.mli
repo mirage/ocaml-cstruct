@@ -333,11 +333,6 @@ val blit_to_bytes: t -> int -> bytes -> int -> int -> unit
 val memset: t -> int -> unit
 (** [memset t x] sets all the bytes of [t] to [x land 0xff]. *)
 
-val len: t -> int [@@deprecated "len is deprecated, you should use length instead."]
-(** Returns the length of the current cstruct view.  Note that this
-    length is potentially smaller than the actual size of the underlying
-    buffer, as the [sub] or [set_len] functions can construct a smaller view. *)
-
 val split: ?start:int -> t -> int -> t * t
 (** [split ~start cstr len] is a tuple containing the cstruct
     extracted from [cstr] at offset [start] (default: 0) of length

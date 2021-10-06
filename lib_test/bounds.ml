@@ -15,15 +15,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-[@@@warning "-3"]
-
 let to_string { Cstruct.buffer; off; len } =
   Printf.sprintf "buffer length = %d; off=%d; len=%d" (Bigarray.Array1.dim buffer) off len
 
 (* Check we can create and use an empty cstruct *)
 let test_empty_cstruct () =
   let x = Cstruct.create 0 in
-  Alcotest.(check int) "empty len" 0 (Cstruct.len x);
+  Alcotest.(check int) "empty len" 0 (Cstruct.length x);
   let y = Cstruct.to_string x in
   Alcotest.(check string) "empty" "" y
 
@@ -39,7 +37,7 @@ let test_anti_cstruct () =
 let test_positive_shift () =
   let x = Cstruct.create 1 in
   let y = Cstruct.shift x 1 in
-  Alcotest.(check int) "positive shift" 0 (Cstruct.len y)
+  Alcotest.(check int) "positive shift" 0 (Cstruct.length y)
 
 (* Check that negative shifts are forbidden. *)
 let test_negative_shift () =
@@ -346,8 +344,8 @@ let test_subview_containment_get_char,
   let test get zero () =
     let x = create 24 in
     let x' = sub x 8 8 in
-    for i = 0 to len x - 1 do set_uint8 x i 0xff done ;
-    for i = 0 to len x' - 1 do set_uint8 x' i 0x00 done ;
+    for i = 0 to length x - 1 do set_uint8 x i 0xff done ;
+    for i = 0 to length x' - 1 do set_uint8 x' i 0x00 done ;
     for i = -8 to 8 do
       try
         let v = get x' i in
@@ -380,15 +378,15 @@ let test_subview_containment_set_char,
   let test set ff () =
     let x = create 24 in
     let x' = sub x 8 8 in
-    for i = 0 to len x - 1 do set_uint8 x i 0x00 done ;
+    for i = 0 to length x - 1 do set_uint8 x i 0x00 done ;
     for i = -8 to 8 do
       try set x' i ff with Invalid_argument _ -> ()
     done;
     let acc = ref 0 in
-    for i = 0 to len x - 1 do
+    for i = 0 to length x - 1 do
       acc := !acc + get_uint8 x i
     done ;
-    if !acc <> (len x' * 0xff) then
+    if !acc <> (length x' * 0xff) then
       failwith "test_subview_containment_set"
   in
   test set_char '\255',
