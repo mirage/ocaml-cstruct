@@ -24,8 +24,7 @@ type buffer = (char, Bigarray_compat.int8_unsigned_elt, Bigarray_compat.c_layout
  * functions that would otherwise be completely unsafe.
  *
  * Furthermore, no operation on [t] is allowed to extend the view on the
- * underlying Bigarray structure, only narrowing is allowed. The deprecated
- * functions add_len and set_len violate this.
+ * underlying Bigarray structure, only narrowing is allowed.
  *
  * All well-intended souls are kindly invited to cross-check that the code
  * indeed maintains this invariant.
@@ -54,8 +53,6 @@ let err_of_bigarray t = err "Cstruct.of_bigarray off=%d len=%d" t
 let err_sub t = err "Cstruct.sub: %a off=%d len=%d" pp_t t
 let err_shift t = err "Cstruct.shift %a %d" pp_t t
 let err_shiftv n = err "Cstruct.shiftv short by %d" n
-let err_set_len t = err "Cstruct.set_len %a %d" pp_t t
-let err_add_len t = err "Cstruct.add_len %a %d" pp_t t
 let err_copy t = err "Cstruct.copy %a off=%d len=%d" pp_t t
 let err_blit_src src dst =
   err "Cstruct.blit src=%a dst=%a src-off=%d len=%d" pp_t src pp_t dst
@@ -190,16 +187,6 @@ let rec shiftv ts = function
     | t :: ts when n >= t.len -> shiftv ts (n - t.len)
     | t :: ts -> shift t n :: ts
 
-let set_len t len =
-  if len < 0 || not (check_bounds t (t.off+len)) then err_set_len t len
-  else { t with len }
-
-let add_len t len =
-  let len = t.len + len in
-  if len < 0 || not (check_bounds t (t.off+len)) then err_add_len t len
-  else { t with len }
-
-
 external unsafe_blit_bigstring_to_bigstring : buffer -> int -> buffer -> int -> int -> unit = "caml_blit_bigstring_to_bigstring" [@@noalloc]
 
 external unsafe_blit_string_to_bigstring : string -> int -> buffer -> int -> int -> unit = "caml_blit_string_to_bigstring" [@@noalloc]
@@ -253,8 +240,6 @@ let blit_to_bytes src srcoff dst dstoff len =
     err_blit_to_bytes_dst src dst dstoff len
   else
     unsafe_blit_bigstring_to_bytes src.buffer (src.off+srcoff) dst dstoff len
-
-let blit_to_string = blit_to_bytes
 
 let compare t1 t2 =
   let l1 = t1.len
@@ -419,7 +404,7 @@ let [@inline always] of_data_abstract blitfun lenfun ?allocator ?(off=0) ?len bu
   | Some fn ->
     let c = fn buflen in
     blitfun buf off c 0 buflen;
-    set_len c buflen
+    { c with len = buflen }
 
 let of_string ?allocator ?off ?len buf =
   of_data_abstract blit_from_string String.length ?allocator ?off ?len buf

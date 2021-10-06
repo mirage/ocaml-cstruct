@@ -163,34 +163,6 @@ let test_of_bigarray_large_length () =
         with Invalid_argument _ ->
           ()
 
-let test_set_len_too_big () =
-  let x = Cstruct.create 0 in
-  try
-    let[@ocaml.warning "-3"] y = Cstruct.set_len x 1 in
-    failwith (Printf.sprintf "test_set_len_too_big: %s" (to_string y))
-  with Invalid_argument _ -> ()
-
-let test_set_len_too_small () =
-  let x = Cstruct.create 0 in
-  try
-    let[@ocaml.warning "-3"] y = Cstruct.set_len x (-1) in
-    failwith (Printf.sprintf "test_set_len_too_small: %s" (to_string y))
-  with Invalid_argument _ -> ()
-
-let test_add_len_too_big () =
-  let x = Cstruct.create 0 in
-  try
-    let[@ocaml.warning "-3"] y = Cstruct.add_len x 1 in
-    failwith (Printf.sprintf "test_add_len_too_big: %s" (to_string y))
-  with Invalid_argument _ -> ()
-
-let test_add_len_too_small () =
-  let x = Cstruct.create 0 in
-  try
-    let[@ocaml.warning "-3"] y = Cstruct.add_len x (-1) in
-    failwith (Printf.sprintf "test_add_len_too_small: %s" (to_string y))
-  with Invalid_argument _ -> ()
-
 let test_blit_offset_too_big () =
   let x = Cstruct.create 1 in
   let y = Cstruct.create 1 in
@@ -451,10 +423,6 @@ let suite = [
   "test of_bigarray negative params", `Quick, test_of_bigarray_negative_params;
   "test of_bigarray large offset", `Quick, test_of_bigarray_large_offset;
   "test of_bigarray large length", `Quick, test_of_bigarray_large_length;
-  "test set len too big", `Quick, test_set_len_too_big;
-  "test set len too small", `Quick, test_set_len_too_small;
-  "test add len too big", `Quick, test_add_len_too_big;
-  "test add len too small", `Quick, test_add_len_too_small;
   "test blit offset too big", `Quick, test_blit_offset_too_big;
   "test blit offset too small", `Quick, test_blit_offset_too_small;
   "test blit dst offset too big", `Quick, test_blit_dst_offset_too_big;

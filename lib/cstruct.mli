@@ -330,10 +330,6 @@ val blit_to_bytes: t -> int -> bytes -> int -> int -> unit
     valid segment of [src], or if [dstoff] and [len] do not designate
     a valid segment of [dst]. *)
 
-val blit_to_string: t -> int -> bytes -> int -> int -> unit
-  [@@ocaml.deprecated "Use blit_to_bytes instead, blit_to_string will be removed in cstruct 5.0.0"]
-(** [blit_to_string] is a deprecated alias of {!blit_to_bytes}. *)
-
 val memset: t -> int -> unit
 (** [memset t x] sets all the bytes of [t] to [x land 0xff]. *)
 
@@ -341,18 +337,6 @@ val len: t -> int [@@deprecated "len is deprecated, you should use length instea
 (** Returns the length of the current cstruct view.  Note that this
     length is potentially smaller than the actual size of the underlying
     buffer, as the [sub] or [set_len] functions can construct a smaller view. *)
-
-val set_len : t -> int -> t
-  [@@ocaml.deprecated "This function will be removed in cstruct 5.0.0. If you need this function, discuss other ways in the issue tracker https://github.com/mirage/ocaml-cstruct."]
-(** [set_len t len] sets the length of the cstruct [t] to a new absolute
-    value, and returns a fresh cstruct with these settings.
-    @raise Invalid_argument if [len] exceeds the size of the buffer. *)
-
-val add_len : t -> int -> t
-  [@@ocaml.deprecated "This function will be removed in cstruct 5.0.0. If you need this function, discuss other ways in the issue tracker https://github.com/mirage/ocaml-cstruct."]
-(** [add_len t l] will add [l] bytes to the length of the buffer, and return
-    a fresh cstruct with these settings.
-    @raise Invalid_argument if [len] exceeds the size of the buffer. *)
 
 val split: ?start:int -> t -> int -> t * t
 (** [split ~start cstr len] is a tuple containing the cstruct
@@ -614,7 +598,7 @@ val stop_pos : t -> int
 val length : t -> int
 (** Returns the length of the current cstruct view.  Note that this
     length is potentially smaller than the actual size of the underlying
-    buffer, as the [sub] or [set_len] functions can construct a smaller view. *)
+    buffer, as the [sub] function can construct a smaller view. *)
 
 val head : ?rev:bool -> t -> char option
 (** [head cs] is [Some (get cs h)] with [h = 0] if [rev = false] (default) or [h
