@@ -24,8 +24,7 @@ type buffer = (char, Bigarray_compat.int8_unsigned_elt, Bigarray_compat.c_layout
  * functions that would otherwise be completely unsafe.
  *
  * Furthermore, no operation on [t] is allowed to extend the view on the
- * underlying Bigarray structure, only narrowing is allowed. The deprecated
- * functions add_len and set_len violate this.
+ * underlying Bigarray structure, only narrowing is allowed.
  *
  * All well-intended souls are kindly invited to cross-check that the code
  * indeed maintains this invariant.
@@ -54,8 +53,6 @@ let err_of_bigarray t = err "Cstruct.of_bigarray off=%d len=%d" t
 let err_sub t = err "Cstruct.sub: %a off=%d len=%d" pp_t t
 let err_shift t = err "Cstruct.shift %a %d" pp_t t
 let err_shiftv n = err "Cstruct.shiftv short by %d" n
-let err_set_len t = err "Cstruct.set_len %a %d" pp_t t
-let err_add_len t = err "Cstruct.add_len %a %d" pp_t t
 let err_copy t = err "Cstruct.copy %a off=%d len=%d" pp_t t
 let err_blit_src src dst =
   err "Cstruct.blit src=%a dst=%a src-off=%d len=%d" pp_t src pp_t dst
@@ -190,16 +187,6 @@ let rec shiftv ts = function
     | t :: ts when n >= t.len -> shiftv ts (n - t.len)
     | t :: ts -> shift t n :: ts
 
-let set_len t len =
-  if len < 0 || not (check_bounds t (t.off+len)) then err_set_len t len
-  else { t with len }
-
-let add_len t len =
-  let len = t.len + len in
-  if len < 0 || not (check_bounds t (t.off+len)) then err_add_len t len
-  else { t with len }
-
-
 external unsafe_blit_bigstring_to_bigstring : buffer -> int -> buffer -> int -> int -> unit = "caml_blit_bigstring_to_bigstring" [@@noalloc]
 
 external unsafe_blit_string_to_bigstring : string -> int -> buffer -> int -> int -> unit = "caml_blit_string_to_bigstring" [@@noalloc]
@@ -253,8 +240,6 @@ let blit_to_bytes src srcoff dst dstoff len =
     err_blit_to_bytes_dst src dst dstoff len
   else
     unsafe_blit_bigstring_to_bytes src.buffer (src.off+srcoff) dst dstoff len
-
-let blit_to_string = blit_to_bytes
 
 let compare t1 t2 =
   let l1 = t1.len
@@ -352,8 +337,7 @@ module LE = struct
   let get_uint64 t i = get_uint64 Sys.big_endian "LE" t i [@@inline]
 end
 
-let len t =
-  t.len
+let length { len ; _ } = len
 
 (** [sum_lengths ~caller acc l] is [acc] plus the sum of the lengths
     of the elements of [l].  Raises [Invalid_argument caller] if
@@ -361,7 +345,7 @@ let len t =
 let rec sum_lengths_aux ~caller acc = function
   | [] -> acc
   | h :: t ->
-     let sum = len h + acc in
+     let sum = length h + acc in
      if sum < acc then invalid_arg caller
      else sum_lengths_aux ~caller sum t
 
@@ -374,7 +358,7 @@ let copyv ts =
   let dst = Bytes.create sz in
   let _ = List.fold_left
     (fun off src ->
-      let x = len src in
+      let x = length src in
       unsafe_blit_bigstring_to_bytes src.buffer src.off dst off x;
       off + x
     ) 0 ts in
@@ -385,8 +369,8 @@ let fillv ~src ~dst =
   let rec aux dst n = function
     | [] -> n, []
     | hd::tl ->
-        let avail = len dst in
-        let first = len hd in
+        let avail = length dst in
+        let first = length hd in
         if first <= avail then (
           blit hd 0 dst 0 first;
           aux (shift dst first) (n + first) tl
@@ -398,7 +382,7 @@ let fillv ~src ~dst =
   aux dst 0 src
 
 let to_string ?(off=0) ?len:sz t =
-  let len = match sz with None -> len t - off | Some l -> l in
+  let len = match sz with None -> length t - off | Some l -> l in
   (* The following call is safe, since this is the only reference to the
      freshly-created value built by [to_bytes t]. *)
   copy t off len
@@ -419,7 +403,7 @@ let [@inline always] of_data_abstract blitfun lenfun ?allocator ?(off=0) ?len bu
   | Some fn ->
     let c = fn buflen in
     blitfun buf off c 0 buflen;
-    set_len c buflen
+    { c with len = buflen }
 
 let of_string ?allocator ?off ?len buf =
   of_data_abstract blit_from_string String.length ?allocator ?off ?len buf
@@ -477,7 +461,7 @@ let hexdump_pp fmt t =
     |  _ -> ()
   in
   Format.pp_open_vbox fmt 0 ;
-  for i = 0 to len t - 1 do
+  for i = 0 to length t - 1 do
     let column = i mod 16 in
     let c = Char.code (Bigarray_compat.Array1.get t.buffer (t.off+i)) in
     Format.fprintf fmt "%a%.2x%a" before column c after column
@@ -493,7 +477,7 @@ let hexdump_to_buffer buf t =
 let split ?(start=0) t off =
   try
     let header =sub t start off in
-    let body = sub t (start+off) (len t - off - start) in
+    let body = sub t (start+off) (length t - off - start) in
     header, body
   with Invalid_argument _ -> err_split t start off
 
@@ -503,7 +487,7 @@ let iter lenfn pfn t =
   let i = ref 0 in
   fun () ->
     match !body with
-      |Some buf when len buf = 0 ->
+      |Some buf when length buf = 0 ->
         body := None;
         None
       |Some buf -> begin
@@ -526,7 +510,7 @@ let rec fold f next acc = match next () with
   | Some v -> fold f next (f acc v)
 
 let append cs1 cs2 =
-  let l1 = len cs1 and l2 = len cs2 in
+  let l1 = length cs1 and l2 = length cs2 in
   let cs = create_unsafe (l1 + l2) in
   blit cs1 0 cs 0  l1 ;
   blit cs2 0 cs l1 l2 ;
@@ -538,14 +522,14 @@ let concat = function
   | css  ->
       let result = create_unsafe (sum_lengths ~caller:"Cstruct.concat" css) in
       let aux off cs =
-        let n = len cs in
+        let n = length cs in
         blit cs 0 result off n ;
         off + n in
       ignore @@ List.fold_left aux 0 css ;
       result
 
 let rev t =
-  let n = len t in
+  let n = length t in
   let out = create_unsafe n in
   for i_src = 0 to n - 1 do
     let byte = get_uint8 t i_src in
@@ -583,7 +567,6 @@ let buffer ?(off= 0) ?len buffer =
   if off < 0 || len < 0 || off + len > buffer_len then invalid_arg "index out of bounds" ;
   of_bigarray ~off ~len buffer
 
-let length cs = len cs
 let start_pos { off; _ } = off
 let stop_pos { off; len; _ } = off + len
 
@@ -642,14 +625,14 @@ let is_suffix ~affix:({ len= alen; _ } as affix)
 
 let for_all sat cs =
   let rec go acc i =
-    if i < len cs
+    if i < length cs
     then go (sat (get_char cs i) && acc) (succ i)
     else acc in
   go true 0
 
 let exists sat cs =
   let rec go acc i =
-    if i < len cs
+    if i < length cs
     then go (sat (get_char cs i) || acc) (succ i)
     else acc in
   go false 0

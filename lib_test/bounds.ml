@@ -15,15 +15,13 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *)
 
-[@@@warning "-3"]
-
 let to_string { Cstruct.buffer; off; len } =
   Printf.sprintf "buffer length = %d; off=%d; len=%d" (Bigarray.Array1.dim buffer) off len
 
 (* Check we can create and use an empty cstruct *)
 let test_empty_cstruct () =
   let x = Cstruct.create 0 in
-  Alcotest.(check int) "empty len" 0 (Cstruct.len x);
+  Alcotest.(check int) "empty len" 0 (Cstruct.length x);
   let y = Cstruct.to_string x in
   Alcotest.(check string) "empty" "" y
 
@@ -39,7 +37,7 @@ let test_anti_cstruct () =
 let test_positive_shift () =
   let x = Cstruct.create 1 in
   let y = Cstruct.shift x 1 in
-  Alcotest.(check int) "positive shift" 0 (Cstruct.len y)
+  Alcotest.(check int) "positive shift" 0 (Cstruct.length y)
 
 (* Check that negative shifts are forbidden. *)
 let test_negative_shift () =
@@ -162,34 +160,6 @@ let test_of_bigarray_large_length () =
           failwith (Printf.sprintf "test_of_bigarray_large_length: %s" (to_string x))
         with Invalid_argument _ ->
           ()
-
-let test_set_len_too_big () =
-  let x = Cstruct.create 0 in
-  try
-    let[@ocaml.warning "-3"] y = Cstruct.set_len x 1 in
-    failwith (Printf.sprintf "test_set_len_too_big: %s" (to_string y))
-  with Invalid_argument _ -> ()
-
-let test_set_len_too_small () =
-  let x = Cstruct.create 0 in
-  try
-    let[@ocaml.warning "-3"] y = Cstruct.set_len x (-1) in
-    failwith (Printf.sprintf "test_set_len_too_small: %s" (to_string y))
-  with Invalid_argument _ -> ()
-
-let test_add_len_too_big () =
-  let x = Cstruct.create 0 in
-  try
-    let[@ocaml.warning "-3"] y = Cstruct.add_len x 1 in
-    failwith (Printf.sprintf "test_add_len_too_big: %s" (to_string y))
-  with Invalid_argument _ -> ()
-
-let test_add_len_too_small () =
-  let x = Cstruct.create 0 in
-  try
-    let[@ocaml.warning "-3"] y = Cstruct.add_len x (-1) in
-    failwith (Printf.sprintf "test_add_len_too_small: %s" (to_string y))
-  with Invalid_argument _ -> ()
 
 let test_blit_offset_too_big () =
   let x = Cstruct.create 1 in
@@ -374,8 +344,8 @@ let test_subview_containment_get_char,
   let test get zero () =
     let x = create 24 in
     let x' = sub x 8 8 in
-    for i = 0 to len x - 1 do set_uint8 x i 0xff done ;
-    for i = 0 to len x' - 1 do set_uint8 x' i 0x00 done ;
+    for i = 0 to length x - 1 do set_uint8 x i 0xff done ;
+    for i = 0 to length x' - 1 do set_uint8 x' i 0x00 done ;
     for i = -8 to 8 do
       try
         let v = get x' i in
@@ -408,15 +378,15 @@ let test_subview_containment_set_char,
   let test set ff () =
     let x = create 24 in
     let x' = sub x 8 8 in
-    for i = 0 to len x - 1 do set_uint8 x i 0x00 done ;
+    for i = 0 to length x - 1 do set_uint8 x i 0x00 done ;
     for i = -8 to 8 do
       try set x' i ff with Invalid_argument _ -> ()
     done;
     let acc = ref 0 in
-    for i = 0 to len x - 1 do
+    for i = 0 to length x - 1 do
       acc := !acc + get_uint8 x i
     done ;
-    if !acc <> (len x' * 0xff) then
+    if !acc <> (length x' * 0xff) then
       failwith "test_subview_containment_set"
   in
   test set_char '\255',
@@ -451,10 +421,6 @@ let suite = [
   "test of_bigarray negative params", `Quick, test_of_bigarray_negative_params;
   "test of_bigarray large offset", `Quick, test_of_bigarray_large_offset;
   "test of_bigarray large length", `Quick, test_of_bigarray_large_length;
-  "test set len too big", `Quick, test_set_len_too_big;
-  "test set len too small", `Quick, test_set_len_too_small;
-  "test add len too big", `Quick, test_add_len_too_big;
-  "test add len too small", `Quick, test_add_len_too_small;
   "test blit offset too big", `Quick, test_blit_offset_too_big;
   "test blit offset too small", `Quick, test_blit_offset_too_small;
   "test blit dst offset too big", `Quick, test_blit_dst_offset_too_big;
