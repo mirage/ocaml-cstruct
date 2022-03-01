@@ -307,6 +307,33 @@ let test_view_bounds_too_small_get_le64 () =
   with
     Invalid_argument _ -> ()
 
+let test_view_bounds_too_small_get_he16 () =
+  let x = Cstruct.create 4 in
+  let x' = Cstruct.sub x 0 1 in
+  try
+    let _ = Cstruct.HE.get_uint16 x' 0 in
+    failwith "test_view_bounds_too_small_get_he16"
+  with
+    Invalid_argument _ -> ()
+
+let test_view_bounds_too_small_get_he32 () =
+  let x = Cstruct.create 8 in
+  let x' = Cstruct.sub x 2 5 in
+  try
+    let _ = Cstruct.HE.get_uint32 x' 2 in
+    failwith "test_view_bounds_too_small_get_he32"
+  with
+    Invalid_argument _ -> ()
+
+let test_view_bounds_too_small_get_he64 () =
+  let x = Cstruct.create 9 in
+  let x' = Cstruct.sub x 1 5 in
+  try
+    let _ = Cstruct.HE.get_uint64 x' 0 in
+    failwith "test_view_bounds_too_small_get_he64"
+  with
+    Invalid_argument _ -> ()
+
 let test_lenv_overflow () =
   if Sys.word_size = 32 then (
     (* free-up some space *)
@@ -338,7 +365,10 @@ let test_subview_containment_get_char,
     test_subview_containment_get_be64,
     test_subview_containment_get_le16,
     test_subview_containment_get_le32,
-    test_subview_containment_get_le64
+    test_subview_containment_get_le64,
+    test_subview_containment_get_he16,
+    test_subview_containment_get_he32,
+    test_subview_containment_get_he64
   =
   let open Cstruct in
   let test get zero () =
@@ -361,7 +391,10 @@ let test_subview_containment_get_char,
   test BE.get_uint64 0L,
   test LE.get_uint16 0,
   test LE.get_uint32 0l,
-  test LE.get_uint64 0L
+  test LE.get_uint64 0L,
+  test HE.get_uint16 0,
+  test HE.get_uint32 0l,
+  test HE.get_uint64 0L
 
 (* Steamroll over a buffer and a contained subview, checking that only the
  * contents of the subview is writable. *)
@@ -372,7 +405,10 @@ let test_subview_containment_set_char,
     test_subview_containment_set_be64,
     test_subview_containment_set_le16,
     test_subview_containment_set_le32,
-    test_subview_containment_set_le64
+    test_subview_containment_set_le64,
+    test_subview_containment_set_he16,
+    test_subview_containment_set_he32,
+    test_subview_containment_set_he64
   =
   let open Cstruct in
   let test set ff () =
@@ -396,7 +432,10 @@ let test_subview_containment_set_char,
   test BE.set_uint64 0xffffffffffffffffL,
   test LE.set_uint16 0xffff,
   test LE.set_uint32 0xffffffffl,
-  test LE.set_uint64 0xffffffffffffffffL
+  test LE.set_uint64 0xffffffffffffffffL,
+  test HE.set_uint16 0xffff,
+  test HE.set_uint32 0xffffffffl,
+  test HE.set_uint64 0xffffffffffffffffL
 
 let regression_244 () =
   let whole = Cstruct.create 44943 in
@@ -438,6 +477,9 @@ let suite = [
   "test_view_bounds_too_small_get_le16" , `Quick, test_view_bounds_too_small_get_le16;
   "test_view_bounds_too_small_get_le32" , `Quick, test_view_bounds_too_small_get_le32;
   "test_view_bounds_too_small_get_le64" , `Quick, test_view_bounds_too_small_get_le64;
+  "test_view_bounds_too_small_get_he16" , `Quick, test_view_bounds_too_small_get_he16;
+  "test_view_bounds_too_small_get_he32" , `Quick, test_view_bounds_too_small_get_he32;
+  "test_view_bounds_too_small_get_he64" , `Quick, test_view_bounds_too_small_get_he64;
   "test_lenv_overflow", `Quick, test_lenv_overflow;
   "test_copyv_overflow", `Quick, test_copyv_overflow;
   "test_subview_containment_get_char", `Quick, test_subview_containment_get_char;
@@ -448,6 +490,9 @@ let suite = [
   "test_subview_containment_get_le16", `Quick, test_subview_containment_get_le16;
   "test_subview_containment_get_le32", `Quick, test_subview_containment_get_le32;
   "test_subview_containment_get_le64", `Quick, test_subview_containment_get_le64;
+  "test_subview_containment_get_le16", `Quick, test_subview_containment_get_he16;
+  "test_subview_containment_get_le32", `Quick, test_subview_containment_get_he32;
+  "test_subview_containment_get_le64", `Quick, test_subview_containment_get_he64;
   "test_subview_containment_set_char", `Quick, test_subview_containment_set_char;
   "test_subview_containment_set_8"   , `Quick, test_subview_containment_set_8;
   "test_subview_containment_set_be16", `Quick, test_subview_containment_set_be16;
@@ -456,5 +501,8 @@ let suite = [
   "test_subview_containment_set_le16", `Quick, test_subview_containment_set_le16;
   "test_subview_containment_set_le32", `Quick, test_subview_containment_set_le32;
   "test_subview_containment_set_le64", `Quick, test_subview_containment_set_le64;
+  "test_subview_containment_set_le16", `Quick, test_subview_containment_set_he16;
+  "test_subview_containment_set_le32", `Quick, test_subview_containment_set_he32;
+  "test_subview_containment_set_le64", `Quick, test_subview_containment_set_he64;
   "regression 244", `Quick, regression_244;
 ]

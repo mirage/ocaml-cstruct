@@ -337,6 +337,15 @@ module LE = struct
   let get_uint64 t i = get_uint64 Sys.big_endian "LE" t i [@@inline]
 end
 
+module HE = struct
+  let set_uint16 t i c = set_uint16 false "HE" t i c [@@inline]
+  let set_uint32 t i c = set_uint32 false "HE" t i c [@@inline]
+  let set_uint64 t i c = set_uint64 false "HE" t i c [@@inline]
+  let get_uint16 t i = get_uint16 false "HE" t i [@@inline]
+  let get_uint32 t i = get_uint32 false "HE" t i [@@inline]
+  let get_uint64 t i = get_uint64 false "HE" t i [@@inline]
+end
+
 let length { len ; _ } = len
 
 (** [sum_lengths ~caller acc l] is [acc] plus the sum of the lengths
