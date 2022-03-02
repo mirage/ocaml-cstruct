@@ -7,7 +7,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ocaml-version: [ '4.05.0', '4.04.2', '4.03.0' ]
+        ocaml-version: [ '4.05.0' ]
     steps:
     - uses: actions/checkout@v2
     - uses: avsm/setup-ocaml@v1
