@@ -136,7 +136,7 @@ val string_to_bar16 : string -> bar16 option
 
 (** {2 Base types } *)
 
-type buffer = (char, Bigarray_compat.int8_unsigned_elt, Bigarray_compat.c_layout) Bigarray_compat.Array1.t
+type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
 (** Type of a buffer. A cstruct is composed of an underlying buffer
     and position/length within this buffer. *)
 
