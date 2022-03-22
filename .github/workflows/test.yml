@@ -1,34 +1,13 @@
 name: Cstruct
 on: [push, pull_request]
 jobs:
-  older:
-    name: Older
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        ocaml-version: [ '4.05.0' ]
-    steps:
-    - uses: actions/checkout@v2
-    - uses: avsm/setup-ocaml@v1
-      with:
-        ocaml-version: ${{ matrix.ocaml-version }}
-    - run: opam pin add -n cstruct.dev .
-    - name: Packages
-      run: opam depext -yt cstruct
-    - name: Dependencies
-      run: opam install -t cstruct --deps-only
-    - name: Build
-      run: opam exec -- dune build -p cstruct
-    - name: Test
-      run: opam exec -- dune runtest -p cstruct
   latest:
     name: Latest
     runs-on: ${{ matrix.operating-system }}
     strategy:
       fail-fast: false
       matrix:
-        ocaml-version: [ '4.10.0', '4.08.1', '4.07.1', '4.06.1' ]
+        ocaml-version: [ '4.13.1', '4.10.0', '4.08.1' ]
         operating-system: [macos-latest, ubuntu-latest, windows-latest]
     steps:
     - uses: actions/checkout@v2
@@ -46,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ocaml-version: [ '4.10.0', '4.08.1', '4.07.1' ]
+        ocaml-version: [ '4.13.1', '4.10.0', '4.08.1' ]
         operating-system: [macos-latest, ubuntu-latest, windows-latest]
     steps:
     - uses: actions/checkout@v2
@@ -64,7 +43,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        ocaml-version: [ '4.10.0', '4.08.1', '4.07.1' ]
+        ocaml-version: [ '4.13.1', '4.10.0', '4.08.1' ]
         operating-system: [macos-latest, ubuntu-latest]
     steps:
     - uses: actions/checkout@v2
@@ -73,6 +52,6 @@ jobs:
         ocaml-version: ${{ matrix.ocaml-version }}
     - run: opam pin add -n .
     - name: Packages
-      run: opam depext -yt cstruct-async 
+      run: opam depext -yt cstruct-async
     - name: Dependencies
       run: opam install -t cstruct-async
