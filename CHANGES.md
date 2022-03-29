@@ -9,7 +9,7 @@ v6.1.0 2022-03-29
 - Compatibility with OCaml 5.0.0 (@dinosaure #294)
 - Drop support of OCaml < 4.08.0, remove bigarray-compat dependency
   (@hannesm #298)
-- Fix year in chages (@reynir #297)
+- Fix year in changes of 6.0.1 (@reynir #297)
 
 v6.0.1 2021-06-25
 -----------------
