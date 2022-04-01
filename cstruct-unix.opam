@@ -18,7 +18,6 @@ depends: [
   "ocaml" {>= "4.06.0"}
   "dune" {>= "2.0.0"}
   "base-unix"
-  "mmap" {>= "1.2.0"}
   "cstruct" {=version}
 ]
 synopsis: "Access C-like structures directly from OCaml"
