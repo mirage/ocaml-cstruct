@@ -1,5 +1,6 @@
 (*
  * Copyright (c) 2012 Anil Madhavapeddy <anil@recoil.org>
+ * Copyright (c) 2022 David Scott <dave@recoil.org>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,3 +19,23 @@
 
 val of_fd : Unix.file_descr -> Cstruct.t
 (** [of_fd fd] memory maps the [fd] and returns a cstruct *)
+
+val read: Unix.file_descr -> Cstruct.t -> int
+(** [read fd cs] reads from the file descriptor into the buffer, returning the number of bytes read.
+    Similar to Unix.read. *)
+
+val write: Unix.file_descr -> Cstruct.t -> unit
+(** [write fd cs] writes the whole Cstruct to the file descriptor.
+    Similar to Unix.write. *)
+
+val writev: Unix.file_descr -> Cstruct.t list -> unit
+(** [writev fd cs] writes the whole list of Cstructs to the file descriptor.
+    Similar to Unix.write. *)
+
+val send: Unix.file_descr -> Cstruct.t -> int
+(** [send fd c] sends a message from a socket. This can be used to send a datagram.
+    If only a partial send is possible, the return argument is how many bytes were sent. *)
+
+val recv: Unix.file_descr -> Cstruct.t -> int
+(** [recv fd c] receives a message from a socket. This can be used to receive a datagram.
+    If only a partial receive is possible, the return argument is now many bytes were received. *)
