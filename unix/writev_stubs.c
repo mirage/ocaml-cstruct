@@ -1,3 +1,5 @@
+#define _XOPEN_SOURCE
+
 #include <caml/mlvalues.h>
 #include <caml/memory.h>
 #include <caml/custom.h>
