@@ -130,6 +130,34 @@ let test_send_recv () =
     Thread.join t
   )
 
+let test_sendto_recvfrom () =
+  let test_message = Cstruct.concat test_message_list in
+  with_sock_dgram @@ fun s ->
+  with_sock_dgram @@ fun c ->
+  let sport = bind_random_port s in
+  let cport = bind_random_port c in (* So we can assert the sender on receiver port *)
+  let server () =
+    let buf = Cstruct.create 1024 in
+    let n, (addr:Unix.sockaddr) = Unix_cstruct.recvfrom s buf [] in
+    let addr, port = match addr with
+      | ADDR_INET (a, p) -> Unix.string_of_inet_addr a, p
+      | _ -> Alcotest.fail "Bad AF_FAMILY"
+    in
+    Alcotest.(check string) "recvfrom inetaddr" addr "127.0.0.1";
+    Alcotest.(check int) "recvfrom port" port cport;
+    Alcotest.(check int) "recvfrom length" (Cstruct.length test_message) n;
+    let expected = Cstruct.to_string test_message in
+    let actual = Cstruct.(to_string @@ sub buf 0 n) in
+    Alcotest.(check string) "read contents" expected actual
+  in
+  let client () =
+    let addr = Unix.ADDR_INET (Unix.inet_addr_loopback, sport) in
+    let n = Unix_cstruct.sendto c test_message [] addr in
+    Alcotest.(check int) "sendto length" (Cstruct.length test_message) n;
+  in
+  client ();
+  server ()
+
 let suite = [
   "writev", [
     "test read and writev via a file", `Quick, test_writev_file;
@@ -137,6 +165,9 @@ let suite = [
   ];
   "send recv", [
     "test send and recv", `Quick, test_send_recv;
+  ];
+  "sendto recvfrom", [
+    "test sendto and recvfrom", `Quick, test_sendto_recvfrom;
   ]
 ]
 

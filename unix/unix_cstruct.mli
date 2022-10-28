@@ -39,3 +39,9 @@ val send: Unix.file_descr -> Cstruct.t -> int
 val recv: Unix.file_descr -> Cstruct.t -> int
 (** [recv fd c] receives a message from a socket. This can be used to receive a datagram.
     If only a partial receive is possible, the return argument is now many bytes were received. *)
+
+val recvfrom: Unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> int * Unix.sockaddr
+(** [recvfrom fd c] Like Unix.recvfrom, but for Cstruct. *)
+
+val sendto: Unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> Unix.sockaddr -> int
+(** [sendto fd c a] Like Unix.sendto, but for Cstruct. *)

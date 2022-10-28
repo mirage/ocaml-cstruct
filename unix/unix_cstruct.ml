@@ -74,3 +74,11 @@ let recv fd x = stub_recv fd (x.Cstruct.buffer, x.Cstruct.off, x.Cstruct.len)
 external stub_read: Unix.file_descr -> (buffer * int * int) -> int = "stub_cstruct_read"
 
 let read fd x = stub_read fd (x.Cstruct.buffer, x.Cstruct.off, x.Cstruct.len)
+
+external stub_recvfrom : Unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> int * Unix.sockaddr = "stub_cstruct_recvfrom"
+
+let recvfrom fd x fl = stub_recvfrom fd x fl
+
+external stub_sendto : Unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> Unix.sockaddr -> int = "stub_cstruct_sendto"
+
+let sendto fd x fl a = stub_sendto fd x fl a
