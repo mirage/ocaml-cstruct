@@ -1,3 +1,4 @@
+#define _XOPEN_SOURCE /* IOV_MAX */
 #include <caml/mlvalues.h>
 #include <caml/memory.h>
 #include <caml/custom.h>
