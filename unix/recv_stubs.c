@@ -35,7 +35,7 @@ CAMLprim value stub_cstruct_recv(value val_fd, value val_c)
 #ifdef WIN32
     int win32err = 0;
     if (Descr_kind_val(val_fd) != KIND_SOCKET)
-        unix_error(EINVAL, "recv", Nothing);
+        unix_error(EINVAL, "stub_cstruct_recv", Nothing);
 
     SOCKET s = Socket_val(val_fd);
 
