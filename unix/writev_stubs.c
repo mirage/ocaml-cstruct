@@ -64,7 +64,7 @@ CAMLprim
   ssize_t n = writev(c_fd, iovec, length);
   caml_acquire_runtime_system();
   if (n < 0)
-    unix_error(errno, "writev", Nothing);
+    uerror("writev", Nothing);
   CAMLreturn(Val_int(n));
 #endif
 }

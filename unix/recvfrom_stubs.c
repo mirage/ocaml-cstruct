@@ -44,7 +44,7 @@ CAMLprim value stub_cstruct_recvfrom(value val_fd, value val_c, value val_flags)
   caml_acquire_runtime_system();
 
   if (n == -1)
-    caml_uerror("recvfrom", Nothing);
+    uerror("recvfrom", Nothing);
 
   val_addr = caml_unix_alloc_sockaddr(&addr, addr_len, -1);
   val_res = caml_alloc_small(2, 0);

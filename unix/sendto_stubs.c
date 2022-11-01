@@ -44,7 +44,7 @@ CAMLprim value stub_cstruct_sendto(value val_fd, value val_c, value val_flags, v
   caml_acquire_runtime_system();
 
   if (n == -1)
-    caml_uerror("sendto", Nothing);
+    uerror("sendto", Nothing);
 
   CAMLreturn (Val_int(n));
 }

@@ -38,7 +38,7 @@ CAMLprim value stub_cstruct_read(value val_fd, value val_c)
     if (n == SOCKET_ERROR)
     {
       win32_maperr(win32err);
-      unix_error(errno, "read", Nothing);
+      uerror("read", Nothing);
     }
     break;
   case KIND_HANDLE:
@@ -53,7 +53,7 @@ CAMLprim value stub_cstruct_read(value val_fd, value val_c)
     if (!ok)
     {
       win32_maperr(win32err);
-      unix_error(errno, "read", Nothing);
+      uerror("read", Nothing);
     }
     break;
   default:
@@ -64,7 +64,7 @@ CAMLprim value stub_cstruct_read(value val_fd, value val_c)
   n = read(Int_val(val_fd), buf, len);
   caml_acquire_runtime_system();
   if (n < 0)
-    unix_error(errno, "read", Nothing);
+    uerror("read", Nothing);
 #endif
   CAMLreturn(Val_int(n));
 }

@@ -47,7 +47,7 @@ CAMLprim value stub_cstruct_recv(value val_fd, value val_c)
     if (n == SOCKET_ERROR)
     {
         win32_maperr(win32err);
-        unix_error(errno, "recv", Nothing);
+        uerror("recv", Nothing);
     }
 #else
     int fd = Int_val(val_fd);
@@ -57,7 +57,7 @@ CAMLprim value stub_cstruct_recv(value val_fd, value val_c)
     caml_acquire_runtime_system();
 
     if (n < 0)
-        unix_error(errno, "recv", Nothing);
+        uerror("recv", Nothing);
 #endif
     CAMLreturn(Val_int(n));
 }
