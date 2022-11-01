@@ -36,7 +36,7 @@ CAMLprim value stub_cstruct_sendto(value val_fd, value val_c, value val_flags, v
 
   buf = (uint8_t *)Caml_ba_data_val(val_buf) + Long_val(val_ofs);
   len = Long_val(val_len);
-  caml_unix_get_sockaddr(val_daddr, &addr, &addr_len);
+  get_sockaddr(val_daddr, &addr, &addr_len);
   cv_flags = caml_convert_flag_list(val_flags, msg_flag_table);
 
   caml_release_runtime_system();
