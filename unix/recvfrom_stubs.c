@@ -8,7 +8,12 @@
 #include <caml/threads.h>
 #include <caml/socketaddr.h>
 
+#ifdef WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <winsock2.h>
+#else
 #include <sys/socket.h>
+#endif
 
 static int msg_flag_table[] = {
   MSG_OOB, MSG_DONTROUTE, MSG_PEEK /* XXX */
