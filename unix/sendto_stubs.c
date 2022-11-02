@@ -39,12 +39,29 @@ CAMLprim value stub_cstruct_sendto(value val_fd, value val_c, value val_flags, v
   get_sockaddr(val_daddr, &addr, &addr_len);
   cv_flags = caml_convert_flag_list(val_flags, msg_flag_table);
 
+#ifdef WIN32
+  int win32err = 0;
+  if (Descr_kind_val(val_fd) != KIND_SOCKET)
+      unix_error(EINVAL, "sendto", Nothing);
+
+  SOCKET s = Socket_val(val_fd);
+  caml_release_runtime_system();
+  n = sendto(s, buf, len, cv_flags, &addr.s_gen, addr_len);
+  win32err = WSAGetLastError();
+  caml_acquire_runtime_system();
+
+  if (n == SOCKET_ERROR)
+  {
+      win32_maperr(win32err);
+      uerror("send", Nothing);
+  }
+#else
   caml_release_runtime_system();
   n = sendto(Int_val(val_fd), buf, len, cv_flags, &addr.s_gen, addr_len);
   caml_acquire_runtime_system();
 
   if (n == -1)
     uerror("sendto", Nothing);
-
+#endif
   CAMLreturn (Val_int(n));
 }

@@ -38,13 +38,31 @@ CAMLprim value stub_cstruct_recvfrom(value val_fd, value val_c, value val_flags)
   buf = (uint8_t *)Caml_ba_data_val(val_buf) + Long_val(val_ofs);
   len = Long_val(val_len);
   addr_len = sizeof(addr);
+#ifdef WIN32
+  int win32err = 0;
+  if (Descr_kind_val(val_fd) != KIND_SOCKET)
+      unix_error(EINVAL, "recvfrom", Nothing);
 
+  SOCKET s = Socket_val(val_fd);
+
+  caml_release_runtime_system();
+  n = recvfrom(s, buf, len, cv_flags, &addr.s_gen, &addr_len);
+  win32err = WSAGetLastError();
+  caml_acquire_runtime_system();
+
+  if (n == SOCKET_ERROR)
+  {
+      win32_maperr(win32err);
+      uerror("recvfrom", Nothing);
+  }
+#else
   caml_release_runtime_system();
   n = recvfrom(Int_val(val_fd), buf, len, cv_flags, &addr.s_gen, &addr_len);
   caml_acquire_runtime_system();
 
   if (n == -1)
     uerror("recvfrom", Nothing);
+#endif
 
   val_addr = alloc_sockaddr(&addr, addr_len, -1);
   val_res = caml_alloc_small(2, 0);
