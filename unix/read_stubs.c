@@ -16,7 +16,7 @@ CAMLprim value stub_cstruct_read(value val_fd, value val_c)
   CAMLlocal3(val_buf, val_ofs, val_len);
   uint8_t *buf;
   size_t len;
-  int n = 0;
+  ssize_t n = 0;
 #ifdef WIN32
   int win32err = 0;
   SOCKET s;

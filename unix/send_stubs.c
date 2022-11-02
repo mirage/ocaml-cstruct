@@ -30,7 +30,7 @@ CAMLprim value stub_cstruct_send(value val_fd, value val_c, value val_flags)
     CAMLlocal3(val_buf, val_ofs, val_len);
     uint8_t *buf;
     size_t len;
-    int n = 0;
+    ssize_t n = 0;
     int cv_flags = caml_convert_flag_list(val_flags, msg_flag_table);
 #ifdef WIN32
     int win32err = 0;

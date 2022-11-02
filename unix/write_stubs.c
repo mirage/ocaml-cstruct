@@ -19,7 +19,7 @@ CAMLprim value stub_cstruct_write(value val_fd, value val_c)
   val_len = Field(val_c, 2);
   void *buf = (char *)Caml_ba_data_val(val_buf) + Long_val(val_ofs);
   size_t len = Long_val(val_len);
-  int n = 0;
+  ssize_t n = 0;
 
 #ifdef _WIN32
   int win32err = 0;
