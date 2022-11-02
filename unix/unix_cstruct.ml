@@ -63,22 +63,12 @@ let writev fd bufs =
   let use_write_fallback = List.iter (write fd) in
   (if iov_max = 0 then use_write_fallback else use_writev) bufs
 
-external stub_send: Unix.file_descr -> (buffer * int * int) -> Unix.msg_flag list -> int = "stub_cstruct_send"
+external send: Unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> int = "stub_cstruct_send"
 
-external stub_recv: Unix.file_descr -> (buffer * int * int) -> Unix.msg_flag list -> int = "stub_cstruct_recv"
+external recv: Unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> int = "stub_cstruct_recv"
 
-let send fd x = stub_send fd (x.Cstruct.buffer, x.Cstruct.off, x.Cstruct.len)
+external read: Unix.file_descr -> Cstruct.t -> int = "stub_cstruct_read"
 
-let recv fd x = stub_recv fd (x.Cstruct.buffer, x.Cstruct.off, x.Cstruct.len)
+external recvfrom : Unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> int * Unix.sockaddr = "stub_cstruct_recvfrom"
 
-external stub_read: Unix.file_descr -> (buffer * int * int) -> int = "stub_cstruct_read"
-
-let read fd x = stub_read fd (x.Cstruct.buffer, x.Cstruct.off, x.Cstruct.len)
-
-external stub_recvfrom : Unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> int * Unix.sockaddr = "stub_cstruct_recvfrom"
-
-let recvfrom fd x fl = stub_recvfrom fd x fl
-
-external stub_sendto : Unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> Unix.sockaddr -> int = "stub_cstruct_sendto"
-
-let sendto fd x fl a = stub_sendto fd x fl a
+external sendto : Unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> Unix.sockaddr -> int = "stub_cstruct_sendto"
