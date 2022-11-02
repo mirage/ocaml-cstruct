@@ -27,9 +27,7 @@ CAMLprim
 #endif
 }
 
-CAMLprim
-    value
-    stub_cstruct_writev(value fd, value val_list)
+CAMLprim value stub_cstruct_writev(value fd, value val_list)
 {
   CAMLparam2(fd, val_list);
   CAMLlocal5(next, head, val_buf, val_ofs, val_len);
