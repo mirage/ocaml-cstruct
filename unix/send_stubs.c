@@ -28,22 +28,26 @@ CAMLprim value stub_cstruct_send(value val_fd, value val_c, value val_flags)
 {
     CAMLparam3(val_fd, val_c, val_flags);
     CAMLlocal3(val_buf, val_ofs, val_len);
+    uint8_t *buf;
+    size_t len;
+    int n = 0;
+    int cv_flags = caml_convert_flag_list(val_flags, msg_flag_table);
+#ifdef WIN32
+    int win32err = 0;
+    SOCKET s = Socket_val(val_fd);
+#endif
 
     val_buf = Field(val_c, 0);
     val_ofs = Field(val_c, 1);
     val_len = Field(val_c, 2);
 
-    const char *buf = (char *)Caml_ba_data_val(val_buf) + Long_val(val_ofs);
-    size_t len = (size_t)Long_val(val_len);
-    int n = 0;
-    int cv_flags = caml_convert_flag_list(val_flags, msg_flag_table);
+    buf = (uint8_t *)Caml_ba_data_val(val_buf) + Long_val(val_ofs);
+    len = (size_t)Long_val(val_len);
 
 #ifdef WIN32
-    int win32err = 0;
     if (Descr_kind_val(val_fd) != KIND_SOCKET)
         unix_error(EINVAL, "send", Nothing);
 
-    SOCKET s = Socket_val(val_fd);
     caml_release_runtime_system();
     n = send(s, buf, len, cv_flags);
     win32err = WSAGetLastError();
@@ -55,10 +59,8 @@ CAMLprim value stub_cstruct_send(value val_fd, value val_c, value val_flags)
         uerror("send", Nothing);
     }
 #else
-    int fd = Int_val(val_fd);
-
     caml_release_runtime_system();
-    n = send(fd, buf, len, cv_flags);
+    n = send(Int_val(val_fd), buf, len, cv_flags);
     caml_acquire_runtime_system();
     if (n < 0)
         uerror("send", Nothing);

@@ -14,21 +14,28 @@ CAMLprim value stub_cstruct_read(value val_fd, value val_c)
 {
   CAMLparam2(val_fd, val_c);
   CAMLlocal3(val_buf, val_ofs, val_len);
-
+  uint8_t *buf;
+  size_t len;
+  int n = 0;
+#ifdef WIN32
+  int win32err = 0;
+  SOCKET s;
+  HANDLE h;
+  DWORD numread;
+  int ok;
+#endif
   val_buf = Field(val_c, 0);
   val_ofs = Field(val_c, 1);
   val_len = Field(val_c, 2);
 
-  void *buf = (char *)Caml_ba_data_val(val_buf) + Long_val(val_ofs);
-  size_t len = Long_val(val_len);
-  int n = 0;
+  buf = (uint8_t *)Caml_ba_data_val(val_buf) + Long_val(val_ofs);
+  len = (size_t)Long_val(val_len);
 
-#ifdef _WIN32
-  int win32err = 0;
+#ifdef WIN32
   switch (Descr_kind_val(val_fd))
   {
   case KIND_SOCKET:
-    SOCKET s = Socket_val(val_fd);
+    s = Socket_val(val_fd);
 
     caml_release_runtime_system();
     n = recv(s, buf, len, 0);
@@ -42,10 +49,9 @@ CAMLprim value stub_cstruct_read(value val_fd, value val_c)
     }
     break;
   case KIND_HANDLE:
-    HANDLE h = Handle_val(val_fd);
-    DWORD numread;
+    h = Handle_val(val_fd);
     caml_release_runtime_system();
-    int ok = ReadFile(h, buf, len, &numread, NULL);
+    ok = ReadFile(h, buf, len, &numread, NULL);
     win32err = GetLastError();
     n = numread;
     caml_acquire_runtime_system();

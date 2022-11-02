@@ -29,6 +29,10 @@ CAMLprim value stub_cstruct_recvfrom(value val_fd, value val_c, value val_flags)
   int cv_flags;
   union sock_addr_union addr;
   socklen_param_type addr_len;
+#ifdef WIN32
+  int win32err = 0;
+  SOCKET s = Socket_val(val_fd);
+#endif
 
   val_buf = Field(val_c, 0);
   val_ofs = Field(val_c, 1);
@@ -39,11 +43,8 @@ CAMLprim value stub_cstruct_recvfrom(value val_fd, value val_c, value val_flags)
   len = Long_val(val_len);
   addr_len = sizeof(addr);
 #ifdef WIN32
-  int win32err = 0;
   if (Descr_kind_val(val_fd) != KIND_SOCKET)
       unix_error(EINVAL, "recvfrom", Nothing);
-
-  SOCKET s = Socket_val(val_fd);
 
   caml_release_runtime_system();
   n = recvfrom(s, buf, len, cv_flags, &addr.s_gen, &addr_len);

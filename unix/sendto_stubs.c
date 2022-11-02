@@ -29,6 +29,10 @@ CAMLprim value stub_cstruct_sendto(value val_fd, value val_c, value val_flags, v
   size_t len;
   ssize_t n;
   int cv_flags;
+#ifdef WIN32
+  int win32err = 0;
+  SOCKET s = Socket_val(val_fd);
+#endif
 
   val_buf = Field(val_c, 0);
   val_ofs = Field(val_c, 1);
@@ -40,11 +44,9 @@ CAMLprim value stub_cstruct_sendto(value val_fd, value val_c, value val_flags, v
   cv_flags = caml_convert_flag_list(val_flags, msg_flag_table);
 
 #ifdef WIN32
-  int win32err = 0;
   if (Descr_kind_val(val_fd) != KIND_SOCKET)
       unix_error(EINVAL, "sendto", Nothing);
 
-  SOCKET s = Socket_val(val_fd);
   caml_release_runtime_system();
   n = sendto(s, buf, len, cv_flags, &addr.s_gen, addr_len);
   win32err = WSAGetLastError();
