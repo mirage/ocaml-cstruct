@@ -18,14 +18,12 @@ let of_fd fd =
   let buffer = Bigarray.(array1_of_genarray (Unix.map_file fd char c_layout false [|-1|])) in
   Cstruct.of_bigarray buffer
 
-type buffer = (char, Bigarray.int8_unsigned_elt, Bigarray.c_layout) Bigarray.Array1.t
-
 (* Returns 0 if there is no writev *)
 external stub_iov_max: unit -> int = "stub_cstruct_iov_max"
 
-external stub_write: Unix.file_descr -> (buffer * int * int) -> int = "stub_cstruct_write"
+external stub_write: Unix.file_descr -> Cstruct.t -> int = "stub_cstruct_write"
 
-external stub_writev: Unix.file_descr -> (buffer * int * int) list -> int = "stub_cstruct_writev"
+external stub_writev: Unix.file_descr -> Cstruct.t list -> int = "stub_cstruct_writev"
 
 let iov_max = stub_iov_max ()
 
@@ -47,7 +45,7 @@ let rec shift t x =
 
 let rec write fd buf =
   if Cstruct.length buf > 0 then begin
-    let n = stub_write fd (buf.Cstruct.buffer, buf.Cstruct.off, buf.Cstruct.len) in
+    let n = stub_write fd buf in
     write fd @@ Cstruct.shift buf n
   end
 
@@ -57,7 +55,7 @@ let writev fd bufs =
     | remaining ->
       (* write at most iov_max at a time *)
       let to_send = first iov_max [] remaining in
-      let n = stub_writev fd (List.map (fun x -> x.Cstruct.buffer, x.Cstruct.off, x.Cstruct.len) to_send) in
+      let n = stub_writev fd to_send in
       let rest = shift remaining n in
       use_writev rest in
   let use_write_fallback = List.iter (write fd) in
