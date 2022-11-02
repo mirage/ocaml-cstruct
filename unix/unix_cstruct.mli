@@ -22,26 +22,27 @@ val of_fd : Unix.file_descr -> Cstruct.t
 
 val read: Unix.file_descr -> Cstruct.t -> int
 (** [read fd cs] reads from the file descriptor into the buffer, returning the number of bytes read.
-    Similar to Unix.read. *)
+    Like {! Unix.read}, but for Cstruct. *)
 
 val write: Unix.file_descr -> Cstruct.t -> unit
-(** [write fd cs] writes the whole Cstruct to the file descriptor.
-    Similar to Unix.write. *)
+(** [write fd cs] writes the whole Cstruct to the file descriptor. Like {! Unix.write}, but for Cstruct. *)
 
 val writev: Unix.file_descr -> Cstruct.t list -> unit
 (** [writev fd cs] writes the whole list of Cstructs to the file descriptor.
-    Similar to Unix.write. *)
+    Like {! Unix.write}, but for a list of Cstructs. *)
 
 val send: Unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> int
-(** [send fd c] Like Unix.send, but for Cstruct.
-    If only a partial send is possible, the return argument is how many bytes were sent. *)
+(** [send fd c flags] sends the Cstruct to the file descriptor, returning the number of bytes written.
+    Like {! Unix.send}, but for Cstruct. *)
 
 val recv: Unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> int
-(** [recv fd c] Like Unix.recv, but for Cstruct.
-    If only a partial receive is possible, the return argument is now many bytes were received. *)
+(** [recv fd c flags] receives up to a Cstruct's worth of data from the file descriptor, returning the number of bytes written.
+    Like {! Unix.recv}, but for Cstruct. *)
 
 val recvfrom: Unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> int * Unix.sockaddr
-(** [recvfrom fd c] Like Unix.recvfrom, but for Cstruct. *)
+(** [recvfrom fd c flags] receives up to a Cstruct's worth of data from the file descriptor, returning the number of bytes
+    read and the address they were sent from. Like {! Unix.recvfrom}, but for Cstruct. *)
 
 val sendto: Unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> Unix.sockaddr -> int
-(** [sendto fd c a] Like Unix.sendto, but for Cstruct. *)
+(** [sendto fd c flags addr] sends a Cstruct's worth of data to the address via the file descriptor.
+    Like {! Unix.sendto}, but for Cstruct. *)
