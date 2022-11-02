@@ -5,5 +5,5 @@
  (foreign_stubs
   (language c)
   (names read_stubs write_stubs writev_stubs send_stubs recv_stubs
-         recvfrom_stubs sendto_stubs))
+    recvfrom_stubs sendto_stubs))
  (libraries cstruct unix))
