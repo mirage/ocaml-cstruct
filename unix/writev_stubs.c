@@ -62,7 +62,7 @@ CAMLprim value stub_cstruct_writev(value fd, value val_list)
   ssize_t n = writev(c_fd, iovec, length);
   caml_acquire_runtime_system();
   if (n < 0)
-    uerror("writev", Nothing);
+    uerror("stub_cstruct_writev", Nothing);
   CAMLreturn(Val_int(n));
 #endif
 }

@@ -36,7 +36,7 @@ CAMLprim value stub_cstruct_write(value val_fd, value val_c)
     if (n == SOCKET_ERROR)
     {
       win32_maperr(win32err);
-      unix_error(errno, "writev", Nothing);
+      unix_error(errno, "stub_cstruct_write", Nothing);
     }
     break;
   case KIND_HANDLE:
@@ -52,7 +52,7 @@ CAMLprim value stub_cstruct_write(value val_fd, value val_c)
     if (!ok)
     {
       win32_maperr(win32err);
-      uerror("writev", Nothing);
+      uerror("stub_cstruct_write", Nothing);
     }
     break;
   default:
@@ -63,7 +63,7 @@ CAMLprim value stub_cstruct_write(value val_fd, value val_c)
   n = write(Int_val(val_fd), buf, len);
   caml_acquire_runtime_system();
   if (n < 0)
-    uerror("write", Nothing);
+    uerror("stub_cstruct_write", Nothing);
 #endif
   CAMLreturn(Val_int(n));
 }

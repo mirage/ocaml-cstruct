@@ -46,7 +46,7 @@ CAMLprim value stub_cstruct_send(value val_fd, value val_c, value val_flags)
 
 #ifdef WIN32
     if (Descr_kind_val(val_fd) != KIND_SOCKET)
-        unix_error(EINVAL, "send", Nothing);
+        unix_error(EINVAL, "stub_cstruct_send", Nothing);
 
     caml_release_runtime_system();
     n = send(s, buf, len, cv_flags);
@@ -56,14 +56,14 @@ CAMLprim value stub_cstruct_send(value val_fd, value val_c, value val_flags)
     if (n == SOCKET_ERROR)
     {
         win32_maperr(win32err);
-        uerror("send", Nothing);
+        uerror("stub_cstruct_send", Nothing);
     }
 #else
     caml_release_runtime_system();
     n = send(Int_val(val_fd), buf, len, cv_flags);
     caml_acquire_runtime_system();
     if (n < 0)
-        uerror("send", Nothing);
+        uerror("stub_cstruct_send", Nothing);
 #endif
     CAMLreturn(Val_int(n));
 }

@@ -45,7 +45,7 @@ CAMLprim value stub_cstruct_sendto(value val_fd, value val_c, value val_flags, v
 
 #ifdef WIN32
   if (Descr_kind_val(val_fd) != KIND_SOCKET)
-      unix_error(EINVAL, "sendto", Nothing);
+      unix_error(EINVAL, "stub_cstruct_sendto", Nothing);
 
   caml_release_runtime_system();
   n = sendto(s, buf, len, cv_flags, &addr.s_gen, addr_len);
@@ -55,7 +55,7 @@ CAMLprim value stub_cstruct_sendto(value val_fd, value val_c, value val_flags, v
   if (n == SOCKET_ERROR)
   {
       win32_maperr(win32err);
-      uerror("send", Nothing);
+      uerror("stub_cstruct_sendto", Nothing);
   }
 #else
   caml_release_runtime_system();
@@ -63,7 +63,7 @@ CAMLprim value stub_cstruct_sendto(value val_fd, value val_c, value val_flags, v
   caml_acquire_runtime_system();
 
   if (n == -1)
-    uerror("sendto", Nothing);
+    uerror("stub_cstruct_sendto", Nothing);
 #endif
   CAMLreturn (Val_int(n));
 }

@@ -44,7 +44,7 @@ CAMLprim value stub_cstruct_recvfrom(value val_fd, value val_c, value val_flags)
   addr_len = sizeof(addr);
 #ifdef WIN32
   if (Descr_kind_val(val_fd) != KIND_SOCKET)
-      unix_error(EINVAL, "recvfrom", Nothing);
+      unix_error(EINVAL, "stub_cstruct_recvfrom", Nothing);
 
   caml_release_runtime_system();
   n = recvfrom(s, buf, len, cv_flags, &addr.s_gen, &addr_len);
@@ -54,7 +54,7 @@ CAMLprim value stub_cstruct_recvfrom(value val_fd, value val_c, value val_flags)
   if (n == SOCKET_ERROR)
   {
       win32_maperr(win32err);
-      uerror("recvfrom", Nothing);
+      uerror("stub_cstruct_recvfrom", Nothing);
   }
 #else
   caml_release_runtime_system();
@@ -62,7 +62,7 @@ CAMLprim value stub_cstruct_recvfrom(value val_fd, value val_c, value val_flags)
   caml_acquire_runtime_system();
 
   if (n == -1)
-    uerror("recvfrom", Nothing);
+    uerror("stub_cstruct_recvfrom", Nothing);
 #endif
 
   val_addr = alloc_sockaddr(&addr, addr_len, -1);
