@@ -32,8 +32,8 @@ val writev: Unix.file_descr -> Cstruct.t list -> unit
 (** [writev fd cs] writes the whole list of Cstructs to the file descriptor.
     Similar to Unix.write. *)
 
-val send: Unix.file_descr -> Cstruct.t -> int
-(** [send fd c] sends a message from a socket. This can be used to send a datagram.
+val send: Unix.file_descr -> Cstruct.t -> Unix.msg_flag list -> int
+(** [send fd c] Like Unix.send, but for Cstruct.
     If only a partial send is possible, the return argument is how many bytes were sent. *)
 
 val recv: Unix.file_descr -> Cstruct.t -> int

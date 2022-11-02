@@ -20,9 +20,13 @@
 #include <errno.h>
 #endif
 
-CAMLprim value stub_cstruct_send(value val_fd, value val_c)
+static int msg_flag_table[] = {
+    MSG_OOB, MSG_DONTROUTE, MSG_PEEK /* XXX */
+};
+
+CAMLprim value stub_cstruct_send(value val_fd, value val_c, value val_flags)
 {
-    CAMLparam2(val_fd, val_c);
+    CAMLparam3(val_fd, val_c, val_flags);
     CAMLlocal3(val_buf, val_ofs, val_len);
 
     val_buf = Field(val_c, 0);
@@ -32,6 +36,7 @@ CAMLprim value stub_cstruct_send(value val_fd, value val_c)
     const char *buf = (char *)Caml_ba_data_val(val_buf) + Long_val(val_ofs);
     size_t len = (size_t)Long_val(val_len);
     int n = 0;
+    int cv_flags = caml_convert_flag_list(val_flags, msg_flag_table);
 
 #ifdef WIN32
     int win32err = 0;
@@ -40,7 +45,7 @@ CAMLprim value stub_cstruct_send(value val_fd, value val_c)
 
     SOCKET s = Socket_val(val_fd);
     caml_release_runtime_system();
-    n = send(s, buf, len, 0);
+    n = send(s, buf, len, cv_flags);
     win32err = WSAGetLastError();
     caml_acquire_runtime_system();
 
@@ -53,7 +58,7 @@ CAMLprim value stub_cstruct_send(value val_fd, value val_c)
     int fd = Int_val(val_fd);
 
     caml_release_runtime_system();
-    n = send(fd, buf, len, 0);
+    n = send(fd, buf, len, cv_flags);
     caml_acquire_runtime_system();
     if (n < 0)
         uerror("send", Nothing);

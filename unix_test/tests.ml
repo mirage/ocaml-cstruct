@@ -122,7 +122,7 @@ let test_send_recv () =
     with_sock_dgram (fun c ->
       Unix.connect c (Unix.ADDR_INET(localhost, port));
       while with_mutex m (fun () -> not !finished) do
-        let n = Unix_cstruct.send c test_message in
+        let n = Unix_cstruct.send c test_message [] in
         Alcotest.(check int) "send length" (Cstruct.length test_message) n;
         Thread.delay 0.1
       done

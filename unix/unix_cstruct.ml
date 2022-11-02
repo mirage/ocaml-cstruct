@@ -63,7 +63,7 @@ let writev fd bufs =
   let use_write_fallback = List.iter (write fd) in
   (if iov_max = 0 then use_write_fallback else use_writev) bufs
 
-external stub_send: Unix.file_descr -> (buffer * int * int) -> int = "stub_cstruct_send"
+external stub_send: Unix.file_descr -> (buffer * int * int) -> Unix.msg_flag list -> int = "stub_cstruct_send"
 
 external stub_recv: Unix.file_descr -> (buffer * int * int) -> int = "stub_cstruct_recv"
 
