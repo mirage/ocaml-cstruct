@@ -112,7 +112,7 @@ let test_send_recv () =
     let finished = ref false in
     let t = Thread.create (fun () ->
           let buf = Cstruct.create 1024 in
-          let n = Unix_cstruct.recv s buf in
+          let n = Unix_cstruct.recv s buf [] in
           Alcotest.(check int) "recv length" (Cstruct.length test_message) n;
           let expected = Cstruct.to_string test_message in
           let actual = Cstruct.(to_string @@ sub buf 0 n) in

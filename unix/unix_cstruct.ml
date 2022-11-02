@@ -65,7 +65,7 @@ let writev fd bufs =
 
 external stub_send: Unix.file_descr -> (buffer * int * int) -> Unix.msg_flag list -> int = "stub_cstruct_send"
 
-external stub_recv: Unix.file_descr -> (buffer * int * int) -> int = "stub_cstruct_recv"
+external stub_recv: Unix.file_descr -> (buffer * int * int) -> Unix.msg_flag list -> int = "stub_cstruct_recv"
 
 let send fd x = stub_send fd (x.Cstruct.buffer, x.Cstruct.off, x.Cstruct.len)
 
