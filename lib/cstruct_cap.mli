@@ -35,8 +35,8 @@
     The functions that retrieve bytes ({!get_uint8} etc.) require a [read]
    capability, functions mutating the underlying buffer ({!set_uint8} etc.)
    require a [write] capability. Allocation of a buffer (via {!create}, ...)
-   returns a [t] with read and write capabilities. {!ro} drops the write
-   capability, {!wo} drops the read capability. The only exception is
+   returns a [t] with read and write capabilities. {!val:ro} drops the write
+   capability, {!val:wo} drops the read capability. The only exception is
    {!unsafe_to_bigarray} that returns the underlying [Bigarray.t].
 
     Accessors and mutators for fixed size integers (8, 16, 32, 64 bit) are
@@ -516,10 +516,10 @@ val span : ?rev:bool -> ?min:int -> ?max:int -> ?sat:(char -> bool) -> 'a rd t -
 
     {ul
     {- if [rev] is [false] (default), [l] is at least [min] and at most
-       [max] consecutive [sat] satisfying initial bytes of [cs] or {!empty}
+       [max] consecutive [sat] satisfying initial bytes of [cs] or {!is_empty}
        if there are no such bytes. [r] are the remaining bytes of [cs].}
     {- if [rev] is [true], [r] is at least [min] and at most [max]
-       consecutive [sat] satisfying final bytes of [cs] or {!empty}
+       consecutive [sat] satisfying final bytes of [cs] or {!is_empty}
        if there are no such bytes. [l] are the remaining bytes of [cs].}}
 
     If [max] is unspecified the span is unlimited. If [min] is unspecified

@@ -181,7 +181,7 @@ val of_bigarray: ?off:int -> ?len:int -> buffer -> t
     (default [Bigarray.Array1.dim b - off]). *)
 
 val to_bigarray: t -> buffer
-(** [to_bigarray t] converts a {!t} into a {!buffer} Bigarray, using
+(** [to_bigarray t] converts a {!t} into a {!type:buffer} Bigarray, using
     the Bigarray slicing to allocate a fresh array that preserves
     sharing of the underlying buffer. *)
 
@@ -606,7 +606,7 @@ val string : ?off:int -> ?len:int -> string -> t
 (** [string ~off ~len str] is the subbuffer of [str] that starts at position [off]
    (defaults to [0]) and stops at position [off + len] (defaults to
    [String.length str]). [str] is fully-replaced by an fresh allocated
-   {!Cstruct.buffer}.
+   {!type:buffer}.
 
     @raise Invalid_argument if [off] or [off + len] are not positions of [str].
 *)
@@ -621,10 +621,10 @@ val buffer : ?off:int -> ?len:int -> buffer -> t
    [buffer]. *)
 
 val start_pos : t -> int
-(** [start_pos cs] is [cs]'s start position in the base {!Cstruct.buffer}. *)
+(** [start_pos cs] is [cs]'s start position in the base {!type:buffer}. *)
 
 val stop_pos : t -> int
-(** [stop_pos cs] is [cs]'s stop position in the base {!Cstruct.buffer}. *)
+(** [stop_pos cs] is [cs]'s stop position in the base {!type:buffer}. *)
 
 val length : t -> int
 (** Returns the length of the current cstruct view.  Note that this
