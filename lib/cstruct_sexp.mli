@@ -17,7 +17,7 @@
 (** Sexpression serialisers for {!Cstruct.t} values *)
 
 type buffer = Cstruct.buffer
-(** [buffer] is an alias for the corresponding {!Cstruct.buffer} type *)
+(** [buffer] is an alias for the corresponding {!type:Cstruct.buffer} type *)
 
 val sexp_of_buffer : Cstruct.buffer -> Sexplib.Sexp.t
 (** [sexp_of_buffer b] returns the s-expression representation of the raw memory buffer [b] *)
@@ -35,4 +35,3 @@ val sexp_of_t : t -> Sexplib.Sexp.t
 val t_of_sexp : Sexplib.Sexp.t -> t
 (** [t_of_sexp s] returns a fresh {!Cstruct.t} that represents the
      s-expression previously serialised by {!sexp_of_t}. *)
-

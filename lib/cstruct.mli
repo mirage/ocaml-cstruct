@@ -181,7 +181,7 @@ val of_bigarray: ?off:int -> ?len:int -> buffer -> t
     (default [Bigarray.Array1.dim b - off]). *)
 
 val to_bigarray: t -> buffer
-(** [to_bigarray t] converts a {!t} into a {!buffer} Bigarray, using
+(** [to_bigarray t] converts a {!t} into a {!type:buffer} Bigarray, using
     the Bigarray slicing to allocate a fresh array that preserves
     sharing of the underlying buffer. *)
 
@@ -362,25 +362,6 @@ val to_bytes: ?off:int -> ?len:int -> t -> bytes
     @raise Invalid_argument if [off] or [len] is negative, or
     [Cstruct.len str - off] < [len]. *)
 
-(** {2 Debugging } *)
-
-val hexdump: t -> unit
-(** When the going gets tough, the tough hexdump their cstructs
-    and peer at it until the bug disappears.  This will directly
-    prettyprint the contents of the cstruct to the standard output. *)
-
-val hexdump_to_buffer: Buffer.t -> t -> unit
-(** [hexdump_to_buffer buf c] will append the pretty-printed hexdump
-    of the cstruct [c] to the buffer [buf]. *)
-
-val hexdump_pp: Format.formatter -> t -> unit
-(** [hexdump_pp f c] pretty-prints a hexdump of [c] to [f]. *)
-
-val debug: t -> string
-(** [debug t] will print out the internal details of a cstruct such
-    as its base offset and the length, and raise an assertion failure
-    if invariants have been violated.  Not intended for casual use. *)
-
 module BE : sig
 
   (** Get/set big-endian integers of various sizes. The second
@@ -491,6 +472,25 @@ module HE : sig
       unsigned integer [i] at offset [off] of [cstr].
       @raise Invalid_argument if the buffer is too small. *)
 end
+
+(** {2 Debugging } *)
+
+val hexdump: t -> unit
+(** When the going gets tough, the tough hexdump their cstructs
+    and peer at it until the bug disappears.  This will directly
+    prettyprint the contents of the cstruct to the standard output. *)
+
+val hexdump_to_buffer: Buffer.t -> t -> unit
+(** [hexdump_to_buffer buf c] will append the pretty-printed hexdump
+    of the cstruct [c] to the buffer [buf]. *)
+
+val hexdump_pp: Format.formatter -> t -> unit
+(** [hexdump_pp f c] pretty-prints a hexdump of [c] to [f]. *)
+
+val debug: t -> string
+(** [debug t] will print out the internal details of a cstruct such
+    as its base offset and the length, and raise an assertion failure
+    if invariants have been violated.  Not intended for casual use. *)
 
 (** {2 List of buffers} *)
 
@@ -611,7 +611,7 @@ val string : ?off:int -> ?len:int -> string -> t
 (** [string ~off ~len str] is the subbuffer of [str] that starts at position [off]
    (defaults to [0]) and stops at position [off + len] (defaults to
    [String.length str]). [str] is fully-replaced by an fresh allocated
-   {!Cstruct.buffer}.
+   {!type:buffer}.
 
     @raise Invalid_argument if [off] or [off + len] are not positions of [str].
 *)
@@ -626,10 +626,10 @@ val buffer : ?off:int -> ?len:int -> buffer -> t
    [buffer]. *)
 
 val start_pos : t -> int
-(** [start_pos cs] is [cs]'s start position in the base {!Cstruct.buffer}. *)
+(** [start_pos cs] is [cs]'s start position in the base {!type:buffer}. *)
 
 val stop_pos : t -> int
-(** [stop_pos cs] is [cs]'s stop position in the base {!Cstruct.buffer}. *)
+(** [stop_pos cs] is [cs]'s stop position in the base {!type:buffer}. *)
 
 val length : t -> int
 (** Returns the length of the current cstruct view.  Note that this
