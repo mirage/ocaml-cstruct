@@ -146,6 +146,14 @@ val sub : 'a t -> off:int -> len:int -> 'a t
 
     @raise Invalid_argument if the offset exceeds [t] length. *)
 
+val sub_copy : 'a t -> off:int -> len:int -> rdwr t
+(** [sub_copy t ~off ~len] is a new copy of [sub t ~off ~len],
+    that does not share the underlying buffer of [t].
+    The returned value has read-write capabilities because it doesn't
+    affect [t].
+
+    @raise Invalid_argument if the offset exceeds [t] length. *)
+
 val shift : 'a t -> int -> 'a t
 (** [shift t len] returns a proxy which shares the underlying buffer of [t]. The
     returned value starts [len] bytes later than the given [t]. The returned

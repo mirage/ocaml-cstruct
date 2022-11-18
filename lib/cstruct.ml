@@ -217,6 +217,11 @@ let blit src srcoff dst dstoff len =
     unsafe_blit_bigstring_to_bigstring src.buffer (src.off+srcoff) dst.buffer
       (dst.off+dstoff) len
 
+let sub_copy cstr off len : t =
+  let cstr2 = create_unsafe len in
+  blit cstr off cstr2 0 len;
+  cstr2
+
 let blit_from_string src srcoff dst dstoff len =
   if len < 0 || srcoff < 0 || dstoff < 0 || String.length src - srcoff < len then
     err_blit_from_string_src src dst srcoff len

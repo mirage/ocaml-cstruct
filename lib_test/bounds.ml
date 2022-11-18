@@ -71,6 +71,19 @@ let test_sub () =
   Alcotest.(check int) "sub 3" 20 z.Cstruct.off;
   Alcotest.(check int) "sub 4" 60 z.Cstruct.len
 
+let test_sub_copy () =
+  let x = Cstruct.create 100 in
+  let y = Cstruct.sub_copy x 10 80 in
+  Alcotest.(check int) "sub_copy 1" 0 y.Cstruct.off;
+  Alcotest.(check int) "sub_copy 2" 80 y.Cstruct.len;
+  let z = Cstruct.sub_copy y 10 60 in
+  Alcotest.(check int) "sub_copy 3" 0 z.Cstruct.off;
+  Alcotest.(check int) "sub_copy 4" 60 z.Cstruct.len;
+  Cstruct.set_uint8 x 50 42;
+  Alcotest.(check int) "x changed" 42 (Cstruct.get_uint8 x 50);
+  Alcotest.(check int) "y unchanged" 0 (Cstruct.get_uint8 y 50);
+  ()
+
 let test_negative_sub () =
   let x = Cstruct.create 2 in
   let y = Cstruct.sub x 1 1 in
@@ -453,6 +466,7 @@ let suite = [
   "test negative shift", `Quick, test_negative_shift;
   "test bad positive shift", `Quick, test_bad_positive_shift;
   "test sub", `Quick, test_sub;
+  "test sub_copy", `Quick, test_sub_copy;
   "test negative sub", `Quick, test_negative_sub;
   "test sub len too big", `Quick, test_sub_len_too_big;
   "test sub len too small", `Quick, test_sub_len_too_small;

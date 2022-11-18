@@ -56,6 +56,10 @@ let sub t ~off ~len =
   Cstruct.sub t off len
 [@@inline]
 
+let sub_copy t ~off ~len =
+  Cstruct.sub_copy t off len
+[@@inline]
+
 let unsafe_to_bigarray = Cstruct.to_bigarray
 
 let concat vss =

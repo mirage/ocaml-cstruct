@@ -282,6 +282,11 @@ val sub: t -> int -> int -> t
 (** [sub cstr off len] is [{ t with off = t.off + off; len }]
     @raise Invalid_argument if the offset exceeds cstruct length. *)
 
+val sub_copy: t -> int -> int -> t
+(** [sub_copy cstr off len] is a new copy of [sub cstr off len],
+    that does not share the underlying buffer of [cstr].
+    @raise Invalid_argument if the offset exceeds cstruct length. *)
+
 val shift: t -> int -> t
 (** [shift cstr len] is [{ cstr with off=t.off+len; len=t.len-len }]
     @raise Invalid_argument if the offset exceeds cstruct length. *)
