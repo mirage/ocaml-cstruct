@@ -352,7 +352,15 @@ val to_string: ?off:int -> ?len:int -> t -> string
     [len] (default [Cstruct.len t - off]) into it, and return that string.
 
     @raise Invalid_argument if [off] or [len] is negative, or
-    [Cstruct.len str - off] < [len]. *)
+    [Cstruct.len t - off] < [len]. *)
+
+val to_hex_string : ?off:int -> ?len:int -> t -> string
+(** [to_hex_string ~off ~len t] is a fresh OCaml [string] containing
+    the hex representation of [sub t off len]. It is therefore of length
+    [2 * len]. This string can be read back into a Cstruct using {!of_hex}.
+    @raise Invalid_argument if [off] or [len] is negative, or
+      if [Cstruct.len t - off < len].
+    @since 6.2 *)
 
 val to_bytes: ?off:int -> ?len:int -> t -> bytes
 (** [to_bytes ~off ~len t] will allocate a fresh OCaml [bytes] and copy the
