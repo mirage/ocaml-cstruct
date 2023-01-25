@@ -166,6 +166,25 @@ let hexdump_small () =
 let hex_multiline =
   Cstruct.of_hex "000102030405060708090a0b0c0d0e0f101112"
 
+let hex_to_string_empty () =
+  let c = Cstruct.of_string "" in
+  let s = Cstruct.to_hex_string c in
+  assert_string_equal ~msg:"encoded" s ""
+
+let hex_to_string_small () =
+  let c = Cstruct.of_string "hello world \x00 !" in
+  let s = Cstruct.to_hex_string c in
+  assert_string_equal ~msg:"encoded" "68656c6c6f20776f726c6420002021" s;
+  let c' = Cstruct.of_hex s in
+  assert_cs_equal ~msg:"decoded again" c c'
+
+let hex_to_string_small_slice () =
+  let c = Cstruct.of_string "This_1s Not @ Dr1LL" in
+  let s = Cstruct.to_hex_string ~off:2 ~len:11 c in
+  assert_string_equal ~msg:"encoded" "69735f3173204e6f742040" s;
+  let c' = Cstruct.of_hex s in
+  assert_cs_equal ~msg:"decoded again" (Cstruct.sub c 2 11) c'
+
 let hexdump_multiline () =
   test_hexdump
     hex_multiline
@@ -224,7 +243,13 @@ let suite = [
     "aligned", `Quick, hexdump_aligned;
     "aligned to half", `Quick, hexdump_aligned_to_half;
     "in box", `Quick, hexdump_in_box;
+  ];
+  "hex_to_string", [
+    "empty", `Quick, hex_to_string_empty;
+    "small", `Quick, hex_to_string_small;
+    "small_slice", `Quick, hex_to_string_small_slice;
   ]
+
 ]
 
 let () = Alcotest.run "cstruct" (("bounds", Bounds.suite) :: suite)
