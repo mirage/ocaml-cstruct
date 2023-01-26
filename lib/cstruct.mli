@@ -349,17 +349,17 @@ val split: ?start:int -> t -> int -> t * t
 val to_string: ?off:int -> ?len:int -> t -> string
 (** [to_string ~off ~len t] will allocate a fresh OCaml [string] and copy the
     contents of the cstruct starting at offset [off] (default [0]) of length
-    [len] (default [Cstruct.len t - off]) into it, and return that string.
+    [len] (default [Cstruct.length t - off]) into it, and return that string.
 
     @raise Invalid_argument if [off] or [len] is negative, or
-    [Cstruct.len t - off] < [len]. *)
+    [Cstruct.length t - off] < [len]. *)
 
 val to_hex_string : ?off:int -> ?len:int -> t -> string
 (** [to_hex_string ~off ~len t] is a fresh OCaml [string] containing
     the hex representation of [sub t off len]. It is therefore of length
     [2 * len]. This string can be read back into a Cstruct using {!of_hex}.
     @raise Invalid_argument if [off] or [len] is negative, or
-      if [Cstruct.len t - off < len].
+      if [Cstruct.length t - off < len].
     @since 6.2 *)
 
 val to_bytes: ?off:int -> ?len:int -> t -> bytes
