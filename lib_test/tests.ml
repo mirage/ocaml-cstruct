@@ -183,7 +183,17 @@ let hex_to_string_small_slice () =
   let s = Cstruct.to_hex_string ~off:2 ~len:11 c in
   assert_string_equal ~msg:"encoded" "69735f3173204e6f742040" s;
   let c' = Cstruct.of_hex s in
-  assert_cs_equal ~msg:"decoded again" (Cstruct.sub c 2 11) c'
+  assert_cs_equal ~msg:"decoded again" (Cstruct.sub c 2 11) c';
+  assert_string_equal ~msg:"decoded as str" "is_1s Not @" (Cstruct.to_string c')
+
+let hex_to_string_small_slice_of_slice () =
+  let c = Cstruct.of_string "This_1s Not @ Dr1LL" in
+  let c_slice = Cstruct.sub c 2 11 in
+  let s = Cstruct.to_hex_string ~off:3 ~len:6 c_slice in
+  assert_string_equal ~msg:"encoded" "3173204e6f74" s;
+  let c' = Cstruct.of_hex s in
+  assert_cs_equal ~msg:"decoded again" (Cstruct.sub c_slice 3 6) c';
+  assert_string_equal ~msg:"decoded as str" "1s Not" (Cstruct.to_string c')
 
 let hexdump_multiline () =
   test_hexdump
@@ -248,6 +258,7 @@ let suite = [
     "empty", `Quick, hex_to_string_empty;
     "small", `Quick, hex_to_string_small;
     "small_slice", `Quick, hex_to_string_small_slice;
+    "small_slice_of_slice", `Quick, hex_to_string_small_slice_of_slice;
   ]
 
 ]
