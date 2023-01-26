@@ -416,7 +416,7 @@ let to_hex_string ?(off=0) ?len:sz t : string =
   else (
     let out = Bytes.create (2 * len) in
     for i=0 to len-1 do
-      let c = Char.code @@ Bigarray.Array1.get t.buffer (i+off) in
+      let c = Char.code @@ Bigarray.Array1.get t.buffer (i+t.off+off) in
       Bytes.set out (2*i) (nibble_to_char (c lsr 4));
       Bytes.set out (2*i+1) (nibble_to_char (c land 0xf));
     done;
