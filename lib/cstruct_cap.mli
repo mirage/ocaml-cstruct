@@ -265,6 +265,13 @@ val to_string : ?off:int -> ?len:int -> 'a rd t -> string
     @raise Invalid_argument if [off] and [len] does not designate a valid
     segment of [t]. *)
 
+val to_hex_string : ?off:int -> ?len:int -> _ rd t -> string
+(** [to_hex_string ~off ~len t] is a fresh OCaml [string] containing
+    the hex representation of [sub t off len]. See {!Cstruct.to_hex_string}.
+    @raise Invalid_argument if [off] or [len] is negative, or
+      if [Cstruct.length t - off < len].
+    @since 6.2 *)
+
 val of_hex : ?off:int -> ?len:int -> string -> rdwr t
 (** [of_hex ~off ~len s] allocates a buffer and copies the content of [s]
     starting at offset [off] (default [0]) of length [len] (default
