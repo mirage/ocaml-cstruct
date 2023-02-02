@@ -54,6 +54,7 @@ let err_sub t = err "Cstruct.sub: %a off=%d len=%d" pp_t t
 let err_shift t = err "Cstruct.shift %a %d" pp_t t
 let err_shiftv n = err "Cstruct.shiftv short by %d" n
 let err_copy t = err "Cstruct.copy %a off=%d len=%d" pp_t t
+let err_to_hex_string t = err "Cstruct.to_hex_string %a off=%d len=%d" pp_t t
 let err_blit_src src dst =
   err "Cstruct.blit src=%a dst=%a src-off=%d len=%d" pp_t src pp_t dst
 let err_blit_dst src dst =
@@ -400,6 +401,28 @@ let to_string ?(off=0) ?len:sz t =
   (* The following call is safe, since this is the only reference to the
      freshly-created value built by [to_bytes t]. *)
   copy t off len
+
+let to_hex_string ?(off=0) ?len:sz t : string =
+  let[@inline] nibble_to_char (i:int) : char =
+    if i < 10 then
+      Char.chr (i + Char.code '0')
+    else
+      Char.chr (i - 10 + Char.code 'a')
+  in
+
+  let len = match sz with None -> length t - off | Some l -> l in
+  if len < 0 || off < 0 || t.len - off < len then
+    err_to_hex_string t off len
+  else (
+    let out = Bytes.create (2 * len) in
+    for i=0 to len-1 do
+      let c = Char.code @@ Bigarray.Array1.get t.buffer (i+t.off+off) in
+      Bytes.set out (2*i) (nibble_to_char (c lsr 4));
+      Bytes.set out (2*i+1) (nibble_to_char (c land 0xf));
+    done;
+    Bytes.unsafe_to_string out
+  )
+
 
 let to_bytes ?off ?len t =
   Bytes.unsafe_of_string (to_string ?off ?len t)
