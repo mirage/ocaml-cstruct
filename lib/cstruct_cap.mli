@@ -177,6 +177,10 @@ val split : ?start:int -> 'a t -> int -> 'a t * 'a t
     @raise Invalid_argument if [start] exceeds the length of [t],
     or if there is a bounds violation of [t] via [len + start]. *)
 
+val copy : 'a t -> int -> int -> string
+[@@ocaml.alert deprecated "this is just like [to_string] without defaults, were you looking for [sub_copy]?"]
+(** [copy cstr off len] is the same as [Cstruct.to_string cstr ~off ~len]. *)
+
 (** {2 Construction from existing t} *)
 
 val append : 'a rd t -> 'b rd t -> rdwr t
