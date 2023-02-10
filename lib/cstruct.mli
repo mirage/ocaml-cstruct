@@ -365,10 +365,10 @@ val to_hex_string : ?off:int -> ?len:int -> t -> string
 val to_bytes: ?off:int -> ?len:int -> t -> bytes
 (** [to_bytes ~off ~len t] will allocate a fresh OCaml [bytes] and copy the
     contents of the cstruct starting at offset [off] (default [0]) of length
-    [len] (default [Cstruct.len t - off]) into it, and return that bytes.
+    [len] (default [Cstruct.length t - off]) into it, and return that bytes.
 
     @raise Invalid_argument if [off] or [len] is negative, or
-    [Cstruct.len str - off] < [len]. *)
+    [Cstruct.length str - off] < [len]. *)
 
 module BE : sig
 
