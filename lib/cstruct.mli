@@ -292,8 +292,10 @@ val shift: t -> int -> t
     @raise Invalid_argument if the offset exceeds cstruct length. *)
 
 val copy: t -> int -> int -> string
+[@@ocaml.alert deprecated "this is just like [to_string] without defaults, were you looking for [sub_copy]?"]
 (** [copy cstr off len] is the string representation of the segment of
-    [t] starting at [off] of size [len].
+    [t] starting at [off] of size [len]. It is equivalent to
+    [Cstruct.to_string cstr ~off ~len].
     @raise Invalid_argument if [off] and [len] do not designate a
     valid segment of [t]. *)
 
