@@ -1,3 +1,13 @@
+v6.2.0 2023-02-20
+-----------------
+
+- Add `sub_copy` function (@c-cube, #305)
+- Fix documentation (@MisterDA, #304)
+- Add `to_hex_string` function (@c-cube, #306)
+- Fix documentation and use `Cstruct.length` instead of `Cstruct.len` (@reynir, #307)
+- Deprecate `copy` function (alias of `to_string`) (will be removed at the next minor release)
+  (@reynir, #308)
+
 v6.1.1 2022-07-24
 -----------------
 
