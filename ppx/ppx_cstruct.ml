@@ -298,7 +298,7 @@ let op_expr loc s = function
   | Op_set f -> set_expr loc s f
   | Op_copy f ->
     let len = width_of_field f in
-    [%expr fun src -> Cstruct.copy src [%e Ast.eint ~loc f.off] [%e Ast.eint ~loc len] ]
+    [%expr fun src -> Cstruct.to_string src ~off:[%e Ast.eint ~loc f.off] ~len:[%e Ast.eint ~loc len] ]
   | Op_blit f ->
     let len = width_of_field f in
     [%expr fun src srcoff dst ->
