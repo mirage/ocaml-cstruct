@@ -961,3 +961,22 @@ let mapi f ({ len; _ } as cs) =
     for i = 0 to len - 1 do
       set_char b i (f i (get_char cs i))
     done ; b
+
+external unsafe_input_data_size : buffer -> int -> int -> int = "caml_unsafe_input_data_size"
+external input_value_from_bigstring : buffer -> int -> int -> 'a = "caml_input_value_from_bigstring"
+external output_value_to_bigstring : buffer -> int -> int -> 'a -> Marshal.extern_flags list -> int = "caml_output_value_to_bigstring"
+
+let unsafe_input_value t =
+  input_value_from_bigstring t.buffer t.off t.len
+
+let input_value t =
+  if t.len < Marshal.header_size then
+    invalid_arg "input_value";
+  if t.len < unsafe_input_data_size t.buffer t.off t.len then
+    invalid_arg "input_value";
+  (* check data size *)
+  unsafe_input_value t
+
+let output_value v flags t =
+  output_value_to_bigstring t.buffer t.off t.len v flags +
+  Marshal.header_size

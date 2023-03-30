@@ -71,3 +71,6 @@ let concat vss =
   let len = List.fold_left go 0 vss in
   assert (len = Cstruct.length res) ;
   res
+
+let output_value = Cstruct.output_value
+let input_value = Cstruct.input_value
