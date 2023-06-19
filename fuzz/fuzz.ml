@@ -83,10 +83,10 @@ let () =
     );
   add_test ~name:"shiftv" [list cstruct; int] (fun ts n ->
       match Cstruct.shiftv ts n with
-      | exception Invalid_argument _ -> check (n < 0 || n > Cstruct.lenv ts)
+      | exception Invalid_argument _ -> check (n < 0 || n > Cstruct.lengthv ts)
       | ts' ->
         assert (Cstruct.equal (Cstruct.concat ts') (Cstruct.shift (Cstruct.concat ts) n));
-        assert ((Cstruct.lenv ts = n) = (ts' = []));
+        assert ((Cstruct.lengthv ts = n) = (ts' = []));
         match ts' with
         | hd :: _ -> assert (not (Cstruct.is_empty hd))
         | [] -> ()
@@ -142,21 +142,21 @@ let () =
       | () -> check in_range
       | exception Invalid_argument _ -> check (not in_range)
     );
-  add_test ~name:"lenv" [list cstruct] (fun cs ->
-      check (Cstruct.lenv cs >= 0)
+  add_test ~name:"lengthv" [list cstruct] (fun cs ->
+      check (Cstruct.lengthv cs >= 0)
     );
   add_test ~name:"copyv" [list cstruct] (fun cs ->
       check (String.equal (Cstruct.copyv cs) (Cstruct.concat cs |> Cstruct.to_string))
     );
   add_test ~name:"fillv" [list cstruct; cstruct] (fun src dst ->
       let copied, rest = Cstruct.fillv ~src ~dst in
-      check (copied + Cstruct.lenv rest = Cstruct.lenv src);
+      check (copied + Cstruct.lengthv rest = Cstruct.lengthv src);
       (* OCaml tends to underestimate how much space bigarrays are using: *)
       Gc.minor ()
     );
   add_test ~name:"concat" [list cstruct] (fun cs ->
       let x = Cstruct.concat cs in
-      check (Cstruct.length x = Cstruct.lenv cs)
+      check (Cstruct.length x = Cstruct.lengthv cs)
     );
   add_test ~name:"span" [ cstruct; list char ] (fun cs p ->
       let sat chr = List.exists ((=) chr) p in

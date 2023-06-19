@@ -114,8 +114,8 @@ val check_alignment : 'a t -> int -> bool
 
     @raise Invalid_argument if [alignment] is not a positive integer. *)
 
-val lenv : 'a t list -> int
-(** [lenv vs] is the combined length of all {!t} in [vs].
+val lengthv : 'a t list -> int
+(** [lengthv vs] is the combined length of all {!t} in [vs].
 
     @raise Invalid_argument if computing the sum overflows. *)
 
@@ -166,7 +166,7 @@ val shiftv: 'a t list -> int -> 'a t list
     It has the property that [equal (concat (shiftv ts n)) (shift (concat ts) n)].
     This operation is fairly fast, as it will share the tail of the list.
     The first item in the returned list is never an empty cstruct,
-    so you'll get [[]] if and only if [lenv ts = n]. *)
+    so you'll get [[]] if and only if [lengthv ts = n]. *)
 
 val split : ?start:int -> 'a t -> int -> 'a t * 'a t
 (** [split ~start t len] returns two proxies extracted from [t]. The first
@@ -190,7 +190,7 @@ val append : 'a rd t -> 'b rd t -> rdwr t
     the returned value has both read and write capabilities. *)
 
 val concat : 'a rd t list -> rdwr t
-(** [concat vss] allocates a buffer [r] of size [lenv vss]. Each [v] of [vss]
+(** [concat vss] allocates a buffer [r] of size [lengthv vss]. Each [v] of [vss]
     is copied into the buffer [r]. Each [v] of [vss] need at least read
     capability {!rd}, the returned value has both read and write capabilities.
 *)

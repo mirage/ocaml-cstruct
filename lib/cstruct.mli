@@ -504,8 +504,8 @@ val debug: t -> string
 
 (** {2 List of buffers} *)
 
-val lenv: t list -> int
-(** [lenv cstrs] is the combined length of all cstructs in [cstrs].
+val lengthv: t list -> int
+(** [lengthv cstrs] is the combined length of all cstructs in [cstrs].
     @raise Invalid_argument if computing the sum overflows. *)
 
 val copyv: t list -> string
@@ -524,7 +524,7 @@ val shiftv: t list -> int -> t list
     It has the property that [equal (concat (shiftv ts n)) (shift (concat ts) n)].
     This operation is fairly fast, as it will share the tail of the list.
     The first item in the returned list is never an empty cstruct,
-    so you'll get [[]] if and only if [lenv ts = n]. *)
+    so you'll get [[]] if and only if [lengthv ts = n]. *)
 
 (** {2 Iterations} *)
 

@@ -347,14 +347,14 @@ let test_view_bounds_too_small_get_he64 () =
   with
     Invalid_argument _ -> ()
 
-let test_lenv_overflow () =
+let test_lengthv_overflow () =
   if Sys.word_size = 32 then (
     (* free-up some space *)
     Gc.major ();
     let b = Cstruct.create max_int and c = Cstruct.create 3 in
     try
-      let _ = Cstruct.lenv [b; b; c] in
-      failwith "test_lenv_overflow"
+      let _ = Cstruct.lengthv [b; b; c] in
+      failwith "test_lengthv_overflow"
     with
       Invalid_argument _ -> ())
 
@@ -494,7 +494,7 @@ let suite = [
   "test_view_bounds_too_small_get_he16" , `Quick, test_view_bounds_too_small_get_he16;
   "test_view_bounds_too_small_get_he32" , `Quick, test_view_bounds_too_small_get_he32;
   "test_view_bounds_too_small_get_he64" , `Quick, test_view_bounds_too_small_get_he64;
-  "test_lenv_overflow", `Quick, test_lenv_overflow;
+  "test_lengthv_overflow", `Quick, test_lengthv_overflow;
   "test_copyv_overflow", `Quick, test_copyv_overflow;
   "test_subview_containment_get_char", `Quick, test_subview_containment_get_char;
   "test_subview_containment_get_8"   , `Quick, test_subview_containment_get_8;
