@@ -508,6 +508,10 @@ val lengthv: t list -> int
 (** [lengthv cstrs] is the combined length of all cstructs in [cstrs].
     @raise Invalid_argument if computing the sum overflows. *)
 
+val lenv : t list -> int
+[@@ocaml.alert deprecated "use lengthv instead"]
+(** [lenv] is deprecated in favor of [lengthv]. *)
+
 val copyv: t list -> string
 (** [copyv cstrs] is the string representation of the concatenation of
     all cstructs in [cstrs].

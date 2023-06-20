@@ -368,6 +368,7 @@ let rec sum_lengths_aux ~caller acc = function
 
 let sum_lengths ~caller l = sum_lengths_aux ~caller 0 l
 
+let lenv l = sum_lengths ~caller:"Cstruct.lenv" l
 let lengthv l = sum_lengths ~caller:"Cstruct.lengthv" l
 
 let copyv ts =

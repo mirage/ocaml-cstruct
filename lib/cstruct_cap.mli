@@ -119,6 +119,10 @@ val lengthv : 'a t list -> int
 
     @raise Invalid_argument if computing the sum overflows. *)
 
+val lenv : 'a t list -> int
+[@@ocaml.alert deprecated "use lengthv instead"]
+(** [lenv] is deprecated in favor of [lengthv]. *)
+
 (** {2 Constructors} *)
 
 val create : int -> rdwr t
