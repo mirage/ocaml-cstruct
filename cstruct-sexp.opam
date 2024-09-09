@@ -18,9 +18,10 @@ build: [
 depends: [
   "ocaml" {>= "4.08.0"}
   "dune" {>= "2.0.0"}
-  "sexplib"
+  "sexplib0"
   "cstruct" {=version}
   "alcotest" {with-test}
+  "sexplib" {with-test}
 ]
 synopsis: "S-expression serialisers for C-like structures"
 description: """

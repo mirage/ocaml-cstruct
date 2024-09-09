@@ -13,4 +13,4 @@
  (name cstruct_sexp)
  (public_name cstruct-sexp)
  (modules cstruct_sexp)
- (libraries cstruct sexplib))
+ (libraries cstruct sexplib0))
