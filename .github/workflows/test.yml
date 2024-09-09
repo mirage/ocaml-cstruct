@@ -9,6 +9,9 @@ jobs:
       matrix:
         ocaml-version: [ '4.13.1', '4.10.0', '4.08.1' ]
         operating-system: [macos-latest, ubuntu-latest, windows-latest]
+        exclude:
+          - operating-system: macos-latest
+            ocaml-version: '4.08.1'
     steps:
     - uses: actions/checkout@v2
     - uses: avsm/setup-ocaml@v1
@@ -27,6 +30,9 @@ jobs:
       matrix:
         ocaml-version: [ '4.13.1', '4.10.0', '4.08.1' ]
         operating-system: [macos-latest, ubuntu-latest, windows-latest]
+        exclude:
+          - operating-system: macos-latest
+            ocaml-version: '4.08.1'
     steps:
     - uses: actions/checkout@v2
     - uses: avsm/setup-ocaml@v1
@@ -45,6 +51,9 @@ jobs:
       matrix:
         ocaml-version: [ '4.13.1', '4.10.0', '4.08.1' ]
         operating-system: [macos-latest, ubuntu-latest]
+        exclude:
+          - operating-system: macos-latest
+            ocaml-version: '4.08.1'
     steps:
     - uses: actions/checkout@v2
     - uses: avsm/setup-ocaml@v1
