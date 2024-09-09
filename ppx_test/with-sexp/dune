@@ -2,7 +2,7 @@
  (name ppx_cstruct_and_sexp)
  (preprocess
   (pps ppx_cstruct ppx_sexp_conv -- -no-check))
- (libraries cstruct sexplib cstruct-sexp))
+ (libraries cstruct sexplib0 cstruct-sexp))
 
 (rule
  (alias runtest)
