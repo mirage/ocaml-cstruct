@@ -434,12 +434,12 @@ let declare_enum_expr ~loc ({fields; _} as cenum) = function
     [%expr
       fun x ->
         match x with
-        | Sexplib.Sexp.List _ ->
-          raise (Sexplib.Pre_sexp.Of_sexp_error (Failure "expected Atom, got List", x))
+        | Sexplib0.Sexp.List _ ->
+          raise (Sexplib0.Sexp.Of_sexp_error (Failure "expected Atom, got List", x))
         | Sexplib.Sexp.Atom v ->
           match [%e Ast.evar ~loc (enum_op_name cenum Enum_parse)] v with
           | None ->
-            raise (Sexplib.Pre_sexp.Of_sexp_error (Failure "unable to parse enum string", x))
+            raise (Sexplib0.Sexp.Of_sexp_error (Failure "unable to parse enum string", x))
           | Some r -> r
     ]
   | Enum_get ->
@@ -512,7 +512,7 @@ let enum_op_type ~loc {name; prim; _} =
   | Enum_print -> [%type: [%t cty] -> string]
   | Enum_parse -> [%type: string -> [%t cty] option]
   | Enum_to_sexp -> [%type: [%t cty] -> Sexplib0.Sexp.t]
-  | Enum_of_sexp -> [%type: Sexplib.Sexp.t -> [%t cty]]
+  | Enum_of_sexp -> [%type: Sexplib0.Sexp.t -> [%t cty]]
   | Enum_compare -> [%type: [%t cty] -> [%t cty] -> int]
 
 let output_enum_sig loc (cenum:cenum) =
