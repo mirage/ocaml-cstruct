@@ -436,7 +436,7 @@ let declare_enum_expr ~loc ({fields; _} as cenum) = function
         match x with
         | Sexplib0.Sexp.List _ ->
           raise (Sexplib0.Sexp.Of_sexp_error (Failure "expected Atom, got List", x))
-        | Sexplib.Sexp.Atom v ->
+        | Sexplib0.Sexp.Atom v ->
           match [%e Ast.evar ~loc (enum_op_name cenum Enum_parse)] v with
           | None ->
             raise (Sexplib0.Sexp.Of_sexp_error (Failure "unable to parse enum string", x))
