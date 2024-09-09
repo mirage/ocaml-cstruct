@@ -392,7 +392,7 @@ type cenum =
   { name : string Loc.t;
     fields : (string Loc.t * int64) list;
     prim : prim;
-    sexp : bool;
+    sexp : [ `None | `Sexp_of | `Sexp ];
   }
 
 let enum_op_name cenum =
@@ -429,7 +429,7 @@ let enum_integer ~loc {prim; _} =
 
 let declare_enum_expr ~loc ({fields; _} as cenum) = function
   | Enum_to_sexp ->
-    [%expr fun x -> Sexplib.Sexp.Atom ([%e Ast.evar ~loc (enum_op_name cenum Enum_print)] x) ]
+    [%expr fun x -> Sexplib0.Sexp.Atom ([%e Ast.evar ~loc (enum_op_name cenum Enum_print)] x) ]
   | Enum_of_sexp ->
     [%expr
       fun x ->
@@ -474,12 +474,15 @@ let enum_ops_for {sexp; _} =
   Enum_compare ::
   Enum_print ::
   Enum_parse ::
-  if sexp then
+  match sexp with
+  | `None -> []
+  | `Sexp_of ->
+    [ Enum_to_sexp ]
+  | `Sexp ->
+
     [ Enum_to_sexp
     ; Enum_of_sexp
     ]
-  else
-    []
 
 let enum_type_decl {name; fields; _} =
   let decls = List.map (fun (f,_) -> Type.constructor f) fields in
@@ -508,7 +511,7 @@ let enum_op_type ~loc {name; prim; _} =
   | Enum_set -> [%type: [%t cty] -> [%t oty]]
   | Enum_print -> [%type: [%t cty] -> string]
   | Enum_parse -> [%type: string -> [%t cty] option]
-  | Enum_to_sexp -> [%type: [%t cty] -> Sexplib.Sexp.t]
+  | Enum_to_sexp -> [%type: [%t cty] -> Sexplib0.Sexp.t]
   | Enum_of_sexp -> [%type: Sexplib.Sexp.t -> [%t cty]]
   | Enum_compare -> [%type: [%t cty] -> [%t cty] -> int]
 
@@ -598,11 +601,14 @@ let cenum decl =
   in
   let width, sexp =
     match attrs with
-    | ({attr_name = {txt = width; _};attr_payload= PStr [];_}) 
+    | ({attr_name = {txt = width; _};attr_payload= PStr [];_})
       :: ({attr_name = {txt = "sexp"; _};attr_payload = PStr []; _}) :: [] ->
-      width, true
+      width, `Sexp
+    | ({attr_name = {txt = width; _};attr_payload= PStr [];_})
+      :: ({attr_name = {txt = "sexp_of"; _};attr_payload = PStr []; _}) :: [] ->
+      width, `Sexp_of
     | ({attr_name = {txt = width; _};attr_payload= PStr [];_}) :: [] ->
-      width, false
+      width, `None
     | _ ->
       loc_err loc "invalid cenum attributes"
   in
