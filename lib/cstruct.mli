@@ -372,41 +372,46 @@ val to_bytes: ?off:int -> ?len:int -> t -> bytes
     @raise Invalid_argument if [off] or [len] is negative, or
     [Cstruct.length str - off] < [len]. *)
 
+module type GetterSetter = sig
+  val get_uint16: t -> int -> uint16
+  (** [get_uint16 cstr off] is the 16 bit long unsigned
+      integer stored in [cstr] at offset [off].
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val get_uint32: t -> int -> uint32
+  (** [get_uint32 cstr off] is the 32 bit long unsigned
+      integer stored in [cstr] at offset [off].
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val get_uint64: t -> int -> uint64
+  (** [get_uint64 cstr off] is the 64 bit long unsigned
+      integer stored in [cstr] at offset [off].
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val set_uint16: t -> int -> uint16 -> unit
+  (** [set_uint16 cstr off i] writes the 16 bit long
+      unsigned integer [i] at offset [off] of [cstr].
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val set_uint32: t -> int -> uint32 -> unit
+  (** [set_uint32 cstr off i] writes the 32 bit long
+      unsigned integer [i] at offset [off] of [cstr].
+      @raise Invalid_argument if the buffer is too small. *)
+
+  val set_uint64: t -> int -> uint64 -> unit
+  (** [set_uint64 cstr off i] writes the 64 bit long
+      unsigned integer [i] at offset [off] of [cstr].
+      @raise Invalid_argument if the buffer is too small. *)
+end
+
 module BE : sig
 
   (** Get/set big-endian integers of various sizes. The second
       argument of those functions is the position relative to the
       current offset of the cstruct. *)
+  include GetterSetter
 
-  val get_uint16: t -> int -> uint16
-  (** [get_uint16 cstr off] is the 16 bit long big-endian unsigned
-      integer stored in [cstr] at offset [off].
-      @raise Invalid_argument if the buffer is too small. *)
-
-  val get_uint32: t -> int -> uint32
-  (** [get_uint32 cstr off] is the 32 bit long big-endian unsigned
-      integer stored in [cstr] at offset [off].
-      @raise Invalid_argument if the buffer is too small. *)
-
-  val get_uint64: t -> int -> uint64
-  (** [get_uint64 cstr off] is the 64 bit long big-endian unsigned
-      integer stored in [cstr] at offset [off].
-      @raise Invalid_argument if the buffer is too small. *)
-
-  val set_uint16: t -> int -> uint16 -> unit
-  (** [set_uint16 cstr off i] writes the 16 bit long big-endian
-      unsigned integer [i] at offset [off] of [cstr].
-      @raise Invalid_argument if the buffer is too small. *)
-
-  val set_uint32: t -> int -> uint32 -> unit
-  (** [set_uint32 cstr off i] writes the 32 bit long big-endian
-      unsigned integer [i] at offset [off] of [cstr].
-      @raise Invalid_argument if the buffer is too small. *)
-
-  val set_uint64: t -> int -> uint64 -> unit
-  (** [set_uint64 cstr off i] writes the 64 bit long big-endian
-      unsigned integer [i] at offset [off] of [cstr].
-      @raise Invalid_argument if the buffer is too small. *)
+  module Unsafe : GetterSetter
 end
 
 module LE : sig
@@ -415,35 +420,9 @@ module LE : sig
       argument of those functions is the position relative to the
       current offset of the cstruct. *)
 
-  val get_uint16: t -> int -> uint16
-  (** [get_uint16 cstr off] is the 16 bit long little-endian unsigned
-      integer stored in [cstr] at offset [off].
-      @raise Invalid_argument if the buffer is too small. *)
+  include GetterSetter
 
-  val get_uint32: t -> int -> uint32
-  (** [get_uint32 cstr off] is the 32 bit long little-endian unsigned
-      integer stored in [cstr] at offset [off].
-      @raise Invalid_argument if the buffer is too small. *)
-
-  val get_uint64: t -> int -> uint64
-  (** [get_uint64 cstr off] is the 64 bit long little-endian unsigned
-      integer stored in [cstr] at offset [off].
-      @raise Invalid_argument if the buffer is too small. *)
-
-  val set_uint16: t -> int -> uint16 -> unit
-  (** [set_uint16 cstr off i] writes the 16 bit long little-endian
-      unsigned integer [i] at offset [off] of [cstr].
-      @raise Invalid_argument if the buffer is too small. *)
-
-  val set_uint32: t -> int -> uint32 -> unit
-  (** [set_uint32 cstr off i] writes the 32 bit long little-endian
-      unsigned integer [i] at offset [off] of [cstr].
-      @raise Invalid_argument if the buffer is too small. *)
-
-  val set_uint64: t -> int -> uint64 -> unit
-  (** [set_uint64 cstr off i] writes the 64 bit long little-endian
-      unsigned integer [i] at offset [off] of [cstr].
-      @raise Invalid_argument if the buffer is too small. *)
+  module Unsafe : GetterSetter
 end
 
 module HE : sig
@@ -452,35 +431,9 @@ module HE : sig
       argument of those functions is the position relative to the
       current offset of the cstruct. *)
 
-  val get_uint16: t -> int -> uint16
-  (** [get_uint16 cstr off] is the 16 bit long host-endian unsigned
-      integer stored in [cstr] at offset [off].
-      @raise Invalid_argument if the buffer is too small. *)
+  include GetterSetter
 
-  val get_uint32: t -> int -> uint32
-  (** [get_uint32 cstr off] is the 32 bit long host-endian unsigned
-      integer stored in [cstr] at offset [off].
-      @raise Invalid_argument if the buffer is too small. *)
-
-  val get_uint64: t -> int -> uint64
-  (** [get_uint64 cstr off] is the 64 bit long host-endian unsigned
-      integer stored in [cstr] at offset [off].
-      @raise Invalid_argument if the buffer is too small. *)
-
-  val set_uint16: t -> int -> uint16 -> unit
-  (** [set_uint16 cstr off i] writes the 16 bit long host-endian
-      unsigned integer [i] at offset [off] of [cstr].
-      @raise Invalid_argument if the buffer is too small. *)
-
-  val set_uint32: t -> int -> uint32 -> unit
-  (** [set_uint32 cstr off i] writes the 32 bit long host-endian
-      unsigned integer [i] at offset [off] of [cstr].
-      @raise Invalid_argument if the buffer is too small. *)
-
-  val set_uint64: t -> int -> uint64 -> unit
-  (** [set_uint64 cstr off i] writes the 64 bit long host-endian
-      unsigned integer [i] at offset [off] of [cstr].
-      @raise Invalid_argument if the buffer is too small. *)
+  module Unsafe : GetterSetter
 end
 
 (** {2 Debugging } *)
