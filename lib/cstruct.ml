@@ -268,23 +268,42 @@ let create len =
   let t = create_unsafe len in
   memset t 0;
   t
+module type GetterSetterByte = sig
+  val get_char: t -> int -> char
+  val get_uint8: t -> int -> uint8
+  val set_char: t -> int -> char -> unit
+  val set_uint8: t -> int -> uint8 -> unit
+end
+
+module Unsafe = struct
+  let set_uint8 t i c =
+    Bigarray.Array1.unsafe_set t.buffer (t.off+i) (Char.unsafe_chr c)
+
+  let set_char t i c =
+    Bigarray.Array1.unsafe_set t.buffer (t.off+i) c
+
+  let get_uint8 t i =
+    Char.code (Bigarray.Array1.unsafe_get t.buffer (t.off+i))
+
+  let get_char t i =
+    Bigarray.Array1.unsafe_get t.buffer (t.off+i)
+end
 
 let set_uint8 t i c =
   if i >= t.len || i < 0 then err_invalid_bounds "set_uint8" t i 1
-  else Bigarray.Array1.set t.buffer (t.off+i) (Char.unsafe_chr c)
+  else Unsafe.set_uint8 t i c
 
 let set_char t i c =
   if i >= t.len || i < 0 then err_invalid_bounds "set_char" t i 1
-  else Bigarray.Array1.set t.buffer (t.off+i) c
+  else Unsafe.set_char t i c
 
 let get_uint8 t i =
   if i >= t.len || i < 0 then err_invalid_bounds "get_uint8" t i 1
-  else Char.code (Bigarray.Array1.get t.buffer (t.off+i))
+  else Unsafe.get_uint8 t i
 
 let get_char t i =
   if i >= t.len || i < 0 then err_invalid_bounds "get_char" t i 1
-  else Bigarray.Array1.get t.buffer (t.off+i)
-
+  else Unsafe.get_char t i
 
 external ba_set_int16 : buffer -> int -> uint16 -> unit = "%caml_bigstring_set16u"
 external ba_set_int32 : buffer -> int -> uint32 -> unit = "%caml_bigstring_set32u"
@@ -302,7 +321,7 @@ module type Swap = sig
   val name : string
 end
 
-module type GetterSetter = sig
+module type GetterSetterMultiByte = sig
   val get_uint16: t -> int -> uint16
   val get_uint32: t -> int -> uint32
   val get_uint64: t -> int -> uint64
@@ -311,66 +330,69 @@ module type GetterSetter = sig
   val set_uint64: t -> int -> uint64 -> unit
 end
 
-module type GetterSetterWithSwap = sig
+module type GetterSetterMultiByteWithSwap = sig
   module Swap : Swap
-  include GetterSetter
+  include GetterSetterMultiByte
 end
 
-module Unsafe(Swap : Swap) = struct
-  module Swap = Swap
+module Internal = struct
+  module Unsafe(Swap : Swap) = struct
+    module Swap = Swap
 
-  let set_uint16 t i c =
-    ba_set_int16 t.buffer (t.off+i) (if Swap.swap then swap16 c else c) [@@inline]
+    let set_uint16 t i c =
+      ba_set_int16 t.buffer (t.off+i) (if Swap.swap then swap16 c else c) [@@inline]
 
-  let set_uint32 t i c =
-    ba_set_int32 t.buffer (t.off+i) (if Swap.swap then swap32 c else c) [@@inline]
+    let set_uint32 t i c =
+      ba_set_int32 t.buffer (t.off+i) (if Swap.swap then swap32 c else c) [@@inline]
 
-  let set_uint64 t i c =
-    ba_set_int64 t.buffer (t.off+i) (if Swap.swap then swap64 c else c) [@@inline]
+    let set_uint64 t i c =
+      ba_set_int64 t.buffer (t.off+i) (if Swap.swap then swap64 c else c) [@@inline]
 
-  let get_uint16 t i =
-    let r = ba_get_int16 t.buffer (t.off+i) in
-    if Swap.swap then swap16 r else r [@@inline]
+    let get_uint16 t i =
+      let r = ba_get_int16 t.buffer (t.off+i) in
+      if Swap.swap then swap16 r else r [@@inline]
 
-  let get_uint32 t i =
-    let r = ba_get_int32 t.buffer (t.off+i) in
-    if Swap.swap then swap32 r else r [@@inline]
+    let get_uint32 t i =
+      let r = ba_get_int32 t.buffer (t.off+i) in
+      if Swap.swap then swap32 r else r [@@inline]
 
-  let get_uint64 t i =
-    let r = ba_get_int64 t.buffer (t.off+i) in
-    if Swap.swap then swap64 r else r [@@inline]
-end [@@inline]
+    let get_uint64 t i =
+      let r = ba_get_int64 t.buffer (t.off+i) in
+      if Swap.swap then swap64 r else r [@@inline]
+  end [@@inline]
 
-module Safe(Unsafe : GetterSetterWithSwap) = struct
-  module Unsafe = Unsafe
-  module Swap = Unsafe.Swap
+  module Safe(Unsafe : GetterSetterMultiByteWithSwap) = struct
+    module Unsafe = Unsafe
+    module Swap = Unsafe.Swap
 
-  let set_uint16 t i c =
-    if i > t.len - 2 || i < 0 then err_invalid_bounds (Swap.name ^ ".set_uint16") t i 2
-    else Unsafe.set_uint16 t i c [@@inline]
+    let set_uint16 t i c =
+      if i > t.len - 2 || i < 0 then err_invalid_bounds (Swap.name ^ ".set_uint16") t i 2
+      else Unsafe.set_uint16 t i c [@@inline]
 
-  let set_uint32 t i c =
-    if i > t.len - 4 || i < 0 then err_invalid_bounds (Swap.name ^ ".set_uint32") t i 4
-    else Unsafe.set_uint32 t i c [@@inline]
+    let set_uint32 t i c =
+      if i > t.len - 4 || i < 0 then err_invalid_bounds (Swap.name ^ ".set_uint32") t i 4
+      else Unsafe.set_uint32 t i c [@@inline]
 
-  let set_uint64 t i c =
-    if i > t.len - 8 || i < 0 then err_invalid_bounds (Swap.name ^ ".set_uint64") t i 8
-    else Unsafe.set_uint64 t i c [@@inline]
+    let set_uint64 t i c =
+      if i > t.len - 8 || i < 0 then err_invalid_bounds (Swap.name ^ ".set_uint64") t i 8
+      else Unsafe.set_uint64 t i c [@@inline]
 
-  let get_uint16 t i =
-    if i > t.len - 2 || i < 0 then err_invalid_bounds (Swap.name ^ ".get_uint16") t i 2
-    else Unsafe.get_uint16 t i [@@inline]
+    let get_uint16 t i =
+      if i > t.len - 2 || i < 0 then err_invalid_bounds (Swap.name ^ ".get_uint16") t i 2
+      else Unsafe.get_uint16 t i [@@inline]
 
-  let get_uint32 t i =
-    if i > t.len - 4 || i < 0 then err_invalid_bounds (Swap.name ^ ".get_uint32") t i 4
-    else Unsafe.get_uint32 t i [@@inline]
+    let get_uint32 t i =
+      if i > t.len - 4 || i < 0 then err_invalid_bounds (Swap.name ^ ".get_uint32") t i 4
+      else Unsafe.get_uint32 t i [@@inline]
 
-  let get_uint64 t i =
-    if i > t.len - 8 || i < 0 then err_invalid_bounds (Swap.name ^ ".get_uint64") t i 8
-    else Unsafe.get_uint64 t i [@@inline]
-end [@@inline]
+    let get_uint64 t i =
+      if i > t.len - 8 || i < 0 then err_invalid_bounds (Swap.name ^ ".get_uint64") t i 8
+      else Unsafe.get_uint64 t i [@@inline]
+  end [@@inline]
+end
 
 module BE = struct
+  open Internal
   include Safe(Unsafe(struct
                  let swap = not Sys.big_endian
                  let name = "BE"
@@ -378,6 +400,7 @@ module BE = struct
 end
 
 module LE = struct
+  open Internal
   include Safe(Unsafe(struct
                  let swap = Sys.big_endian
                  let name = "LE"
@@ -385,6 +408,7 @@ module LE = struct
 end
 
 module HE = struct
+  open Internal
   include Safe(Unsafe(struct
                  let swap = false
                  let name = "HE"

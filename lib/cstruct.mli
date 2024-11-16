@@ -258,25 +258,30 @@ val check_alignment : t -> int -> bool
     boundary.
     @raise Invalid_argument if [alignment] is not a positive integer. *)
 
-val get_char: t -> int -> char
-(** [get_char t off] returns the character contained in the cstruct
-    at offset [off].
-    @raise Invalid_argument if the offset exceeds cstruct length. *)
+module type GetterSetterByte = sig
+  val get_char: t -> int -> char
+  (** [get_char t off] returns the character contained in the cstruct
+      at offset [off].
+      @raise Invalid_argument if the offset exceeds cstruct length. *)
 
-val get_uint8: t -> int -> uint8
-(** [get_uint8 t off] returns the byte contained in the cstruct
-    at offset [off].
-    @raise Invalid_argument if the offset exceeds cstruct length. *)
+  val get_uint8: t -> int -> uint8
+  (** [get_uint8 t off] returns the byte contained in the cstruct
+      at offset [off].
+      @raise Invalid_argument if the offset exceeds cstruct length. *)
 
-val set_char: t -> int -> char -> unit
-(** [set_char t off c] sets the byte contained in the cstruct
-    at offset [off] to character [c].
-    @raise Invalid_argument if the offset exceeds cstruct length. *)
+  val set_char: t -> int -> char -> unit
+  (** [set_char t off c] sets the byte contained in the cstruct
+      at offset [off] to character [c].
+      @raise Invalid_argument if the offset exceeds cstruct length. *)
 
-val set_uint8: t -> int -> uint8 -> unit
-(** [set_uint8 t off c] sets the byte contained in the cstruct
-    at offset [off] to byte [c].
-    @raise Invalid_argument if the offset exceeds cstruct length. *)
+  val set_uint8: t -> int -> uint8 -> unit
+  (** [set_uint8 t off c] sets the byte contained in the cstruct
+      at offset [off] to byte [c].
+      @raise Invalid_argument if the offset exceeds cstruct length. *)
+end
+include GetterSetterByte
+
+module Unsafe : GetterSetterByte
 
 val sub: t -> int -> int -> t
 (** [sub cstr off len] is [{ t with off = t.off + off; len }]
@@ -372,7 +377,7 @@ val to_bytes: ?off:int -> ?len:int -> t -> bytes
     @raise Invalid_argument if [off] or [len] is negative, or
     [Cstruct.length str - off] < [len]. *)
 
-module type GetterSetter = sig
+module type GetterSetterMultiByte = sig
   val get_uint16: t -> int -> uint16
   (** [get_uint16 cstr off] is the 16 bit long unsigned
       integer stored in [cstr] at offset [off].
@@ -409,9 +414,9 @@ module BE : sig
   (** Get/set big-endian integers of various sizes. The second
       argument of those functions is the position relative to the
       current offset of the cstruct. *)
-  include GetterSetter
+  include GetterSetterMultiByte
 
-  module Unsafe : GetterSetter
+  module Unsafe : GetterSetterMultiByte
 end
 
 module LE : sig
@@ -420,9 +425,9 @@ module LE : sig
       argument of those functions is the position relative to the
       current offset of the cstruct. *)
 
-  include GetterSetter
+  include GetterSetterMultiByte
 
-  module Unsafe : GetterSetter
+  module Unsafe : GetterSetterMultiByte
 end
 
 module HE : sig
@@ -431,9 +436,9 @@ module HE : sig
       argument of those functions is the position relative to the
       current offset of the cstruct. *)
 
-  include GetterSetter
+  include GetterSetterMultiByte
 
-  module Unsafe : GetterSetter
+  module Unsafe : GetterSetterMultiByte
 end
 
 (** {2 Debugging } *)
