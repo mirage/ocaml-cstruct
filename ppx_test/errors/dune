@@ -4,7 +4,7 @@
  (preprocess
   (action
    (run %{bin:cppo} -V OCAML:%{ocaml_version} %{input-file})))
- (libraries ppx_cstruct ocaml-migrate-parsetree))
+ (libraries ppx_cstruct))
 
 (executable
  (name gen_tests)
