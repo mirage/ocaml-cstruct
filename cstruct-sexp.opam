@@ -29,3 +29,4 @@ structures directly from OCaml.  It supports both reading and writing to these
 structures, and they are accessed via the `Bigarray` module.
 
 This library provides Sexplib serialisers for the Cstruct.t values."""
+x-maintenance-intent: [ "(latest)" ]

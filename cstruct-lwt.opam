@@ -28,3 +28,4 @@ structures, and they are accessed via the `Bigarray` module."""
 url {
   src: "git+https://github.com/mirage/ocaml-cstruct.git"
 }
+x-maintenance-intent: [ "(latest)" ]
