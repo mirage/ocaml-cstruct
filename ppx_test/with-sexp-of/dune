@@ -1,5 +1,5 @@
 (executable
- (name ppx_cstruct_and_sexp)
+ (name ppx_cstruct_and_sexp_of)
  (preprocess
   (pps ppx_cstruct ppx_sexp_conv -- -no-check))
  (libraries cstruct sexplib0 cstruct-sexp))
@@ -8,4 +8,4 @@
  (alias runtest)
  (package ppx_cstruct)
  (action
-  (run ./ppx_cstruct_and_sexp.exe)))
+  (run ./ppx_cstruct_and_sexp_of.exe)))

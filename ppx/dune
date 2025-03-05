@@ -6,4 +6,4 @@
  (ppx_runtime_libraries cstruct)
  (preprocess
   (pps ppxlib.metaquot))
- (libraries sexplib ppxlib))
+ (libraries sexplib0 ppxlib))
