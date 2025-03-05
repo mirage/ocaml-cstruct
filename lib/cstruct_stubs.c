@@ -22,6 +22,7 @@
 #include <caml/memory.h>
 #include <caml/alloc.h>
 #include <caml/bigarray.h>
+#include <caml/intext.h>
 
 #ifndef Bytes_val
 #define Bytes_val String_val
@@ -78,4 +79,28 @@ caml_check_alignment_bigstring(value val_buf, value val_ofs, value val_alignment
   uint64_t address = (uint64_t) ((char *)Caml_ba_data_val(val_buf) + Long_val(val_ofs));
   uintnat alignment = Unsigned_long_val(val_alignment);
   return Val_bool(address % alignment == 0);
+}
+
+/* this doesn't seem to be exposed?! */
+extern CAMLprim value caml_marshal_data_size(value v_str, value v_pos);
+
+CAMLprim value
+caml_unsafe_input_data_size(value val_buf, value val_ofs, value val_len)
+{
+  return caml_marshal_data_size((value)((char *)Caml_ba_data_val(val_buf) + Long_val(val_ofs)), Val_int(0));
+}
+
+CAMLprim value
+caml_input_value_from_bigstring(value val_buf, value val_ofs, value val_len)
+{
+  return caml_input_value_from_block((char *)Caml_ba_data_val(val_buf) + Long_val(val_ofs),
+      Long_val(val_len));
+}
+
+CAMLprim value
+caml_output_value_to_bigstring(value val_buf, value val_ofs, value val_len, value v, value flags)
+{
+  return caml_output_value_to_block(v, flags,
+      (char *)Caml_ba_data_val(val_buf) + Long_val(val_ofs),
+      Long_val(val_len));
 }

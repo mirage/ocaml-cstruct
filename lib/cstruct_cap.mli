@@ -670,3 +670,7 @@ val map : (char -> char) -> 'a rd t -> rdwr t
 val mapi : (int -> char -> char) -> 'a rd t -> rdwr t
 (** [map f cs] is [cs'] with [cs'.[i] = f i cs.[i]] for all indices [i]
     of [cs]. [f] is invoked in increasing index order. *)
+
+
+val input_value : 'wr rd t -> 'a
+val output_value : 'a -> Marshal.extern_flags list -> 'rd wr t -> int
