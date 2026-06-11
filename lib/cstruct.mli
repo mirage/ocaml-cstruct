@@ -279,7 +279,7 @@ val set_uint8: t -> int -> uint8 -> unit
     @raise Invalid_argument if the offset exceeds cstruct length. *)
 
 val sub: t -> int -> int -> t
-(** [sub cstr off len] is [{ t with off = t.off + off; len }]
+(** [sub cstr off len] is [{ cstr with off = t.off + off; len }]
     @raise Invalid_argument if the offset exceeds cstruct length. *)
 
 val sub_copy: t -> int -> int -> t
