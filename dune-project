@@ -1,5 +1,3 @@
-(lang dune 2.0)
-
-(allow_approximate_merlin)
+(lang dune 3.17)
 
 (name cstruct)

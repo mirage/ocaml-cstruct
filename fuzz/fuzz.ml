@@ -25,8 +25,6 @@ let bytes = map [bytes] Bytes.unsafe_of_string
 
 let buffer = map [uint8] Bigarray.(Array1.create Char c_layout)
 
-let pp_cstruct f c = Format.pp_print_string f (Cstruct.debug c)
-
 let check_within ~base x =
   check Cstruct.(base.off <= x.off);
   check Cstruct.(base.off + base.len >= x.off + x.len);
