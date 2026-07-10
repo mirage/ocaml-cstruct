@@ -2,11 +2,11 @@
  (name fuzz)
  (libraries cstruct bigarray cstruct-sexp crowbar fmt))
 
+; The fuzzer is afl-only (see fuzz.ml): its generators are unbounded, so
+; quickcheck mode hangs. Build it under runtest as a compile check; run the
+; campaign with an afl-instrumented switch and afl-fuzz on fuzz.exe.
+
 (rule
- (alias fuzz)
- (deps
-  fuzz.exe
-  (source_tree input))
- (action
-  (run timeout --preserve-status 30m bun -v --input=input --output=output --
-    ./fuzz.exe)))
+ (alias runtest)
+ (deps fuzz.exe)
+ (action (progn)))

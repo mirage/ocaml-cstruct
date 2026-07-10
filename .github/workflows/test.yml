@@ -1,57 +1,42 @@
 name: Cstruct
 on: [push, pull_request]
 jobs:
-  latest:
-    name: Latest
-    runs-on: ${{ matrix.operating-system }}
+  # cstruct and its runtime siblings build on modern OCaml, including 5.x.
+  build:
+    name: ${{ matrix.ocaml-compiler }} / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        ocaml-version: [ '4.13.1', '4.10.0', '4.08.1' ]
-        operating-system: [macos-latest, ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
+        ocaml-compiler:
+          - "5.3"
+          - "5.1"
+          - "4.14"
     steps:
-    - uses: actions/checkout@v2
-    - uses: avsm/setup-ocaml@v1
-      with:
-        ocaml-version: ${{ matrix.ocaml-version }}
-    - run: opam pin add -n .
-    - name: Packages
-      run: opam depext -yt cstruct cstruct-sexp cstruct-unix cstruct-lwt
-    - name: Build
-      run: opam install -t cstruct cstruct-sexp cstruct-unix cstruct-lwt
-  ppx:
-    name: PPX
-    runs-on: ${{ matrix.operating-system }}
+      - uses: actions/checkout@v4
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: ${{ matrix.ocaml-compiler }}
+      - run: >-
+          opam install ./cstruct.opam ./cstruct-sexp.opam ./cstruct-unix.opam
+          ./cstruct-lwt.opam --deps-only
+      - run: opam exec -- dune build -p cstruct,cstruct-sexp,cstruct-unix,cstruct-lwt
+
+  # ppx_cstruct (ocaml-migrate-parsetree) and cstruct-async (async) do not build
+  # on OCaml 5.x, so run the full build and test on 4.14.
+  test:
+    name: full build + test (4.14) / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        ocaml-version: [ '4.13.1', '4.10.0', '4.08.1' ]
-        operating-system: [macos-latest, ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
     steps:
-    - uses: actions/checkout@v2
-    - uses: avsm/setup-ocaml@v1
-      with:
-        ocaml-version: ${{ matrix.ocaml-version }}
-    - run: opam pin add -n .
-    - name: Packages
-      run: opam depext -yt ppx_cstruct
-    - name: Build
-      run: opam install -t ppx_cstruct
-  async:
-    name: Async
-    runs-on: ${{ matrix.operating-system }}
-    strategy:
-      fail-fast: false
-      matrix:
-        ocaml-version: [ '4.13.1', '4.10.0', '4.08.1' ]
-        operating-system: [macos-latest, ubuntu-latest]
-    steps:
-    - uses: actions/checkout@v2
-    - uses: avsm/setup-ocaml@v1
-      with:
-        ocaml-version: ${{ matrix.ocaml-version }}
-    - run: opam pin add -n .
-    - name: Packages
-      run: opam depext -yt cstruct-async
-    - name: Dependencies
-      run: opam install -t cstruct-async
+      - uses: actions/checkout@v4
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: "4.14"
+      - run: opam install . --deps-only --with-test
+      - run: opam exec -- dune build
+      - run: opam exec -- dune runtest
