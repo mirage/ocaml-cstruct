@@ -17,7 +17,7 @@ build: [
 ]
 depends: [
   "ocaml" {>= "4.08.0"}
-  "dune" {>= "2.0.0"}
+  "dune" {>= "3.17"}
   "sexplib"
   "cstruct" {=version}
   "alcotest" {with-test}

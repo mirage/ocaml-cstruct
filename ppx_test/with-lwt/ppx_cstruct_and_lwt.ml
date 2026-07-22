@@ -13,3 +13,5 @@ type foo64 =
 let foo = 
   let%lwt foo = Lwt.return () in 
   Lwt.return foo
+
+let () = ignore foo

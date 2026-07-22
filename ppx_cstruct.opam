@@ -17,7 +17,7 @@ build: [
 ]
 depends: [
   "ocaml" {>= "4.08.0"}
-  "dune" {>= "2.0.0"}
+  "dune" {>= "3.17"}
   "cstruct" {=version}
   "ounit" {with-test}
   "ppxlib" {>= "0.16.0"}

@@ -16,7 +16,7 @@ build: [
 depends: [
   "ocaml" {>= "4.08.0"}
   "base-unix"
-  "dune" {>= "2.0.0"}
+  "dune" {>= "3.17"}
   "lwt"
   "cstruct" {=version}
 ]
