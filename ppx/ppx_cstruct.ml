@@ -41,6 +41,8 @@ end
 
 type mode = Big_endian | Little_endian | Host_endian | Bi_endian
 
+type safety = Safe | Unsafe
+
 type prim =
   | Char
   | UInt8
@@ -169,14 +171,26 @@ let create_struct loc endian name fields =
 
 let ($.) l x = Longident.Ldot (l, x)
 let cstruct_id = Longident.Lident "Cstruct"
-let mode_mod s = function
-  |Big_endian -> cstruct_id$."BE"$.s
-  |Little_endian -> cstruct_id$."LE"$.s
-  |Host_endian -> cstruct_id$."HE"$.s
-  |Bi_endian -> cstruct_id$."BL"$.s
 
-let mode_mod loc x s =
-  Exp.ident ~loc {loc ; txt = mode_mod s x}
+let mode_module = function
+  |Big_endian -> cstruct_id$."BE"
+  |Little_endian -> cstruct_id$."LE"
+  |Host_endian -> cstruct_id$."HE"
+  |Bi_endian -> cstruct_id$."BL"
+
+let safe_module safety parent =
+  match safety with
+  | Safe -> parent
+  | Unsafe -> parent$."Unsafe"
+
+let mode_mod s mode safety =
+  (safe_module safety (mode_module mode))$.s
+
+let mode_mod loc x safety s =
+  Exp.ident ~loc {loc ; txt = mode_mod s x safety}
+
+let safe_mod loc safety s =
+  Exp.ident ~loc { loc; txt = (safe_module safety cstruct_id)$.s }
 
 type op =
   | Op_get of named_field
@@ -203,24 +217,28 @@ let op_name s op =
 let op_pvar ~loc s op = Ast.pvar ~loc (op_name s op)
 let op_evar ~loc s op = Ast.evar ~loc (op_name s op)
 
-let get_expr loc s f =
-  let m = mode_mod loc s.endian in
+let get_expr_prim loc s safety prim off =
+  let m = mode_mod loc s.endian safety in
   let num x = Ast.eint ~loc x in
+  [%expr
+    fun v ->
+      [%e match prim with
+        |Char -> [%expr [%e safe_mod loc safety "get_char"] v [%e num off]]
+        |UInt8 -> [%expr [%e safe_mod loc safety "get_uint8"] v [%e num off]]
+        |UInt16 -> [%expr [%e m "get_uint16"] v [%e num off]]
+        |UInt32 -> [%expr [%e m "get_uint32"] v [%e num off]]
+        |UInt64 -> [%expr [%e m "get_uint64"] v [%e num off]]]]
+
+let get_expr loc s f =
   match f.ty with
   |Buffer (_, _) ->
+    let num x = Ast.eint ~loc x in
     let len = width_of_field f in
     [%expr
       fun src -> Cstruct.sub src [%e num f.off] [%e num len]
     ]
   |Prim prim ->
-    [%expr
-      fun v ->
-        [%e match prim with
-            |Char -> [%expr Cstruct.get_char v [%e num f.off]]
-            |UInt8 -> [%expr Cstruct.get_uint8 v [%e num f.off]]
-            |UInt16 -> [%expr [%e m "get_uint16"] v [%e num f.off]]
-            |UInt32 -> [%expr [%e m "get_uint32"] v [%e num f.off]]
-            |UInt64 -> [%expr [%e m "get_uint64"] v [%e num f.off]]]]
+    get_expr_prim loc s Safe prim f.off
 
 let type_of_int_field ~loc = function
   |Char -> [%type: char]
@@ -229,8 +247,18 @@ let type_of_int_field ~loc = function
   |UInt32 -> [%type: Cstruct.uint32]
   |UInt64 -> [%type: Cstruct.uint64]
 
+let set_expr_prim loc s safety prim off =
+  let m = mode_mod loc s.endian safety in
+  let num x = Ast.eint ~loc x in
+  [%expr fun v x ->
+    [%e match prim with
+      |Char -> [%expr [%e safe_mod loc safety "set_char"] v [%e num off] x]
+      |UInt8 -> [%expr [%e safe_mod loc safety "set_uint8"] v [%e num off] x]
+      |UInt16 -> [%expr [%e m "set_uint16"] v [%e num off] x]
+      |UInt32 -> [%expr [%e m "set_uint32"] v [%e num off] x]
+      |UInt64 -> [%expr [%e m "set_uint64"] v [%e num off] x]]]
+
 let set_expr loc s f =
-  let m = mode_mod loc s.endian in
   let num x = Ast.eint ~loc x in
   match f.ty with
   |Buffer (_,_) ->
@@ -239,13 +267,7 @@ let set_expr loc s f =
       fun src srcoff dst ->
         Cstruct.blit_from_string src srcoff dst [%e num f.off] [%e num len]]
   |Prim prim ->
-    [%expr fun v x ->
-        [%e match prim with
-            |Char -> [%expr Cstruct.set_char v [%e num f.off] x]
-            |UInt8 -> [%expr Cstruct.set_uint8 v [%e num f.off] x]
-            |UInt16 -> [%expr [%e m "set_uint16"] v [%e num f.off] x]
-            |UInt32 -> [%expr [%e m "set_uint32"] v [%e num f.off] x]
-            |UInt64 -> [%expr [%e m "set_uint64"] v [%e num f.off] x]]]
+    set_expr_prim loc s Safe prim f.off
 
 let type_of_set ~loc f =
   match f.ty with
@@ -328,13 +350,57 @@ let ops_for s =
      Op_hexdump;
     ])
 
+let make_unsafe_op = function
+  | Op_sizeof -> None
+  | Op_blit _ -> None
+  | Op_copy _ -> None
+  | Op_hexdump -> None
+  | Op_hexdump_to_buffer -> None
+  | Op_get { ty = Prim _ ; _} as op-> Some op
+  | Op_set { ty = Prim _ ; _ } as op -> Some op
+  | Op_get _ -> None
+  | Op_set _ -> None
+
 (** Generate functions of the form {get/set}_<struct>_<field> *)
 let output_struct_one_endian loc s =
-  List.map
-    (fun op ->
-       [%stri let[@ocaml.warning "-32"] [%p op_pvar ~loc s op] =
-                [%e op_expr loc s op]])
-    (ops_for s)
+  let ops = ops_for s in
+  let safe_ops =
+    List.map
+      (fun op ->
+         [%stri let[@ocaml.warning "-32"] [%p op_pvar ~loc s op] =
+                  [%e op_expr loc s op]])
+      ops
+  in
+  let unsafe_module =
+    let ops =
+      List.filter_map make_unsafe_op ops
+      |> List.map
+        (fun op ->
+           let expr =
+             match op with
+             | Op_get { ty = Prim prim; off; _ } -> 
+               get_expr_prim loc s Unsafe prim off
+             | Op_set { ty = Prim prim; off; _ } ->
+               set_expr_prim loc s Unsafe prim off
+             | _ ->
+               loc_err loc "Unsupported unsafe op"
+           in
+           [%stri let[@ocaml.warning "-32"] [%p op_pvar ~loc s op] =
+                    [%e expr]]
+        )
+    in
+    let expr =
+      Mod.structure ops
+    in
+    let modname =
+      "Unsafe_accessors_" ^ s.name
+    in
+    {pstr_desc = Pstr_module
+          {pmb_name = {txt = Some modname; loc}; pmb_expr = expr ;
+           pmb_attributes = []; pmb_loc = loc;}; pstr_loc = loc;}
+  in
+  unsafe_module ::
+  safe_ops
 
 let output_struct _loc s =
   match s.endian with
