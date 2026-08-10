@@ -1,0 +1,10 @@
+(executable
+ (libraries cstruct alcotest cstruct-unix threads)
+ (modules tests)
+ (name tests))
+
+(rule
+ (alias runtest)
+ (package cstruct-unix)
+ (action
+  (run ./tests.exe -e)))
