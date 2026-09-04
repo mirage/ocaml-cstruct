@@ -4,8 +4,9 @@
   (targets cenum_id_payload.ml.errors)
   (action
     (progn
-      (with-stderr-to %{targets}
-        (run ./pp.exe -no-color --impl %{input}))
+      (with-accepted-exit-codes 1
+        (with-stderr-to %{targets}
+          (run ./pp.exe --impl %{input})))
       (bash "sed -i.bak '1d' %{targets}"))))
 (rule
   (alias runtest)
@@ -18,8 +19,9 @@
   (targets cenum_invalid_type.ml.errors)
   (action
     (progn
-      (with-stderr-to %{targets}
-        (run ./pp.exe -no-color --impl %{input}))
+      (with-accepted-exit-codes 1
+        (with-stderr-to %{targets}
+          (run ./pp.exe --impl %{input})))
       (bash "sed -i.bak '1d' %{targets}"))))
 (rule
   (alias runtest)
@@ -32,8 +34,9 @@
   (targets cenum_no_attribute.ml.errors)
   (action
     (progn
-      (with-stderr-to %{targets}
-        (run ./pp.exe -no-color --impl %{input}))
+      (with-accepted-exit-codes 1
+        (with-stderr-to %{targets}
+          (run ./pp.exe --impl %{input})))
       (bash "sed -i.bak '1d' %{targets}"))))
 (rule
   (alias runtest)
@@ -46,8 +49,9 @@
   (targets cenum_not_a_variant.ml.errors)
   (action
     (progn
-      (with-stderr-to %{targets}
-        (run ./pp.exe -no-color --impl %{input}))
+      (with-accepted-exit-codes 1
+        (with-stderr-to %{targets}
+          (run ./pp.exe --impl %{input})))
       (bash "sed -i.bak '1d' %{targets}"))))
 (rule
   (alias runtest)
@@ -60,8 +64,9 @@
   (targets cenum_unknown_attribute.ml.errors)
   (action
     (progn
-      (with-stderr-to %{targets}
-        (run ./pp.exe -no-color --impl %{input}))
+      (with-accepted-exit-codes 1
+        (with-stderr-to %{targets}
+          (run ./pp.exe --impl %{input})))
       (bash "sed -i.bak '1d' %{targets}"))))
 (rule
   (alias runtest)
@@ -74,8 +79,9 @@
   (targets cstruct_attribute_payload.ml.errors)
   (action
     (progn
-      (with-stderr-to %{targets}
-        (run ./pp.exe -no-color --impl %{input}))
+      (with-accepted-exit-codes 1
+        (with-stderr-to %{targets}
+          (run ./pp.exe --impl %{input})))
       (bash "sed -i.bak '1d' %{targets}"))))
 (rule
   (alias runtest)
@@ -88,8 +94,9 @@
   (targets cstruct_duplicate_field.ml.errors)
   (action
     (progn
-      (with-stderr-to %{targets}
-        (run ./pp.exe -no-color --impl %{input}))
+      (with-accepted-exit-codes 1
+        (with-stderr-to %{targets}
+          (run ./pp.exe --impl %{input})))
       (bash "sed -i.bak '1d' %{targets}"))))
 (rule
   (alias runtest)
@@ -102,8 +109,9 @@
   (targets cstruct_len_int32.ml.errors)
   (action
     (progn
-      (with-stderr-to %{targets}
-        (run ./pp.exe -no-color --impl %{input}))
+      (with-accepted-exit-codes 1
+        (with-stderr-to %{targets}
+          (run ./pp.exe --impl %{input})))
       (bash "sed -i.bak '1d' %{targets}"))))
 (rule
   (alias runtest)
@@ -116,8 +124,9 @@
   (targets cstruct_len_not_int.ml.errors)
   (action
     (progn
-      (with-stderr-to %{targets}
-        (run ./pp.exe -no-color --impl %{input}))
+      (with-accepted-exit-codes 1
+        (with-stderr-to %{targets}
+          (run ./pp.exe --impl %{input})))
       (bash "sed -i.bak '1d' %{targets}"))))
 (rule
   (alias runtest)
@@ -130,8 +139,9 @@
   (targets cstruct_len_zero.ml.errors)
   (action
     (progn
-      (with-stderr-to %{targets}
-        (run ./pp.exe -no-color --impl %{input}))
+      (with-accepted-exit-codes 1
+        (with-stderr-to %{targets}
+          (run ./pp.exe --impl %{input})))
       (bash "sed -i.bak '1d' %{targets}"))))
 (rule
   (alias runtest)
@@ -144,8 +154,9 @@
   (targets cstruct_multiple_len.ml.errors)
   (action
     (progn
-      (with-stderr-to %{targets}
-        (run ./pp.exe -no-color --impl %{input}))
+      (with-accepted-exit-codes 1
+        (with-stderr-to %{targets}
+          (run ./pp.exe --impl %{input})))
       (bash "sed -i.bak '1d' %{targets}"))))
 (rule
   (alias runtest)
@@ -158,8 +169,9 @@
   (targets cstruct_not_a_record.ml.errors)
   (action
     (progn
-      (with-stderr-to %{targets}
-        (run ./pp.exe -no-color --impl %{input}))
+      (with-accepted-exit-codes 1
+        (with-stderr-to %{targets}
+          (run ./pp.exe --impl %{input})))
       (bash "sed -i.bak '1d' %{targets}"))))
 (rule
   (alias runtest)
@@ -172,8 +184,9 @@
   (targets cstruct_not_an_identifier.ml.errors)
   (action
     (progn
-      (with-stderr-to %{targets}
-        (run ./pp.exe -no-color --impl %{input}))
+      (with-accepted-exit-codes 1
+        (with-stderr-to %{targets}
+          (run ./pp.exe --impl %{input})))
       (bash "sed -i.bak '1d' %{targets}"))))
 (rule
   (alias runtest)
@@ -186,8 +199,9 @@
   (targets cstruct_several_attributes.ml.errors)
   (action
     (progn
-      (with-stderr-to %{targets}
-        (run ./pp.exe -no-color --impl %{input}))
+      (with-accepted-exit-codes 1
+        (with-stderr-to %{targets}
+          (run ./pp.exe --impl %{input})))
       (bash "sed -i.bak '1d' %{targets}"))))
 (rule
   (alias runtest)
@@ -200,8 +214,9 @@
   (targets cstruct_unknown_endian.ml.errors)
   (action
     (progn
-      (with-stderr-to %{targets}
-        (run ./pp.exe -no-color --impl %{input}))
+      (with-accepted-exit-codes 1
+        (with-stderr-to %{targets}
+          (run ./pp.exe --impl %{input})))
       (bash "sed -i.bak '1d' %{targets}"))))
 (rule
   (alias runtest)
@@ -214,8 +229,9 @@
   (targets cstruct_unknown_type.ml.errors)
   (action
     (progn
-      (with-stderr-to %{targets}
-        (run ./pp.exe -no-color --impl %{input}))
+      (with-accepted-exit-codes 1
+        (with-stderr-to %{targets}
+          (run ./pp.exe --impl %{input})))
       (bash "sed -i.bak '1d' %{targets}"))))
 (rule
   (alias runtest)
