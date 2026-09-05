@@ -940,7 +940,7 @@ let filter_map f ({ len; _ } as cs) =
       then (if k = len then b else sub b 0 k)
       else match f (get_char cs i) with
            | Some chr ->
-              set_char b i chr ;
+              set_char b k chr ;
               loop b (k + 1) (i + 1)
            | None ->
               loop b k (i + 1) in
