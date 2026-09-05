@@ -102,6 +102,17 @@ let tail =
   empty_pos (tail @@ buffer ~off:2 ~len:0 abc) 2 ;
   empty_pos (tail @@ buffer ~off:2 ~len:1 abc) 3 ;
   empty_pos (tail @@ buffer ~off:3 ~len:0 abc) 3 ;
+  empty_pos (tail ~rev:true @@ string "") 0 ;
+  empty_pos (tail ~rev:true @@ buffer ~off:0 ~len:0 abc) 0 ;
+  empty_pos (tail ~rev:true @@ buffer ~off:0 ~len:1 abc) 0 ;
+  Alcotest.(check cstruct) "a" (tail ~rev:true @@ buffer ~off:0 ~len:2 abc) (string "a") ;
+  Alcotest.(check cstruct) "ab" (tail ~rev:true @@ buffer ~off:0 ~len:3 abc) (string "ab") ;
+  empty_pos (tail ~rev:true @@ buffer ~off:1 ~len:0 abc) 1 ;
+  empty_pos (tail ~rev:true @@ buffer ~off:1 ~len:1 abc) 1 ;
+  Alcotest.(check cstruct) "b" (tail ~rev:true @@ buffer ~off:1 ~len:2 abc) (string "b") ;
+  empty_pos (tail ~rev:true @@ buffer ~off:2 ~len:0 abc) 2 ;
+  empty_pos (tail ~rev:true @@ buffer ~off:2 ~len:1 abc) 2 ;
+  empty_pos (tail ~rev:true @@ buffer ~off:3 ~len:0 abc) 3 ;
 ;;
 
 let is_empty =
@@ -486,7 +497,7 @@ let cuts =
   Alcotest.check_raises "invalid" invalid_cuts_argument
     (fun () -> ignore (cuts ~sep:"" "")) ;
   Alcotest.check_raises "invalid" invalid_cuts_argument
-    (fun () -> ignore (cuts ~sep:"" "")) ;
+    (fun () -> ignore (cuts ~rev:true ~sep:"" "")) ;
   Alcotest.(check ls) "0" (cuts ~empty:true  ~sep:"," "") [""] ;
   Alcotest.(check ls) "1" (cuts ~empty:false ~sep:"," "") [] ;
   Alcotest.(check ls) "2" (cuts ~empty:true  ~sep:"," "") [""];
@@ -552,6 +563,76 @@ let cuts =
   Alcotest.(check ls) "57" (cuts ~empty:false ~sep:"aa" "aaaaa") ["a"];
   Alcotest.(check ls) "58" (cuts ~empty:true ~sep:"aa" "aaaaaa") [""; ""; ""; ""];
   Alcotest.(check ls) "59" (cuts ~empty:false ~sep:"aa" "aaaaaa") [];
+  Alcotest.(check ls) "rev 0" (cuts ~rev:true ~empty:true  ~sep:"," "") [""] ;
+  Alcotest.(check ls) "rev 1" (cuts ~rev:true ~empty:false ~sep:"," "") [] ;
+  Alcotest.(check ls) "rev 2" (cuts ~rev:true ~empty:true  ~sep:"," "") [""];
+  Alcotest.(check ls) "rev 3" (cuts ~rev:true ~empty:false ~sep:"," "") [];
+  Alcotest.(check ls) "rev 4" (cuts ~rev:true ~empty:true  ~sep:"," ",") [""; ""];
+  Alcotest.(check ls) "rev 5" (cuts ~rev:true ~empty:false ~sep:"," ",") [];
+  Alcotest.(check ls) "rev 6" (cuts ~rev:true ~empty:true  ~sep:"," ",,") [""; ""; ""];
+  Alcotest.(check ls) "rev 7" (cuts ~rev:true ~empty:false ~sep:"," ",,") [];
+  Alcotest.(check ls) "rev 8" (cuts ~rev:true ~empty:true  ~sep:"," ",,,") [""; ""; ""; ""];
+  Alcotest.(check ls) "rev 9" (cuts ~rev:true ~empty:false ~sep:"," ",,,") [];
+  Alcotest.(check ls) "rev 10" (cuts ~rev:true ~empty:true  ~sep:"," "123") ["123"];
+  Alcotest.(check ls) "rev 11" (cuts ~rev:true ~empty:false ~sep:"," "123") ["123"];
+  Alcotest.(check ls) "rev 12" (cuts ~rev:true ~empty:true  ~sep:"," ",123") [""; "123"];
+  Alcotest.(check ls) "rev 13" (cuts ~rev:true ~empty:false ~sep:"," ",123") ["123"];
+  Alcotest.(check ls) "rev 14" (cuts ~rev:true ~empty:true  ~sep:"," "123,") ["123"; ""];
+  Alcotest.(check ls) "rev 15" (cuts ~rev:true ~empty:false ~sep:"," "123,") ["123";];
+  Alcotest.(check ls) "rev 16" (cuts ~rev:true ~empty:true  ~sep:"," "1,2,3") ["1"; "2"; "3"];
+  Alcotest.(check ls) "rev 17" (cuts ~rev:true ~empty:false ~sep:"," "1,2,3") ["1"; "2"; "3"];
+  Alcotest.(check ls) "rev 18" (cuts ~rev:true ~empty:true  ~sep:"," "1, 2, 3") ["1"; " 2"; " 3"];
+  Alcotest.(check ls) "rev 19" (cuts ~rev:true ~empty:false ~sep:"," "1, 2, 3") ["1"; " 2"; " 3"];
+  Alcotest.(check ls) "rev 20" (cuts ~rev:true ~empty:true ~sep:"," ",1,2,,3,") [""; "1"; "2"; ""; "3"; ""];
+  Alcotest.(check ls) "rev 21" (cuts ~rev:true ~empty:false ~sep:"," ",1,2,,3,") ["1"; "2"; "3";];
+  Alcotest.(check ls) "rev 22" (cuts ~rev:true ~empty:true ~sep:"," ", 1, 2,, 3,")
+    [""; " 1"; " 2"; ""; " 3"; ""];
+  Alcotest.(check ls) "rev 23" (cuts ~rev:true ~empty:false ~sep:"," ", 1, 2,, 3,") [" 1"; " 2";" 3";];
+  Alcotest.(check ls) "rev 24" (cuts ~rev:true ~empty:true ~sep:"<>" "") [""];
+  Alcotest.(check ls) "rev 25" (cuts ~rev:true ~empty:false ~sep:"<>" "") [];
+  Alcotest.(check ls) "rev 26" (cuts ~rev:true ~empty:true ~sep:"<>" "<>") [""; ""];
+  Alcotest.(check ls) "rev 27" (cuts ~rev:true ~empty:false ~sep:"<>" "<>") [];
+  Alcotest.(check ls) "rev 28" (cuts ~rev:true ~empty:true ~sep:"<>" "<><>") [""; ""; ""];
+  Alcotest.(check ls) "rev 29" (cuts ~rev:true ~empty:false ~sep:"<>" "<><>") [];
+  Alcotest.(check ls) "rev 30" (cuts ~rev:true ~empty:true ~sep:"<>" "<><><>") [""; ""; ""; ""];
+  Alcotest.(check ls) "rev 31" (cuts ~rev:true ~empty:false ~sep:"<>" "<><><>") [];
+  Alcotest.(check ls) "rev 32" (cuts ~rev:true ~empty:true ~sep:"<>" "123") [ "123" ];
+  Alcotest.(check ls) "rev 33" (cuts ~rev:true ~empty:false ~sep:"<>" "123") [ "123" ];
+  Alcotest.(check ls) "rev 34" (cuts ~rev:true ~empty:true ~sep:"<>" "<>123") [""; "123"];
+  Alcotest.(check ls) "rev 35" (cuts ~rev:true ~empty:false ~sep:"<>" "<>123") ["123"];
+  Alcotest.(check ls) "rev 36" (cuts ~rev:true ~empty:true ~sep:"<>" "123<>") ["123"; ""];
+  Alcotest.(check ls) "rev 37" (cuts ~rev:true ~empty:false ~sep:"<>" "123<>") ["123"];
+  Alcotest.(check ls) "rev 38" (cuts ~rev:true ~empty:true ~sep:"<>" "1<>2<>3") ["1"; "2"; "3"];
+  Alcotest.(check ls) "rev 39" (cuts ~rev:true ~empty:false ~sep:"<>" "1<>2<>3") ["1"; "2"; "3"];
+  Alcotest.(check ls) "rev 40" (cuts ~rev:true ~empty:true ~sep:"<>" "1<> 2<> 3") ["1"; " 2"; " 3"];
+  Alcotest.(check ls) "rev 41" (cuts ~rev:true ~empty:false ~sep:"<>" "1<> 2<> 3") ["1"; " 2"; " 3"];
+  Alcotest.(check ls) "rev 42" (cuts ~rev:true ~empty:true ~sep:"<>" "<>1<>2<><>3<>")
+    [""; "1"; "2"; ""; "3"; ""];
+  Alcotest.(check ls) "rev 43" (cuts ~rev:true ~empty:false ~sep:"<>" "<>1<>2<><>3<>") ["1"; "2";"3";];
+  Alcotest.(check ls) "rev 44" (cuts ~rev:true ~empty:true ~sep:"<>" "<> 1<> 2<><> 3<>")
+    [""; " 1"; " 2"; ""; " 3";""];
+  Alcotest.(check ls) "rev 45" (cuts ~rev:true ~empty:false ~sep:"<>" "<> 1<> 2<><> 3<>")[" 1"; " 2"; " 3"];
+  Alcotest.(check ls) "rev 46" (cuts ~rev:true ~empty:true ~sep:"<>" ">>><>>>><>>>><>>>>")
+    [">>>"; ">>>"; ">>>"; ">>>" ];
+  Alcotest.(check ls) "rev 47" (cuts ~rev:true ~empty:false ~sep:"<>" ">>><>>>><>>>><>>>>")
+    [">>>"; ">>>"; ">>>"; ">>>" ];
+  Alcotest.(check ls) "rev 48" (cuts ~rev:true ~empty:true ~sep:"<->" "<->>->") [""; ">->"];
+  Alcotest.(check ls) "rev 49" (cuts ~rev:true ~empty:false ~sep:"<->" "<->>->") [">->"];
+  Alcotest.(check ls) "rev 50" (cuts ~rev:true ~empty:true ~sep:"aa" "aa") [""; ""];
+  Alcotest.(check ls) "rev 51" (cuts ~rev:true ~empty:false ~sep:"aa" "aa") [];
+  Alcotest.(check ls) "rev 52" (cuts ~rev:true ~empty:true ~sep:"aa" "aaa") ["a"; ""];
+  Alcotest.(check ls) "rev 53" (cuts ~rev:true ~empty:false ~sep:"aa" "aaa") ["a"];
+  Alcotest.(check ls) "rev 54" (cuts ~rev:true ~empty:true ~sep:"aa" "aaaa") [""; ""; ""];
+  Alcotest.(check ls) "rev 55" (cuts ~rev:true ~empty:false ~sep:"aa" "aaaa") [];
+  Alcotest.(check ls) "rev 56" (cuts ~rev:true ~empty:true ~sep:"aa" "aaaaa") ["a"; ""; ""];
+  Alcotest.(check ls) "rev 57" (cuts ~rev:true ~empty:false ~sep:"aa" "aaaaa") ["a"];
+  Alcotest.(check ls) "rev 58" (cuts ~rev:true ~empty:true ~sep:"aa" "aaaaaa") [""; ""; ""; ""];
+  Alcotest.(check ls) "rev 59" (cuts ~rev:true ~empty:false ~sep:"aa" "aaaaaa") [];
+  let positions =
+    Cstruct.cuts ~rev:true ~empty:true ~sep:(s ",") (s "a,")
+    |> List.map (fun cs -> start_pos cs, stop_pos cs)
+  in
+  Alcotest.(check (list (pair int int))) "64" positions [(1, 2); (3, 3)];
 ;;
 
 let fields =
@@ -621,6 +702,17 @@ let find =
   Alcotest.(check (option cstruct)) "7" (find ~rev:true (fun c -> c = 'b') abcbd) (Some b1);
   Alcotest.(check (option cstruct)) "8" (find (fun c -> c = 'b') ab) (Some b0);
   Alcotest.(check (option cstruct)) "9" (find ~rev:true (fun c -> c = 'b') ab) (Some b0);
+  let { Cstruct.buffer= padded; _ } = Cstruct.of_string "_abcbd_" in
+  let shifted = buffer ~off:1 ~len:5 padded in
+  let check_shifted label expected_pos result = match result with
+    | None -> Alcotest.failf "%s: expected a match" label
+    | Some result ->
+        Alcotest.(check char) label (get_char result 0) 'b';
+        Alcotest.(check int) label (start_pos result) expected_pos
+  in
+  check_shifted "offset forward" 2 (find (fun c -> c = 'b') shifted);
+  check_shifted "offset reverse" 4
+    (find ~rev:true (fun c -> c = 'b') shifted);
 ;;
 
 let find_sub =
@@ -644,6 +736,15 @@ let find_sub =
   Alcotest.(check (option cstruct)) "9" (find_sub ~rev:true ~sub:(Cstruct.of_string "b") abcbd) (Some b1);
   Alcotest.(check (option cstruct)) "10" (find_sub ~sub:b1 ab) (Some b0);
   Alcotest.(check (option cstruct)) "11" (find_sub ~rev:true ~sub:b1 ab) (Some b0);
+  let { Cstruct.buffer= padded; _ } = Cstruct.of_string "_abcbd_" in
+  let shifted = buffer ~off:1 ~len:5 padded in
+  let result = find_sub ~rev:true ~sub:(string "bd") shifted in
+  Alcotest.(check (option cstruct)) "offset reverse" result (Some (string "bd"));
+  let result_pos = Option.map start_pos result in
+  Alcotest.(check (option int)) "offset reverse position" result_pos (Some 4);
+  let result = find_sub ~rev:true ~sub:(string "") shifted in
+  let result_pos = Option.map start_pos result in
+  Alcotest.(check (option int)) "offset reverse empty position" result_pos (Some 6);
 ;;
 
 let () = Alcotest.run "cstruct.parse"

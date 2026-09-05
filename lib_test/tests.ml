@@ -149,6 +149,15 @@ let rev_len_5 () =
   let expected = Cstruct.of_string "edcba" in
   assert_cs_equal expected (Cstruct.rev cs)
 
+let filter_map_drops () =
+  let cs = Cstruct.of_string "banana" in
+  let fm = Cstruct.filter_map (fun c -> if c = 'a' then None else Some c) cs in
+  assert_cs_equal (Cstruct.of_string "bnn") fm
+
+let filter_map_keeps_all () =
+  let cs = Cstruct.of_string "banana" in
+  assert_cs_equal cs (Cstruct.filter_map (fun c -> Some c) cs)
+
 let test_hexdump ?(format=("%a" : _ format4)) cs expected =
   let got = Format.asprintf format Cstruct.hexdump_pp cs in
   Alcotest.(check string) "hexdump output" expected got
@@ -245,6 +254,10 @@ let suite = [
     "empty", `Quick, rev_empty;
     "len = 1", `Quick, rev_len_1;
     "len = 5", `Quick, rev_len_5;
+  ];
+  "filter_map", [
+    "drops bytes", `Quick, filter_map_drops;
+    "keeps all bytes", `Quick, filter_map_keeps_all;
   ];
   "hexdump", [
     "empty", `Quick, hexdump_empty;
