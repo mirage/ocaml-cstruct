@@ -1,14 +1,17 @@
 (executable
  (name pp)
  (modules pp)
- (preprocess
-  (action
-   (run %{bin:cppo} -V OCAML:%{ocaml_version} %{input-file})))
- (libraries ppx_cstruct ocaml-migrate-parsetree))
+ (libraries ppx_cstruct))
 
 (executable
  (name gen_tests)
  (modules gen_tests))
+
+(env
+ (_
+  (env-vars
+   (OCAML_COLOR never)
+   (OCAML_ERROR_STYLE short))))
 
 (include dune.inc)
 
