@@ -816,23 +816,25 @@ let fcuts ~no_empty ~sep:({ len= sep_len; _ } as sep)
   scan 0 0 []
 
 let rcuts ~no_empty ~sep:({ len= sep_len; _ } as sep)
-      ({ buffer; len; _ } as cs) =
+      ({ buffer; off; len; } as cs) =
   if sep_len = 0 then invalid_arg "cuts: empty separator" ;
   let s_len = len in
   let max_sep_zidx = sep_len - 1 in
   let max_s_zidx = len - 1 in
   let rec check_sep zanchor i k acc =
     if k > max_sep_zidx
-    then let off = i + sep_len in
-         rscan i (i - sep_len) (add_sub ~no_empty buffer ~off ~len:(zanchor - off) acc)
+    then let start = i + sep_len in
+         rscan i (i - sep_len)
+           (add_sub ~no_empty buffer ~off:(off + start)
+              ~len:(zanchor - start) acc)
     else
-      if get_char cs (i + k) = get_char cs k
+      if get_char cs (i + k) = get_char sep k
       then check_sep zanchor i (k + 1) acc
       else rscan zanchor (i - 1) acc
   and rscan zanchor i acc =
     if i < 0 then
       if zanchor = s_len then ( if no_empty && s_len = 0 then [] else [ cs ])
-      else add_sub ~no_empty buffer ~off:0 ~len:zanchor acc
+      else add_sub ~no_empty buffer ~off ~len:zanchor acc
     else
       if get_char cs i = get_char sep 0
       then check_sep zanchor i 1 acc
