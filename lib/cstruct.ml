@@ -613,7 +613,7 @@ let head ?(rev= false) ({ len; _ } as cs) =
 
 let tail ?(rev= false) ({ buffer; off; len; } as cs) =
   if len = 0 then cs
-  else if rev then of_bigarray ~off ~len:(len - 2) buffer
+  else if rev then of_bigarray ~off ~len:(len - 1) buffer
   else of_bigarray ~off:(off + 1) ~len:(len - 1) buffer
 
 let is_empty { len; _ } = len = 0
