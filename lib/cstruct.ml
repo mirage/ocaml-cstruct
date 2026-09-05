@@ -613,7 +613,7 @@ let head ?(rev= false) ({ len; _ } as cs) =
 
 let tail ?(rev= false) ({ buffer; off; len; } as cs) =
   if len = 0 then cs
-  else if rev then of_bigarray ~off ~len:(len - 2) buffer
+  else if rev then of_bigarray ~off ~len:(len - 1) buffer
   else of_bigarray ~off:(off + 1) ~len:(len - 1) buffer
 
 let is_empty { len; _ } = len = 0
@@ -816,23 +816,25 @@ let fcuts ~no_empty ~sep:({ len= sep_len; _ } as sep)
   scan 0 0 []
 
 let rcuts ~no_empty ~sep:({ len= sep_len; _ } as sep)
-      ({ buffer; len; _ } as cs) =
+      ({ buffer; off; len; } as cs) =
   if sep_len = 0 then invalid_arg "cuts: empty separator" ;
   let s_len = len in
   let max_sep_zidx = sep_len - 1 in
   let max_s_zidx = len - 1 in
   let rec check_sep zanchor i k acc =
     if k > max_sep_zidx
-    then let off = i + sep_len in
-         rscan i (i - sep_len) (add_sub ~no_empty buffer ~off ~len:(zanchor - off) acc)
+    then let start = i + sep_len in
+         rscan i (i - sep_len)
+           (add_sub ~no_empty buffer ~off:(off + start)
+              ~len:(zanchor - start) acc)
     else
-      if get_char cs (i + k) = get_char cs k
+      if get_char cs (i + k) = get_char sep k
       then check_sep zanchor i (k + 1) acc
       else rscan zanchor (i - 1) acc
   and rscan zanchor i acc =
     if i < 0 then
       if zanchor = s_len then ( if no_empty && s_len = 0 then [] else [ cs ])
-      else add_sub ~no_empty buffer ~off:0 ~len:zanchor acc
+      else add_sub ~no_empty buffer ~off ~len:zanchor acc
     else
       if get_char cs i = get_char sep 0
       then check_sep zanchor i 1 acc
@@ -858,20 +860,20 @@ let fields ?(empty= false) ?(is_sep= is_white) ({ buffer; off; len; } as cs) =
       end in
   loop (max_pos - 1) max_pos []
 
-let ffind sat ({ buffer= v; len; _ } as cs) =
+let ffind sat ({ buffer= v; off; len; } as cs) =
   let max_idx = len - 1 in
   let rec loop i =
     if i > max_idx then None
     else if sat (get_char cs i)
-    then Some (buffer ~off:i ~len:1 v)
+    then Some (buffer ~off:(off + i) ~len:1 v)
     else loop (i + 1) in
   loop 0
 
-let rfind sat ({ buffer= v; len; _ } as cs) =
+let rfind sat ({ buffer= v; off; len; } as cs) =
   let rec loop i =
     if i < 0 then None
     else if sat (get_char cs i)
-    then Some (buffer ~off:i ~len:1 v)
+    then Some (buffer ~off:(off + i) ~len:1 v)
     else loop (i - 1) in
   loop (len - 1)
 
@@ -896,13 +898,15 @@ let ffind_sub ~sub:({ len= sub_len; _ } as sub) ({ buffer= v; off; len; } as cs)
       else loop (i + 1) 0 in
     loop 0 0
 
-let rfind_sub ~sub:({ len= sub_len; _ } as sub) ({ buffer= v; len; _ } as cs) =
+let rfind_sub ~sub:({ len= sub_len; _ } as sub)
+    ({ buffer= v; off; len; } as cs) =
   if sub_len > len then None
   else
     let max_zidx_sub = sub_len - 1 in
     let rec loop i k =
       if i < 0 then None
-      else if k > max_zidx_sub then Some (buffer v ~off:i ~len:sub_len)
+      else if k > max_zidx_sub
+      then Some (buffer v ~off:(off + i) ~len:sub_len)
       else if k > 0
       then ( if get_char sub k = get_char cs (i + k)
              then loop i (k + 1)
@@ -940,7 +944,7 @@ let filter_map f ({ len; _ } as cs) =
       then (if k = len then b else sub b 0 k)
       else match f (get_char cs i) with
            | Some chr ->
-              set_char b i chr ;
+              set_char b k chr ;
               loop b (k + 1) (i + 1)
            | None ->
               loop b k (i + 1) in
