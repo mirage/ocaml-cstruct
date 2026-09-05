@@ -860,20 +860,20 @@ let fields ?(empty= false) ?(is_sep= is_white) ({ buffer; off; len; } as cs) =
       end in
   loop (max_pos - 1) max_pos []
 
-let ffind sat ({ buffer= v; len; _ } as cs) =
+let ffind sat ({ buffer= v; off; len; } as cs) =
   let max_idx = len - 1 in
   let rec loop i =
     if i > max_idx then None
     else if sat (get_char cs i)
-    then Some (buffer ~off:i ~len:1 v)
+    then Some (buffer ~off:(off + i) ~len:1 v)
     else loop (i + 1) in
   loop 0
 
-let rfind sat ({ buffer= v; len; _ } as cs) =
+let rfind sat ({ buffer= v; off; len; } as cs) =
   let rec loop i =
     if i < 0 then None
     else if sat (get_char cs i)
-    then Some (buffer ~off:i ~len:1 v)
+    then Some (buffer ~off:(off + i) ~len:1 v)
     else loop (i - 1) in
   loop (len - 1)
 
@@ -898,13 +898,15 @@ let ffind_sub ~sub:({ len= sub_len; _ } as sub) ({ buffer= v; off; len; } as cs)
       else loop (i + 1) 0 in
     loop 0 0
 
-let rfind_sub ~sub:({ len= sub_len; _ } as sub) ({ buffer= v; len; _ } as cs) =
+let rfind_sub ~sub:({ len= sub_len; _ } as sub)
+    ({ buffer= v; off; len; } as cs) =
   if sub_len > len then None
   else
     let max_zidx_sub = sub_len - 1 in
     let rec loop i k =
       if i < 0 then None
-      else if k > max_zidx_sub then Some (buffer v ~off:i ~len:sub_len)
+      else if k > max_zidx_sub
+      then Some (buffer v ~off:(off + i) ~len:sub_len)
       else if k > 0
       then ( if get_char sub k = get_char cs (i + k)
              then loop i (k + 1)
