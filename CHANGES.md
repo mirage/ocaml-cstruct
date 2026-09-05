@@ -1,3 +1,9 @@
+v6.3.0 2026-09-05
+-----------------
+
+- Fix indexing and subview offset handling in `filter_map`,
+  reverse `tail` and `cuts`, and `find`/`find_sub` (@avsm, @samoht, #324)
+
 v6.2.0 2023-02-20
 -----------------
 
