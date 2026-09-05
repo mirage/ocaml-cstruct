@@ -20,13 +20,11 @@ depends: [
   "dune" {>= "3.17"}
   "cstruct" {=version}
   "ounit" {with-test}
-  "ppxlib" {>= "0.16.0"}
+  "ppxlib" {>= "0.28.0"}
   "ppx_sexp_conv" {with-test}
   "sexplib" {>="v0.9.0"}
   "cstruct-sexp" {with-test}
-  "cppo" {with-test}
   "cstruct-unix" {with-test & =version}
-  "ocaml-migrate-parsetree" {>= "2.1.0" & with-test}
   "lwt_ppx" {>= "2.0.2" & with-test}
 ]
 synopsis: "Access C-like structures directly from OCaml"

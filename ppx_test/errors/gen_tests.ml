@@ -6,8 +6,9 @@ let output_stanzas name =
   (targets %s.errors)
   (action
     (progn
-      (with-stderr-to %%{targets}
-        (run ./pp.exe -no-color --impl %%{input}))
+      (with-accepted-exit-codes 1
+        (with-stderr-to %%{targets}
+          (run ./pp.exe --impl %%{input})))
       (bash "sed -i.bak '1d' %%{targets}"))))
 (rule
   (alias runtest)

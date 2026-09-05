@@ -13,7 +13,7 @@ This repository provides several packages that can be installed via the
 - `cstruct`: the core Cstruct library
 - `cstruct-sexp`: serialisers into s-expression format of Cstructs
 - `cstruct-unix`: provide Unix variations of the read/write functions using file descriptors
-- `cstruct-async`: provide [Async](https://github.com/janestreet/async) Pipe and Bigstring support
+- `cstruct-async`: **deprecated** empty transitional package; use `cstruct` directly with [Async](https://github.com/janestreet/async) (see [async/DEPRECATED.md](async/DEPRECATED.md))
 - `cstruct-lwt`: provide [Lwt](https://ocsigen.org/lwt) variants of read/write functions
 - `ppx_cstruct`: a [PPX](https://caml.inria.fr/pub/docs/manual-ocaml/extn.html#sec248) syntax extension (see below)
 

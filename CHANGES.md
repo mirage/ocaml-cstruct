@@ -1,3 +1,12 @@
+dev
+---
+
+- Remove the `Async_cstruct` library.  `cstruct-async` is now an empty
+  transitional package that installs only migration instructions, since
+  Async >=v0.17.0 depends on `cstruct` itself now. (@avsm)
+- `ppx_cstruct` no longer depends on `ocaml-migrate-parsetree`, allowing it
+  (and the rest of the tree) to build on OCaml 5.x. (@avsm)
+
 v6.3.0 2026-09-05
 -----------------
 
