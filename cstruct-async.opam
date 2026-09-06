@@ -16,14 +16,22 @@ build: [
 depends: [
   "ocaml" {>= "4.08.0"}
   "dune" {>= "3.17"}
-  "async" {>= "v0.9.0" & < "v0.17.0"}
-  "async_unix" {>= "v0.9.0" & < "v0.17.0"}
-  "core" {>= "v0.9.0" & < "v0.17.0"}
-  "cstruct" {=version}
 ]
-synopsis: "Access C-like structures directly from OCaml"
+post-messages: [
+  "cstruct-async is deprecated and installs no library. Use Cstruct directly
+   with Async; see the DEPRECATED.md installed with this package for the
+   conversion functions that Async_cstruct used to provide."
+]
+synopsis: "Deprecated transitional package, use cstruct with Async directly"
 description: """
-Cstruct is a library and syntax extension to make it easier to access C-like
-structures directly from OCaml.  It supports both reading and writing to these
-structures, and they are accessed via the `Bigarray` module."""
+This package used to provide the Async_cstruct library, a thin adapter between
+Cstruct.t and Bigsubstring.t.  Async and Core now depend on cstruct themselves,
+so the shim only widened the dependency cone of the cstruct repository and has
+been removed.
+
+The package is retained as an empty transitional package so that existing
+installations keep resolving, and it will be deleted in a future release.  It
+installs a DEPRECATED.md document containing the source of the old library, so
+that the few functions it offered can be copied into projects that still need
+them."""
 x-maintenance-intent: [ "(latest)" ]
