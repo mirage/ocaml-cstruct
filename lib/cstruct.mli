@@ -836,3 +836,6 @@ val sum_lengths : caller:string -> t list -> int
 (** [sum_lengths ~caller acc l] is [acc] plus the sum of the lengths
     of the elements of [l].  Raises [Invalid_argument caller] if
     arithmetic overflows. *)
+
+val input_value : t -> 'a
+val output_value : 'a -> Marshal.extern_flags list -> t -> int
