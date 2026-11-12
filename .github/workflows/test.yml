@@ -40,3 +40,20 @@ jobs:
       - run: opam install . --deps-only --with-test
       - run: opam exec -- dune build
       - run: opam exec -- dune runtest
+
+  js-wasm:
+    name: js_of_ocaml + wasm_of_ocaml
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: brew install binaryen
+      - uses: ocaml/setup-ocaml@v3
+        with:
+          ocaml-compiler: "5.3"
+      - run: opam install ./cstruct.opam ./cstruct-sexp.opam --deps-only --with-test
+      - run: opam install js_of_ocaml-compiler wasm_of_ocaml-compiler
+      - run: opam exec -- sh -c 'js_of_ocaml --version && wasm_of_ocaml --version && wasm-opt --version && node --version'
+      - run: opam exec -- dune runtest lib_test
