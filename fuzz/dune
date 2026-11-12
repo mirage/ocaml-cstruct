@@ -8,5 +8,6 @@
 
 (rule
  (alias runtest)
+ (package cstruct-sexp)
  (deps fuzz.exe)
  (action (progn)))

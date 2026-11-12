@@ -21,6 +21,8 @@ depends: [
   "sexplib"
   "cstruct" {=version}
   "alcotest" {with-test}
+  "crowbar" {with-test & >= "0.2"}
+  "fmt" {with-test}
 ]
 synopsis: "S-expression serialisers for C-like structures"
 description: """
