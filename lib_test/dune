@@ -19,3 +19,9 @@
  (package cstruct)
  (action
   (run ./parse.exe -e)))
+
+(test
+ (name runtime)
+ (package cstruct)
+ (modules runtime)
+ (libraries cstruct))
