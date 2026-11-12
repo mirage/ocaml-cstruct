@@ -22,7 +22,7 @@ depends: [
   "fmt" {>= "0.8.9"}
   "crowbar" {with-test & >= "0.2"}
 ]
-conflicts: [ "js_of_ocaml" {<"3.5.0"} ]
+conflicts: [ "js_of_ocaml-compiler" {<"4.0.0"} ]
 synopsis: "Access C-like structures directly from OCaml"
 description: """
 Cstruct is a library and syntax extension to make it easier to access C-like
